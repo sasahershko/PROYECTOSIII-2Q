@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { setThemeCookie } from "@lib/themeToggle";
 import SpinLoader from "./SpinLoader";
