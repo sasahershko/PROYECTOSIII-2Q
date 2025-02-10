@@ -10,6 +10,8 @@ const config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        utad: "#0065ef" /* U-tad blue */,
+        accent: "#14192c" /* TEMPORAL */,
       },
     },
   },
