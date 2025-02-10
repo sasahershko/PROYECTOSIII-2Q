@@ -1,0 +1,6 @@
+instalar mongoose: npm install mongoose
+instalar dotenv: npm install dotenv
+
+De momento he añadido la conexion a la bd mediante mongoose
+Las contraseñas de conexion estan almacenadas en variables de entorno
+Habría qeu verificar si esto es seguro o no
