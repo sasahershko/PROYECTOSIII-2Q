@@ -5,7 +5,7 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "start": "node --watch server.js",
+    "start": "node server.js",
     "dev": "nodemon server.js"
   },
   "dependencies": {
