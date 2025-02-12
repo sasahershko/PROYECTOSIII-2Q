@@ -13,6 +13,14 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validación de correo u-tad
+    const correoRegex = /@u-tad\.com$|@live\.u-tad\.com$/;
+    if (!correoRegex.test(formData.correo)) {
+      setError("El correo debe ser del dominio @u-tad.com o @live.u-tad.com.");
+      return;
+    }
+
     try {
       // Llamar a la función del archivo Auth.js para registrar al usuario
       const responseData = await registerUser(formData);
