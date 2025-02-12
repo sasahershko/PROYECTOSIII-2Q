@@ -9,6 +9,7 @@ const Carrusel = () => {
     "/images/proyecto2.jpg",
     "/images/proyecto3.jpg"
   ];
+  //Aqui irian las imagenes que quisieramos meter
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -16,6 +17,8 @@ const Carrusel = () => {
     }, 3000);
     return () => clearInterval(interval);
   }, [imagenes.length]);
+
+  //crea una funcion que cada 3 segundos cambia de imagen y al llegar a la ultima vuelve a la primera
 
   return (
     <div className="w-full max-w-4xl mx-auto p-4 relative">
@@ -29,5 +32,7 @@ const Carrusel = () => {
     </div>
   );
 };
+
+//Te deja moverte libremente entre las imagenes (anterior o siguiente)
 
 export default Carrusel;

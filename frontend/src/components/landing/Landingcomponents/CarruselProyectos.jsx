@@ -1,24 +1,33 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 
 const CarruselProyectos = () => {
   const proyectos = [
-    "Imagen de Proyecto 1",
-    "Imagen de Proyecto 2",
-    "Imagen de Proyecto 3",
-    "Imagen de Proyecto 4",
-    "Imagen de Proyecto 5"
+    { titulo: "Proyecto 1", imagen: "Imagen de Proyecto 1" },
+    { titulo: "Proyecto 2", imagen: "Imagen de Proyecto 2" },
+    { titulo: "Proyecto 3", imagen: "Imagen de Proyecto 3" },
+    { titulo: "Proyecto 4", imagen: "Imagen de Proyecto 4" },
+    { titulo: "Proyecto 5", imagen: "Imagen de Proyecto 5" }
   ];
-
+  //Añado a mano distintos proyectos con sus nombres
   return (
     <div className="w-full max-w-5xl mx-auto p-4">
-      <h2 className="text-2xl bg-gray-300 font-bold text-align-left mb-6">PROYECTOS EN DESARROLLO</h2>
+      {/*Creo el contenedor en el que estara toda la estructura*/}
+      <h2 className="text-2xl bg-gray-300 font-bold text-left mb-6 inline-block px-6 py-2">
+        PROYECTOS EN DESARROLLO
+      </h2>
+      {/*Le pongo un titulo encima*/}
       <div className="overflow-x-auto flex gap-4 p-2 scrollbar-hide">
         {proyectos.map((proyecto, index) => (
-          <div key={index} className="bg-gray-300 h-48 w-64 flex items-center justify-center text-gray-500 rounded-md shadow-md min-w-[250px]">
-            <span>{proyecto}</span>
+          <div key={index} className="bg-gray-300 h-48 w-64 flex items-center justify-center text-gray-500 shadow-md min-w-[250px] relative">
+            <div className="absolute top-2 left-2 bg-black text-white text-xs px-2 py-1">
+              {proyecto.titulo}
+            </div>
+            <span>{proyecto.imagen}</span>
+            {/*Le añado los proyectos, con el titulo de proyecto y la imagen de este*/}
           </div>
+          
         ))}
       </div>
     </div>
