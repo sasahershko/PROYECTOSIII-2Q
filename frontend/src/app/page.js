@@ -1,7 +1,7 @@
 import React from "react";
-import Carrusel from "@/components/landing/Landingcomponents/Carrusel";
-import InfoLanding from "@/components/landing/Landingcomponents/InfoLanding";
-import CarruselProyectos from "@/components/landing/Landingcomponents/CarruselProyectos";
+import Carrusel from "@/components/landing/Carrusel";
+import InfoLanding from "@/components/landing/InfoLanding";
+import CarruselProyectos from "@/components/landing/CarruselProyectos";
 
 export default function Home() {
   return (
@@ -23,7 +23,3 @@ export default function Home() {
     </div>
   );
 }
-
-
-
-
