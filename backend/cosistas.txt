@@ -1,0 +1,26 @@
+instalar mongoose: npm install mongoose
+instalar dotenv: npm install dotenv
+
+instalar todo: npm install mongoose dotenv express cors
+instalar nodemon: npm install nodemon --save-dev
+luego cambiar en el package.json y añadir lo siguiente (recomiendo porque hace las cosas más faciles, pero creo que ya lo he configurado):
+"scripts": {
+  "start": "node server.js",
+  "dev": "nodemon server.js"
+}
+
+Y ya despues se puede ejecutar el servidor en modo desarrollo con npm run dev
+
+para el hasheo de contarseñas npm install bcryptjs
+
+npm install jsonwebtoken  para tener un token de autentificacion que se mandará al frontend
+
+
+
+De momento he añadido la conexion a la bd mediante mongoose
+Las contraseñas de conexion estan almacenadas en variables de entorno
+Habría qeu verificar si esto es seguro o no
+
+
+Para quien lea esto, vamos a usar el README.md en vez de este txt porque para algo está xd, venga vamos equipo
+PD: quien lea esto que borre este txt y pase a usar el README
