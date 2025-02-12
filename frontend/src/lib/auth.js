@@ -1,4 +1,6 @@
-"use server";
+"use server"; 
+
+import { cookies } from "next/headers";
 
 // Función para login
 export const loginUser = async (formData) => {
@@ -15,6 +17,11 @@ export const loginUser = async (formData) => {
     }
 
     const responseData = await res.json();
+
+    // Guardar el token JWT en una cookie
+    const guardadoCookie = cookies();
+    guardadoCookie.set("user_sesion", responseData.token, { path: "/", httpOnly: true });
+
     return responseData;
   } catch (error) {
     throw new Error(error.message);
@@ -36,6 +43,7 @@ export const registerUser = async (formData) => {
     }
 
     const responseData = await res.json();
+
     return responseData;
   } catch (error) {
     throw new Error(error.message);

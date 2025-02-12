@@ -15,9 +15,6 @@ export default function Login() {
       // Llamar a la función del archivo Auth.js para hacer login
       const responseData = await loginUser(formData);
 
-      // Guardar el token JWT en el localStorage
-      localStorage.setItem("jwt", responseData.token);
-
       router.push("/");
       
     } catch (error) {

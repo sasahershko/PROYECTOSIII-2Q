@@ -25,9 +25,6 @@ export default function Register() {
       // Llamar a la función del archivo Auth.js para registrar al usuario
       const responseData = await registerUser(formData);
 
-      // Guardar el token JWT en el localStorage
-      localStorage.setItem("jwt", responseData.token);
-
       router.push("/auth/login");
       
     } catch (error) {
@@ -65,7 +62,7 @@ export default function Register() {
                   value={formData.nombre}
                   onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
                   className="w-full px-4 py-3 rounded-md text-gray-900 bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500"
-                  placeholder="Nombre"
+                  placeholder="Nombre y Apellidos"
                   required
                   style={{ fontFamily: "Open Sans, sans-serif" }}
                 />
