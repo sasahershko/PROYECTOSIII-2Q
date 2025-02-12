@@ -1,51 +1,104 @@
 "use client";
-import { useForm } from "react-hook-form";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Head from "next/head"; 
 
 export default function Login() {
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const [formData, setFormData] = useState({ correo: "", password: "" });
+  const [error, setError] = useState("");
   const router = useRouter();
 
-  const onSubmit = async (data) => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-      const res = await fetch("/api/auth/login", {
+      // Enviar datos al backend para iniciar sesión
+      const res = await fetch("http://localhost:5000/api/users/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(formData),
       });
 
-      if (!res.ok) throw new Error("Error en la autenticación");
+      const responseData = await res.json();
+      if (!res.ok) throw new Error(responseData.mensaje);
 
-      router.push("/dashboard"); // Redirigir tras login exitoso
+      // Guardar el token JWT en el localStorage
+      localStorage.setItem("jwt", responseData.token);
+
+      // Redirigir al dashboard
+      router.push("/");
     } catch (error) {
-      console.error("Error en el login:", error);
+      setError(error.message);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div>
-        <label className="block">Email</label>
-        <input
-          {...register("email", { required: "Email es obligatorio" })}
-          className="w-full border p-2 rounded"
+    <>
+      <Head>
+        {/* Importar fuente desde Google Fonts */}
+        <link
+          href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap"
+          rel="stylesheet"
         />
-        {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
-      </div>
+      </Head>
 
-      <div>
-        <label className="block">Contraseña</label>
-        <input
-          type="password"
-          {...register("password", { required: "Contraseña es obligatoria" })}
-          className="w-full border p-2 rounded"
-        />
-        {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
-      </div>
+      <div className="flex w-full h-screen">
+        {/* Sección izquierda con el formulario */}
+        <div className="flex-1 bg-gray-900 text-white flex flex-col justify-center items-center px-8 py-12">
+          <h1 className="text-5xl font-bold mb-10" style={{ fontFamily: "Open Sans, sans-serif" }}>
+            Project Center
+          </h1>
+          <div className="bg-white p-12 rounded-lg shadow-lg w-full max-w-lg">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6" style={{ fontFamily: "Open Sans, sans-serif" }}>
+              Iniciar Sesión
+            </h2>
+            {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
 
-      <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded">
-        Iniciar sesión
-      </button>
-    </form>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <input
+                  type="email"
+                  name="correo"
+                  value={formData.correo}
+                  onChange={(e) => setFormData({ ...formData, correo: e.target.value })}
+                  className="w-full px-4 py-3 rounded-md text-gray-900 bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500"
+                  placeholder="Correo Electrónico"
+                  required
+                  style={{ fontFamily: "Open Sans, sans-serif" }}
+                />
+              </div>
+
+              <div>
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  className="w-full px-4 py-3 rounded-md text-gray-900 bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500"
+                  placeholder="Contraseña"
+                  required
+                  style={{ fontFamily: "Open Sans, sans-serif" }}
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-gray-800 text-white py-3 rounded-lg font-semibold hover:bg-gray-700"
+              >
+                Iniciar sesión
+              </button>
+            </form>
+
+            <p className="text-gray-600 text-sm mt-6 text-center" style={{ fontFamily: "Open Sans, sans-serif" }}>
+              ¿No tienes cuenta? <a href="/auth/register" className="text-blue-500 font-semibold">Regístrate</a>
+            </p>
+          </div>
+        </div>
+
+        {/* Sección derecha con imagen */}
+        <div className="flex-1 bg-gray-300 flex items-center justify-center">
+          <span className="text-gray-600 text-lg">Imagen</span>
+        </div>
+      </div>
+    </>
   );
 }
