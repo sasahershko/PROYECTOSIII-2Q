@@ -10,12 +10,12 @@ const Landing = () => {
       <div className="w-full max-w-6xl">
         <Carrusel />
       </div>
-      
+
       {/* Sección de información */}
-      <div className="w-full max-w-5xl mt-8">
+      <div className="w-full max-w-6xl mt-8">
         <InfoLanding />
       </div>
-      
+
       {/* Carrusel de proyectos */}
       <div className="w-full max-w-6xl mt-8">
         <CarruselProyectos />
@@ -24,4 +24,4 @@ const Landing = () => {
   );
 };
 
-export default Landing; 
+export default Landing;
