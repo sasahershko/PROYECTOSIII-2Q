@@ -15,4 +15,3 @@
    ```sh
    npm install
    ```
->>>>>>> develop
