@@ -4,9 +4,9 @@ import { cookies } from "next/headers"; // Importante: esto es para leer cookies
 import Footer from "@components/Footer";
 import ThemeToggle from "@components/ThemeToggle"; // el toggle del modo claro/oscuro
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
   // 1. Leemos la cookie "theme"
-  const themeCookie = cookies().get("theme")?.value;
+  const themeCookie = (await cookies()).get("theme")?.value;
 
   // 2. Decidimos la clase a poner en <html>
   //    Si hay cookie, la usamos; si no, por ejemplo "light".
