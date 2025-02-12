@@ -18,6 +18,7 @@
   --accent: 20, 25, 44;
 
   background: rgba(var(--background));
+  transition: background 0.3s;
 }
 
 .dark {
@@ -35,6 +36,7 @@
   --accent: 20, 25, 44;
 
   background: rgba(var(--background));
+  transition: background 0.3s;
 }
 
 /* Scrollbar */
