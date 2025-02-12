@@ -1,11 +1,13 @@
 "use server"; 
 
 import { cookies } from "next/headers";
+import dotenv from 'dotenv';
+dotenv.config();
 
 // Función para login
 export const loginUser = async (formData) => {
   try {
-    const res = await fetch("http://localhost:5000/api/users/login", {
+    const res = await fetch(`${process.env.BACK_URL}/api/users/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData),
@@ -31,7 +33,7 @@ export const loginUser = async (formData) => {
 // Función para register
 export const registerUser = async (formData) => {
   try {
-    const res = await fetch("http://localhost:5000/api/users/register", {
+    const res = await fetch(`${process.env.BACK_URL}/api/users/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData),
