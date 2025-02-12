@@ -6,11 +6,8 @@ import ThemeToggle from "@components/ThemeToggle"; // el toggle del modo claro/o
 
 export default function RootLayout({ children }) {
   // 1. Leemos la cookie "theme"
-  async function getThemeCookie() {
-    return await cookies().get("theme")?.value;
-  }
 
-  const themeCookie = getThemeCookie();
+  const themeCookie = cookies().get("theme")?.value;
 
   // 2. Decidimos la clase a poner en <html>
   //    Si hay cookie, la usamos; si no, por ejemplo "light".
