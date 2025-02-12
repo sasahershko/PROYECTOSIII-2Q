@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Head from "next/head"; 
+import { loginUser } from "@/lib/auth";
 
 export default function Login() {
   const [formData, setFormData] = useState({ correo: "", password: "" });
@@ -11,21 +12,14 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Enviar datos al backend para iniciar sesión
-      const res = await fetch("http://localhost:5000/api/users/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      const responseData = await res.json();
-      if (!res.ok) throw new Error(responseData.mensaje);
+      // Llamar a la función del archivo Auth.js para hacer login
+      const responseData = await loginUser(formData);
 
       // Guardar el token JWT en el localStorage
       localStorage.setItem("jwt", responseData.token);
 
-      // Redirigir al dashboard
       router.push("/");
+      
     } catch (error) {
       setError(error.message);
     }

@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Head from "next/head";
+import { registerUser } from "@/lib/auth";
 
 export default function Register() {
   const [formData, setFormData] = useState({ nombre: "", correo: "", password: "", grado: "INSO" });
@@ -13,28 +14,23 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch("http://localhost:5000/api/users/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      // Llamar a la función del archivo Auth.js para registrar al usuario
+      const responseData = await registerUser(formData);
 
-      const responseData = await res.json();
-      if (!res.ok) throw new Error(responseData.mensaje);
-
-      // Guardar el token JWT en el localStorage después del registro
+      // Guardar el token JWT en el localStorage
       localStorage.setItem("jwt", responseData.token);
 
       router.push("/auth/login");
       
     } catch (error) {
-      setError(error.message); // Mostrar mensaje de error si el correo ya está en uso
+      setError(error.message);
     }
   };
 
   return (
     <>
       <Head>
+        {/* Importar fuente desde Google Fonts */}
         <link
           href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap"
           rel="stylesheet"
@@ -42,6 +38,7 @@ export default function Register() {
       </Head>
 
       <div className="flex w-full h-screen">
+        {/* Sección izquierda con el formulario */}
         <div className="flex-1 bg-gray-900 text-white flex flex-col justify-center items-center px-8 py-12">
           <h1 className="text-5xl font-bold mb-10" style={{ fontFamily: "Open Sans, sans-serif" }}>
             Project Center
@@ -123,6 +120,7 @@ export default function Register() {
           </div>
         </div>
 
+        {/* Sección derecha con imagen */}
         <div className="flex-1 bg-gray-300 flex items-center justify-center">
           <span className="text-gray-600 text-lg">Imagen</span>
         </div>
