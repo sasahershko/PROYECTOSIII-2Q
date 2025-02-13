@@ -4,10 +4,16 @@ const userSchema = new mongoose.Schema({
   nombre: { type: String, required: true }, // Ahora es nombre completo
   correo: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  rol: {
+    type: String,
+    required: true,
+    enum: ["admin", "responsable", "estudiante"],
+    default: "estudiante"
+  },
   grado: {
     type: String,
     required: true,
-    enum: ["INSO", "MAIS", "FIIS"], // Solo permite estos valores
+    enum: ["INSO", "MAIS", "FIIS", "DIPI", "ANIV"], // Solo permite estos valores
   },
 });
 
