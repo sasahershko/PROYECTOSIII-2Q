@@ -36,7 +36,7 @@ const userRouter = express.Router();
  *                 example: "123456"
  *               grado:
  *                 type: string
- *                 enum: [INSO, MAIS, FIIS]
+ *                 enum: [INSO, MAIS, FIIS, DIPI, ANIV]
  *     responses:
  *       201:
  *         description: Usuario registrado exitosamente.
