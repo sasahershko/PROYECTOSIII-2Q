@@ -7,11 +7,11 @@ const InfoLanding = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
         {/* Y ahora creo donde ira el nombre del proyecto con la informacion sobre este */}
         <div>
-          <h2 className="text-2xl font-bold mb-4 bg-gray-300 p-2 text-align-left inline-block">
+          <h2 className="text-2xl font-bold mb-4 bg-card-bg p-2 px-4 text-align-left inline-block">
             PROJECT CENTER
           </h2>
-          <div className="bg-gray-200 p-4 ">
-            <p className="text-gray-700">
+          <div className="bg-card-bg p-4 ">
+            <p className="text-copy-primary">
               Lorem Ipsum es simplemente el texto de relleno de las imprentas y
               archivos de texto. Lorem Ipsum ha sido el texto de relleno
               estándar de las industrias desde el año 1500, cuando un impresor
@@ -29,8 +29,8 @@ const InfoLanding = () => {
         </div>
 
         {/* Aqui iria la primera imagen */}
-        <div className="bg-gray-300 h-48 flex items-center justify-center">
-          <span className="text-gray-500">Imagen 1</span>
+        <div className="bg-card-bg h-96 flex items-center justify-center">
+          <span className="text-copy-primary">Imagen 1</span>
         </div>
       </div>
 
@@ -41,20 +41,21 @@ const InfoLanding = () => {
             ¿QUIERES TRABAJAR CON NOSOTROS?
           </h3>
           <div className="p-2 rounded-md">
-            <p className="text-gray-700">
-              Si eres una empresa y necesitas una solución, Contáctanos. Dejalo
-              en nuestras manos.
+            <p className="">
+              Si eres una empresa y necesitas una solución, <br />
+              Contáctanos. <br />
+              Dejalo en nuestras manos.
             </p>
           </div>
           {/* Creo el boton para mas informacion */}
-          <button className="mt-4 px-6 py-2 bg-blue-500 text-white rounded-lg">
+          <button className="mt-4 px-6 py-2 bg-utad text-white rounded-lg">
             Más información
           </button>
         </div>
 
         {/* Aqui iria la segunda imagen */}
-        <div className="bg-gray-300 h-48 flex items-center justify-center">
-          <span className="text-gray-500">Imagen 2</span>
+        <div className="bg-card-bg h-48 flex items-center justify-center">
+          <span className="text-copy-primary">Imagen 2</span>
         </div>
       </div>
     </div>

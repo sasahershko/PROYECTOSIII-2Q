@@ -6,7 +6,7 @@ export default function Footer() {
 
   return (
     <>
-      <footer className="w-full bg-accent text-gray-400 py-6 mt-4 flex justify-start items-left text-left flex-col px-80">
+      <footer className="w-full bg-accent text-gray-400 py-6 flex justify-start items-left text-left flex-col px-80">
         <div>
           <h3 className="bg-white/90 py-2 px-4 text-accent font-semibold w-fit justify-start">
             MARCAS CON LAS QUE TRABAJAMOS

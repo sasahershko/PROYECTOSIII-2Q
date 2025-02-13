@@ -14,7 +14,7 @@ const CarruselProyectos = () => {
   return (
     <div className="w-full max-w-7xl mx-auto p-4">
       {/*Creo el contenedor en el que estara toda la estructura*/}
-      <h2 className="text-2xl bg-gray-300 font-bold text-left mb-6 inline-block px-6 py-2">
+      <h2 className="text-2xl bg-card-bg font-bold text-left mb-6 inline-block px-4 py-2">
         PROYECTOS EN DESARROLLO
       </h2>
       {/*Le pongo un titulo encima*/}
@@ -22,9 +22,9 @@ const CarruselProyectos = () => {
         {proyectos.map((proyecto, index) => (
           <div
             key={index}
-            className="bg-gray-300 h-48 w-64 flex items-center justify-center text-gray-500 shadow-md min-w-[250px] relative"
+            className="bg-card-bg h-48 w-64 flex items-center justify-center text-gray-500 shadow-md min-w-[250px] relative"
           >
-            <div className="absolute top-2 left-2 bg-black text-white text-xs px-2 py-1">
+            <div className="absolute top-2 left-2 bg-accent text-white px-4 py-1 w-36 text-nowrap overflow-hidden">
               {proyecto.titulo}
             </div>
             <span>{proyecto.imagen}</span>
