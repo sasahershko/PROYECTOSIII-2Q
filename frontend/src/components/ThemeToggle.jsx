@@ -25,7 +25,7 @@ export default function ThemeToggle({ initialTheme }) {
   };
 
   return (
-    <div className="fixed top-4 right-4 flex items-center justify-center">
+    <div className="flex items-center justify-center">
       <button
         onClick={handleToggle}
         disabled={isPending}
@@ -36,7 +36,7 @@ export default function ThemeToggle({ initialTheme }) {
         ) : theme === "dark" ? (
           // Si estamos en modo "dark", mostramos el ícono de "sol" (para cambiar a "light")
           <svg
-            className="h-10 w-10 fill-current text-copy-primary"
+            className="h-10 w-10 fill-current"
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
           >
@@ -45,7 +45,7 @@ export default function ThemeToggle({ initialTheme }) {
         ) : (
           // Si estamos en modo "light", mostramos el ícono de "luna" (para cambiar a "dark")
           <svg
-            className="h-9 w-9 fill-current text-copy-primary"
+            className="h-9 w-9 fill-current"
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
           >
