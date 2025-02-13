@@ -1,11 +1,12 @@
-// app/layout.js (Server Component)
-import "./globals.css";
+import "@/app/globals.css";
 import { cookies } from "next/headers"; // Importante: esto es para leer cookies en el server
 import Footer from "@components/Footer";
 import ThemeToggle from "@components/ThemeToggle"; // el toggle del modo claro/oscuro
+import Header from "@/components/Header";
 
 export default function RootLayout({ children }) {
   // 1. Leemos la cookie "theme"
+
   const themeCookie = cookies().get("theme")?.value;
 
   // 2. Decidimos la clase a poner en <html>
@@ -15,9 +16,8 @@ export default function RootLayout({ children }) {
   return (
     <html lang="es" className={theme}>
       <body className="font-sans text-copy-primary">
+        <Header />
         {/* El toggle, al montarse, recibirá el "tema actual" */}
-        <ThemeToggle initialTheme={theme} />
-
         {children}
         <Footer />
       </body>
