@@ -18,7 +18,7 @@ export default function RootLayout({ children }) {
       <body className="font-sans text-copy-primary">
         <Header />
         {/* El toggle, al montarse, recibirá el "tema actual" */}
-        {children}
+        <div className="w-auto h-auto pt-20">{children}</div>
         <Footer />
       </body>
     </html>

@@ -10,7 +10,7 @@ export default function Header() {
   const theme = themeCookie === "dark" ? "dark" : "light";
 
   return (
-    <div className="flex items-center justify-between px-6 h-20 bg-accent text-white">
+    <div className="flex items-center justify-between px-6 h-20 bg-accent text-white fixed w-full z-50">
       <a href="/">
         <Image
           src={"/logos/logoPC-White.webp"}

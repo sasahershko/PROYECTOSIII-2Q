@@ -11,7 +11,7 @@ const InfoLanding = () => {
             PROJECT CENTER
           </h2>
           <div className="bg-card-bg p-4 ">
-            <p className="text-copy-primary">
+            <p className="text-copy-primary text-justify">
               Lorem Ipsum es simplemente el texto de relleno de las imprentas y
               archivos de texto. Lorem Ipsum ha sido el texto de relleno
               estándar de las industrias desde el año 1500, cuando un impresor

@@ -1,6 +1,28 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* FONTS */
+
+* {
+  font-family: "Open Sans";
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+a,
+button {
+  font-family: "Montserrat";
+}
+
+/* COLORS */
 
 .light {
   --background: 245, 245, 245;
@@ -10,7 +32,7 @@
 
   --card-bg: 209, 213, 219;
 
-  --accent: 20, 25, 44;
+  --accent: 17, 24, 39;
   --utad: 0, 104, 238;
 
   background: rgba(var(--background));
@@ -18,14 +40,14 @@
 }
 
 .dark {
-  --background: 0, 0, 0;
+  --background: 8, 11, 18;
 
   --copy-primary: 250, 250, 250;
   --copy-secondary: 115, 115, 115;
 
-  --card-bg: 38, 38, 38;
+  --card-bg: 20, 21, 26;
 
-  --accent: 20, 25, 44;
+  --accent: 17, 24, 39;
   --utad: 0, 104, 238;
 
   background: rgba(var(--background));
@@ -52,4 +74,8 @@
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
+}
+
+html {
+  scroll-behavior: smooth;
 }
