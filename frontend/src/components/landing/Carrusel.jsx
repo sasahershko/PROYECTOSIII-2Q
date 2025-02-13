@@ -4,11 +4,7 @@ import React, { useState, useEffect } from "react";
 
 const Carrusel = () => {
   const [index, setIndex] = useState(0);
-  const imagenes = [
-    "/images/proyecto1.jpg",
-    "/images/proyecto2.jpg",
-    "/images/proyecto3.jpg",
-  ];
+  const imagenes = ["/carrusel/test.jpg"];
   //Aqui irian las imagenes que quisieramos meter
 
   useEffect(() => {
@@ -21,12 +17,16 @@ const Carrusel = () => {
   //crea una funcion que cada 3 segundos cambia de imagen y al llegar a la ultima vuelve a la primera
 
   return (
-    <div className="w-full max-w-7xl mx-auto p-4 relative">
+    <div className="w-full mx-auto relative">
+      <div className="w-full min-h-[85vh] absolute bg-black/50"></div>
       <img
         src={imagenes[index]}
         alt={`Imagen ${index + 1}`}
-        className="w-full h-48 object-cover"
+        className="w-full h-[85vh] object-cover object-center"
       />
+      <h1 className="absolute bottom-10 left-10 text-white text-7xl font-bold">
+        ¡IMPULSA TUS IDEAS!
+      </h1>
       <div
         className="absolute top-1/2 left-4 text-white cursor-pointer"
         onClick={() =>

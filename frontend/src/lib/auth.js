@@ -1,7 +1,7 @@
-"use server"; 
+"use server";
 
 import { cookies } from "next/headers";
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 dotenv.config();
 
 // Función para login
@@ -22,7 +22,10 @@ export const loginUser = async (formData) => {
 
     // Guardar el token JWT en una cookie
     const guardadoCookie = cookies();
-    guardadoCookie.set("user_sesion", responseData.token, { path: "/", httpOnly: true });
+    guardadoCookie.set("user_sesion", responseData.token, {
+      path: "/",
+      httpOnly: true,
+    });
 
     return responseData;
   } catch (error) {
