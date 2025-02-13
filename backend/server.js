@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import userRouter from "./routes/userRoutes.js";
+import setupSwagger from "./config/swagger.js";
 
 dotenv.config();
 connectDB();
@@ -10,6 +11,9 @@ connectDB();
 const app = express();
 app.use(express.json());
 app.use(cors());
+
+//SWAGGER
+setupSwagger(app);
 
 // ✅ Registrar rutas de usuarios
 app.use("/api/users", userRouter);
