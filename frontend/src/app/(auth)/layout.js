@@ -16,12 +16,12 @@ export default function AuthLayout({ children }) {
 
         <div className="flex w-full min-h-screen bg-gray-900">
           {/* Sección izquierda con el formulario */}
-          <div className="flex-1">
+          <div className="flex-1 items-center justify-center">
             {children} {/* Formularios de Login y Register */}
           </div>
 
           {/* Sección derecha con imagen */}
-          <div className="flex-1 bg-gray-300 flex items-center justify-center">
+          <div className="hidden md:flex flex-1 bg-gray-300 items-center justify-center">
             <Image
               src="/foto-auth.webp"
               width={1100}
