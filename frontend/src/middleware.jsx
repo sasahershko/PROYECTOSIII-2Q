@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { jwtVerify } from 'jose'; //para validar tokens de autenticación
 
-export async function middleware(req, res) {
+export async function middleware(req) {
     const token = req.cookies.get('token')?.value;
 
     if (!token) {
@@ -17,25 +17,32 @@ export async function middleware(req, res) {
 
         const userRole = payload.rol;
 
-        // return NextResponse.json({
-        //     mensaje: "✅ Middleware ejecutado correctamente",
-        //     userRole: userRole,
-        //     tokenPayload: payload
-        // });
-
-        //si el acceso a login y registro si ya estás autenticado
+        // Si ya estás autenticado y en la página de login o registro, redirigir según el rol
         if (req.nextUrl.pathname.startsWith('/login') || req.nextUrl.pathname.startsWith('/register')) {
             if (userRole === 'admin') {
                 return NextResponse.redirect(new URL('/admin', req.url)); //redirigir a la página de admin si el usuario es admin
-            } else if (userRole === 'estudiante') {
-                return NextResponse.redirect(new URL('/user', req.url)); //redirigir a la página de usuario si el usuario es user
+            } else if (userRole === 'user') {
+                return NextResponse.redirect(new URL('/user', req.url)); //redirigir a la página de usuario si el usuario es estudiante
             }
         }
 
-        if (req.nextUrl.pathname.startsWith('/admin') && userRole !== 'admin') {
-            return NextResponse.redirect(new URL('/', req.url)); //redirigir a la página de login si el usuario no es admin
+        //!ESTO ME DA ERROR AL MOMENTO DE ENTRAR A LA PÁGINA DE ADMIN O USER ASI QUE POR ESO DEBO HACER ESO
+        //si ya estás en la página /admin, no hacer nada
+        if (req.nextUrl.pathname.startsWith('/admin') && userRole === 'admin') {
+            return NextResponse.next();
         }
 
+        //si ya estás en la página /user, no hacer nada
+        if (req.nextUrl.pathname.startsWith('/user') && userRole === 'user') {
+            return NextResponse.next();
+        }
+
+        //si estás en la página admin pero no eres admin, redirigir al inicio
+        if (req.nextUrl.pathname.startsWith('/admin') && userRole !== 'admin') {
+            return NextResponse.redirect(new URL('/', req.url));
+        }
+
+        //si estás en la página user pero no eres estudiante, redirigir al inicio
         if (req.nextUrl.pathname.startsWith("/user") && userRole !== "user") {
             return NextResponse.redirect(new URL("/", req.url));
         }
@@ -46,10 +53,8 @@ export async function middleware(req, res) {
         console.error('Token inválido o expirado:', error);
         return NextResponse.redirect(new URL('/login', req.url))
     }
-
 }
 
 export const config = {
-    matcher: ["/admin/:path*", "/user/:path*", "/login", "/register"], // Middleware solo en rutas protegidas
+    matcher: ["/admin/:path*", "/user/:path*", "/login", "/register"], //middleware solo en rutas protegidas
 };
-
