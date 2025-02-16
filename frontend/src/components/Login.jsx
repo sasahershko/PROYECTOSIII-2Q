@@ -13,7 +13,7 @@ export default function Login() {
     try {
       // Llamar a la función del archivo Auth.js para hacer login
       const responseData = await loginUser(formData);
-
+      
       router.push("/");
     } catch (error) {
       setError(error.message);
