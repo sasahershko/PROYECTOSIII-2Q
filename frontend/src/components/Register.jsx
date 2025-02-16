@@ -32,7 +32,6 @@ export default function Register() {
       const responseData = await registerUser(formData);
 
       if (responseData) {
-
         router.push("/login");
       }
     } catch (error) {
