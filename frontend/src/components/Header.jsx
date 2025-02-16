@@ -1,6 +1,9 @@
 import ThemeToggle from "./ThemeToggle";
 import { cookies } from "next/headers";
 import Image from "next/image";
+import Link from "next/link";
+import { jwtVerify } from 'jose';
+
 
 export default function Header() {
   // 1. Leemos la cookie "theme"
@@ -8,20 +11,27 @@ export default function Header() {
   // 2. Decidimos la clase a poner en <html>
   //    Si hay cookie, la usamos; si no, por ejemplo "light".
   const theme = themeCookie === "dark" ? "dark" : "light";
+  const token = cookies().get("token")?.value;
 
   return (
     <div className="flex items-center justify-between px-6 h-20 bg-accent text-white fixed w-full z-50">
-      <a href="/">
+      <Link href="/">
         <Image
           src={"/logos/logoPC-White.webp"}
           alt="Logo"
           width={160}
           height={50}
         />
-      </a>
+      </Link>
       <div className="flex items-center gap-6 pointer font-semibold hover:text-white/90 text-lg">
         <div className="flex gap-4">
-          <a href="/login">LOGIN</a>
+          {token ?
+            <div className="flex justify-between gap-4">
+              <Link href='/'>Perfil</Link>
+              <Link className="text-red-400" href='/' >Cierra sesión</Link >
+            </div>
+            : <Link href="/login">LOGIN</Link>}
+
         </div>
         <ThemeToggle initialTheme={theme} />
       </div>
