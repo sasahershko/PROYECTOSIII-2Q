@@ -15,14 +15,16 @@ export default function Login() {
       // Llamar a la función del archivo Auth.js para hacer login
       const responseData = await loginUser(formData);
 
-      router.push("/");
+      if(responseData){
+        router.push("/");
+      }
+
     } catch (error) {
       setError(error.message);
     }
   };
 
   return (
-    <>
       <div className="flex w-full min-h-screen">
         {/* Sección izquierda con el formulario */}
         <div className="flex-1 bg-gray-900 text-white flex flex-col justify-center items-center px-8 py-12">
@@ -79,7 +81,7 @@ export default function Login() {
           </div>
         </div>
 
-        {/* Sección derecha con imagen */}
+        {/* Sección derecha con imagen*/}
         <div className="flex-1 bg-gray-300 flex items-center justify-center">
           <Image
             src="/foto-auth.webp"
@@ -90,6 +92,5 @@ export default function Login() {
           />
         </div>
       </div>
-    </>
   );
 }
