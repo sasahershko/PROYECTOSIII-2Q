@@ -22,7 +22,7 @@ export const loginUser = async (formData) => {
 
     // Guardar el token JWT en una cookie
     const guardadoCookie = cookies();
-    guardadoCookie.set("user_sesion", responseData.token, {
+    guardadoCookie.set("token", responseData.token, {
       path: "/",
       httpOnly: true,
     });
