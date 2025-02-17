@@ -42,10 +42,10 @@ export default function Register() {
   return (
     <div className="flex w-full h-screen">
       {/* Sección izquierda con el formulario */}
-      <div className="flex-1 bg-gray-900 text-white flex flex-col justify-center items-center px-8 py-12">
+      <div className="flex-1 bg-secundary text-white flex flex-col justify-center items-center px-8 py-12">
         <h1 className="text-4xl font-bold mb-10">PROJECT CENTER</h1>
         <div className="bg-white p-12 rounded-lg shadow-lg w-full max-w-lg">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Registro</h2>
+          <h2 className="text-2xl font-bold text-secundary mb-6">Registro</h2>
           {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -57,7 +57,7 @@ export default function Register() {
                 onChange={(e) =>
                   setFormData({ ...formData, nombre: e.target.value })
                 }
-                className="w-full px-4 py-3 rounded-md text-gray-900 bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500"
+                className="w-full px-4 py-3 rounded-md text-secundary bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500"
                 placeholder="Nombre y Apellidos"
                 required
               />
@@ -71,7 +71,7 @@ export default function Register() {
                 onChange={(e) =>
                   setFormData({ ...formData, correo: e.target.value })
                 }
-                className="w-full px-4 py-3 rounded-md text-gray-900 bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500"
+                className="w-full px-4 py-3 rounded-md text-secundary bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500"
                 placeholder="Correo Electrónico"
                 required
               />
@@ -85,7 +85,7 @@ export default function Register() {
                 onChange={(e) =>
                   setFormData({ ...formData, password: e.target.value })
                 }
-                className="w-full px-4 py-3 rounded-md text-gray-900 bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500"
+                className="w-full px-4 py-3 rounded-md text-secundary bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500"
                 placeholder="Contraseña"
                 required
               />
@@ -98,7 +98,7 @@ export default function Register() {
                 onChange={(e) =>
                   setFormData({ ...formData, grado: e.target.value })
                 }
-                className="w-full px-4 py-3 rounded-md text-gray-900 bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 rounded-md text-secundary bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               >
                 {gradosPermitidos.map((grado, index) => (
