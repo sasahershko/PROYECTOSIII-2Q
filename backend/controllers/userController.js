@@ -12,18 +12,22 @@ dotenv.config();
  */
 export const registerUser = async (req, res) => {
   try {
-    const { nombre, correo, password, grado } = req.body;
+    const { name, surname, email, password, dni, grade } = req.body;
 
-    if (!nombre || !correo || !password || !grado) {
-      return res.status(400).json({ mensaje: "Todos los campos son obligatorios" });
+    if (!name || !surname || !email || !password || !dni || !grade) {
+      return res
+        .status(400)
+        .json({ mensaje: "Todos los campos son obligatorios" });
     }
 
     const gradosPermitidos = ["INSO", "MAIS", "FIIS"];
-    if (!gradosPermitidos.includes(grado)) {
-      return res.status(400).json({ mensaje: "Grado no válido. Debe ser INSO, MAIS o FIIS." });
+    if (!gradosPermitidos.includes(grade)) {
+      return res
+        .status(400)
+        .json({ mensaje: "Grado no válido. Debe ser INSO, MAIS o FIIS." });
     }
 
-    const usuarioExistente = await User.findOne({ correo }).exec();
+    const usuarioExistente = await User.findOne({ email }).exec();
     if (usuarioExistente) {
       return res.status(400).json({ mensaje: "El correo ya está en uso" });
     }
@@ -32,10 +36,12 @@ export const registerUser = async (req, res) => {
     const passwordHasheada = await bcrypt.hash(password, salt);
 
     const nuevoUsuario = new User({
-      nombre,
-      correo,
+      name,
+      surname,
+      email,
       password: passwordHasheada,
-      grado,
+      dni,
+      grade,
     });
 
     await nuevoUsuario.save();
@@ -52,25 +58,31 @@ export const registerUser = async (req, res) => {
  */
 export const loginUser = async (req, res) => {
   try {
-    const { correo, password } = req.body;
+    const { email, password } = req.body;
 
-    if (!correo || !password) {
-      return res.status(400).json({ mensaje: "Correo y contraseña son obligatorios" });
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ mensaje: "Correo y contraseña son obligatorios" });
     }
 
-    const usuario = await User.findOne({ correo }).exec();
+    const usuario = await User.findOne({ email }).exec();
     if (!usuario) {
-      return res.status(401).json({ mensaje: "Correo o contraseña incorrectos" });
+      return res
+        .status(401)
+        .json({ mensaje: "Correo o contraseña incorrectos" });
     }
 
     const passwordValida = await bcrypt.compare(password, usuario.password);
     if (!passwordValida) {
-      return res.status(401).json({ mensaje: "Correo o contraseña incorrectos" });
+      return res
+        .status(401)
+        .json({ mensaje: "Correo o contraseña incorrectos" });
     }
 
     // 📌 Generar token JWT
     const token = jwt.sign(
-      { id: usuario._id, correo: usuario.correo, grado: usuario.grado },
+      { id: usuario._id, email: usuario.email, grade: usuario.grade },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN }
     );
@@ -79,9 +91,10 @@ export const loginUser = async (req, res) => {
       mensaje: "Login exitoso",
       usuario: {
         id: usuario._id,
-        nombre: usuario.nombre,
-        correo: usuario.correo,
-        grado: usuario.grado,
+        name: usuario.name,
+        surname: usuario.surname,
+        email: usuario.email,
+        grade: usuario.grade,
       },
       token,
     });
@@ -104,6 +117,37 @@ export const getUserProfile = async (req, res) => {
     }
 
     res.status(200).json(usuario);
+  } catch (error) {
+    console.error("❌ Error en el servidor:", error);
+    res.status(500).json({ mensaje: "Error en el servidor" });
+  }
+};
+
+/**
+ * @desc Eliminar usuario (propio o admin)
+ * @route DELETE /api/users/:id
+ * @access Private (usuario autenticado o admin)
+ */
+export const deleteUser = async (req, res) => {
+  try {
+    const usuarioAutenticado = req.usuario; // Usuario autenticado
+    const { id } = req.params; // ID del usuario a eliminar
+
+    const usuarioAEliminar = await User.findById(id);
+
+    if (!usuarioAEliminar) {
+      return res.status(404).json({ mensaje: "Usuario no encontrado" });
+    }
+
+    // Permitir el delete solo si un usuario se borra a sí mismo o si es admin
+    if (usuarioAutenticado.rol !== "admin" && usuarioAutenticado.id !== id) {
+      return res
+        .status(403)
+        .json({ mensaje: "No tienes permisos para eliminar este usuario" });
+    }
+
+    await usuarioAEliminar.deleteOne();
+    res.status(200).json({ mensaje: "Usuario eliminado correctamente" });
   } catch (error) {
     console.error("❌ Error en el servidor:", error);
     res.status(500).json({ mensaje: "Error en el servidor" });

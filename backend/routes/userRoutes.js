@@ -1,5 +1,10 @@
 import express from "express";
-import { registerUser, loginUser, getUserProfile } from "../controllers/userController.js";
+import {
+  registerUser,
+  loginUser,
+  getUserProfile,
+  deleteUser,
+} from "../controllers/userController.js";
 import verificarToken from "../middleware/authMiddleware.js";
 
 const userRouter = express.Router();
@@ -75,7 +80,6 @@ userRouter.post("/register", registerUser);
  */
 userRouter.post("/login", loginUser);
 
-
 //! igual lo suyo es mostrar lo que se guarda de la persona, tipo lo que se devuelve; IMPORTANTE (meter: dni)
 /**
  * @swagger
@@ -94,5 +98,32 @@ userRouter.post("/login", loginUser);
  *         description: Usuario no encontrado.
  */
 userRouter.get("/profile", verificarToken, getUserProfile);
+
+/**
+ * @swagger
+ * /api/users/{id}:
+ *   delete:
+ *     summary: Eliminar un usuario (propio o por admin)
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID del usuario a eliminar
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Usuario eliminado correctamente.
+ *       403:
+ *         description: No tienes permisos para eliminar este usuario.
+ *       404:
+ *         description: Usuario no encontrado.
+ *       500:
+ *         description: Error en el servidor.
+ */
+userRouter.delete("/:id", verificarToken, deleteUser);
 
 export default userRouter;
