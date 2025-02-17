@@ -9,10 +9,7 @@ export default function RootLayout({ children }) {
       <body>
         <ThemeProvider attribute="class" defaultTheme="light">
           <Header />
-          {/* El toggle, al montarse, recibirá el "tema actual" */}
-          <div className="w-auto h-auto pt-20 dark:bg-secundary-bg">
-            {children}
-          </div>
+          <div className="w-auto h-auto pt-20">{children}</div>
           <Footer />
         </ThemeProvider>
       </body>
