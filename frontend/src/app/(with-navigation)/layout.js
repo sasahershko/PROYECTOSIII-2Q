@@ -9,7 +9,7 @@ export default function RootLayout({ children }) {
       <body>
         <ThemeProvider attribute="class" defaultTheme="light">
           <Header />
-          <div className="w-auto h-auto pt-20">{children}</div>
+          <div className="w-auto h-auto pt-20 bg-primary-bg">{children}</div>
           <Footer />
         </ThemeProvider>
       </body>

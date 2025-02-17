@@ -9,15 +9,14 @@ const config = {
   ],
   theme: {
     extend: {
-      colors: {
-        secundary: "#111827",
-      },
+      colors: {},
     },
   },
   plugins: [
     createThemes({
       light: {
         "primary-bg": "#fff",
+        secundary: "#111827",
         "primary-text": "#000",
         "secundary-text": "#111827",
         accent: "#0068ee",
@@ -25,6 +24,7 @@ const config = {
       },
       dark: {
         "primary-bg": "#080b12",
+        secundary: "#111827",
         "primary-text": "#fff",
         "secundary-text": "#d1d5db",
         accent: "#14b55a",
