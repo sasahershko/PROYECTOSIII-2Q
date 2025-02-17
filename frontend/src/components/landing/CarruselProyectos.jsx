@@ -24,7 +24,7 @@ const CarruselProyectos = () => {
             key={index}
             className="bg-card-bg h-48 w-64 flex items-center justify-center text-gray-500 shadow-md min-w-[250px] relative"
           >
-            <div className="absolute top-2 left-2 bg-accent text-white px-4 py-1 w-36 text-nowrap overflow-hidden">
+            <div className="absolute top-2 left-2 bg-secundary text-white px-4 py-1 w-36 text-nowrap overflow-hidden">
               {proyecto.titulo}
             </div>
             <span>{proyecto.imagen}</span>
