@@ -16,11 +16,13 @@ export default function ThemeToggle() {
   if (!mounted) return null;
 
   return (
-    <button
-      onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-      className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 transition-colors duration-300"
+    <select
+      value={theme}
+      onChange={(e) => setTheme(e.target.value)}
+      className="px-2 py-1 rounded bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 transition-colors duration-300"
     >
-      {theme === "light" ? "Modo Oscuro" : "Modo Claro"}
-    </button>
+      <option value="light">Modo Claro</option>
+      <option value="dark">Modo Oscuro</option>
+    </select>
   );
 }
