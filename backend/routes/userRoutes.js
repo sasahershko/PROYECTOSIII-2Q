@@ -28,18 +28,24 @@ const userRouter = express.Router();
  *         application/json:
  *           schema:
  *             type: object
- *             required: [nombre, correo, password, grado]
+ *             required: [name, surname, email, password, dni, grade]
  *             properties:
- *               nombre:
+ *               name:
  *                 type: string
- *                 example: "Juan Pérez"
- *               correo:
+ *                 example: "Juan"
+ *               surname:
+ *                 type: string
+ *                 example: "Pérez"
+ *               email:
  *                 type: string
  *                 example: "juan@example.com"
  *               password:
  *                 type: string
  *                 example: "123456"
- *               grado:
+ *               dni:
+ *                 type: string
+ *                 example: "12345678A"
+ *               grade:
  *                 type: string
  *                 enum: [INSO, MAIS, FIIS, DIPI, ANIV]
  *     responses:
@@ -62,9 +68,9 @@ userRouter.post("/register", registerUser);
  *         application/json:
  *           schema:
  *             type: object
- *             required: [correo, password]
+ *             required: [email, password]
  *             properties:
- *               correo:
+ *               email:
  *                 type: string
  *                 example: "juan@example.com"
  *               password:
@@ -80,7 +86,6 @@ userRouter.post("/register", registerUser);
  */
 userRouter.post("/login", loginUser);
 
-//! igual lo suyo es mostrar lo que se guarda de la persona, tipo lo que se devuelve; IMPORTANTE (meter: dni)
 /**
  * @swagger
  * /api/users/profile:
@@ -92,6 +97,32 @@ userRouter.post("/login", loginUser);
  *     responses:
  *       200:
  *         description: Devuelve el perfil del usuario autenticado.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                   example: "65a3f2e4b1c3e5a7d2a4c9b2"
+ *                 name:
+ *                   type: string
+ *                   example: "Juan"
+ *                 surname:
+ *                   type: string
+ *                   example: "Pérez"
+ *                 email:
+ *                   type: string
+ *                   example: "juan@example.com"
+ *                 dni:
+ *                   type: string
+ *                   example: "12345678A"
+ *                 grade:
+ *                   type: string
+ *                   example: "INSO"
+ *                 rol:
+ *                   type: string
+ *                   example: "user"
  *       401:
  *         description: No autorizado, falta el token.
  *       404:

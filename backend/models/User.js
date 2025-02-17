@@ -9,8 +9,8 @@ const userSchema = new mongoose.Schema({
   rol: {
     type: String,
     required: true,
-    enum: ["admin", "responsable", "estudiante"],
-    default: "estudiante",
+    enum: ["admin", "moderator", "user"],
+    default: "user"
   },
   grade: {
     type: String,
