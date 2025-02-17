@@ -2,15 +2,22 @@ import { NextResponse } from 'next/server';
 import { jwtVerify } from 'jose'; //para validar tokens de autenticación
 
 export async function middleware(req) {
-    const token = req.cookies.get('token')?.value;
+
+
+    // const token = req.cookies.get('token')?.value; -> ESTE NO ME FUNCIONA
+    //lo saco manualmente desde la cabecera
+    const cookieHeader = req.headers.get("cookie") || "";
+    const cookies = Object.fromEntries(cookieHeader.split("; ").map(c => c.split("=")));
+    const token = cookies.token;
 
     //si no hay token y no está en login o register, redirigir a login
     if (!token) {
-        if (req.nextUrl.pathname.startsWith('/login') || req.nextUrl.pathname.startsWith('/register')) {
-            return NextResponse.next();
+        if (req.nextUrl.pathname === '/login' || req.nextUrl.pathname === '/register') {
+            return NextResponse.next(); // Permitir acceso sin token
         }
-        return NextResponse.redirect(new URL('/login', req.url)); //redirigir a la página de login si no hay token
+        return NextResponse.redirect(new URL('/login', req.url));
     }
+
 
     try {
         const secret = new TextEncoder().encode(process.env.JWT_SECRET); //convertir la clave secreta en un array de bytes (jwtVerify requiere un Uint8Array)
@@ -19,14 +26,17 @@ export async function middleware(req) {
         const userRole = payload.rol;
 
         //si ya estás autenticado y en la página de login o register, redirigir según el rol
-        if ((req.nextUrl.pathname.startsWith('/login') || req.nextUrl.pathname.startsWith('/register'))) {
-            if (userRole === 'admin' && req.nextUrl.pathname !== '/admin') {
-                return NextResponse.redirect(new URL('/admin', req.url)); //redirigir a la página de admin si el usuario es admin
-            } else if (userRole === 'user' && req.nextUrl.pathname !== '/user') {
-                return NextResponse.redirect(new URL('/user', req.url)); //redirigir a la página de usuario si el usuario es estudiante
+        if (req.nextUrl.pathname.startsWith('/login') || req.nextUrl.pathname.startsWith('/register')) {
+            if (userRole === 'admin') {
+                return NextResponse.redirect(new URL('/admin', req.url));
             }
-            return NextResponse.next(); //si ya está en su página correcta, no hacer nada
+            if (userRole === 'user') {
+                return NextResponse.redirect(new URL('/user', req.url));
+            }
+            return NextResponse.next();
         }
+        
+
 
         //si ya estás en la página /admin y eres admin, no hacer nada
         if (req.nextUrl.pathname.startsWith('/admin') && userRole === 'admin') {
