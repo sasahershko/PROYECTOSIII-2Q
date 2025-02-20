@@ -161,21 +161,15 @@ export const deleteUser = async (req, res) => {
 };
 
 /**
- * @desc Obtener todos los usuarios (solo admin)
+ * @desc Obtener todos los usuarios (requiere autenticación)
  * @route GET /api/users
- * @access Private (solo admin)
+ * @access Private (requiere token)
  */
 export const getAllUsers = async (req, res) => {
   try {
-    // Verificar si el usuario es admin
-    if (req.usuario.rol !== "admin") {
-      return res
-        .status(403)
-        .json({ mensaje: "No tienes permisos para ver todos los usuarios" });
-    }
-
-    // Buscar todos los usuarios excepto sus contraseñas
+    // Buscar todos los usuarios excepto las contraseñas
     const usuarios = await User.find().select("-password");
+
     res.status(200).json(usuarios);
   } catch (error) {
     console.error("❌ Error en el servidor:", error);

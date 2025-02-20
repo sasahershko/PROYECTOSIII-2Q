@@ -162,7 +162,7 @@ userRouter.delete("/:id", verificarToken, deleteUser);
  * @swagger
  * /api/users:
  *   get:
- *     summary: Obtener todos los usuarios (solo admin puede)
+ *     summary: Obtener todos los usuarios (requiere autenticación)
  *     tags: [Usuarios]
  *     security:
  *       - bearerAuth: []
@@ -197,8 +197,8 @@ userRouter.delete("/:id", verificarToken, deleteUser);
  *                   rol:
  *                     type: string
  *                     example: "user"
- *       403:
- *         description: No tienes permisos para acceder a esta información.
+ *       401:
+ *         description: No autorizado, falta el token.
  *       500:
  *         description: Error en el servidor.
  */
