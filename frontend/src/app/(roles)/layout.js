@@ -1,6 +1,6 @@
 import "@/app/globals.css";
 import Header from "@components/Header";
-import { ThemeUpdater } from "@components/ThemeUpdater";
+import ThemeUpdater from "@components/ThemeUpdater";
 
 export default function RootLayout({ children }) {
   return (
