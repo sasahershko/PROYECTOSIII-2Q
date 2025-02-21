@@ -9,11 +9,14 @@ const config = {
   ],
   theme: {
     extend: {
-      colors: {},
+      colors: {
+        // Aquí se pueden definir colores que no se modifiquen segun el tema
+      },
     },
   },
   plugins: [
     createThemes({
+      // Aquí se pueden definir colores segun el tema, deben tener el mismo nombre
       light: {
         "primary-bg": "#fff",
         secundary: "#111827",
