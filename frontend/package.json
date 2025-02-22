@@ -1,6 +1,6 @@
 {
   "name": "project-center",
-  "version": "0.1.1",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
@@ -10,7 +10,8 @@
   },
   "dependencies": {
     "dotenv": "^16.4.7",
-    "next": "15.1.6",
+    "jose": "^5.9.6",
+    "next": "^15.1.7",
     "next-themes": "^0.4.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -22,6 +23,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.1.6",
     "postcss": "^8",
-    "tailwindcss": "^3.4.1"
+    "tailwindcss": "^3.4.1",
+    "tw-colors": "^3.3.2"
   }
 }

@@ -7,11 +7,11 @@ const InfoLanding = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
         {/* Y ahora creo donde ira el nombre del proyecto con la informacion sobre este */}
         <div>
-          <h2 className="text-2xl font-bold mb-4 bg-card-bg p-2 px-4 text-align-left inline-block">
+          <h2 className="text-2xl font-bold mb-4 bg-card p-2 px-4 text-align-left inline-block">
             PROJECT CENTER
           </h2>
-          <div className="bg-card-bg p-4 ">
-            <p className="text-copy-primary text-justify">
+          <div className="bg-card p-4 ">
+            <p className="text-primary-text text-justify">
               Lorem Ipsum es simplemente el texto de relleno de las imprentas y
               archivos de texto. Lorem Ipsum ha sido el texto de relleno
               estándar de las industrias desde el año 1500, cuando un impresor
@@ -29,8 +29,8 @@ const InfoLanding = () => {
         </div>
 
         {/* Aqui iria la primera imagen */}
-        <div className="bg-card-bg h-96 flex items-center justify-center">
-          <span className="text-copy-primary">Imagen 1</span>
+        <div className="bg-card h-96 flex items-center justify-center">
+          <span className="text-primary-text">Imagen 1</span>
         </div>
       </div>
 
@@ -48,14 +48,14 @@ const InfoLanding = () => {
             </p>
           </div>
           {/* Creo el boton para mas informacion */}
-          <button className="mt-4 px-6 py-2 bg-utad text-white rounded-lg">
+          <button className="mt-4 px-6 py-2 bg-accent text-white rounded-lg">
             Más información
           </button>
         </div>
 
         {/* Aqui iria la segunda imagen */}
-        <div className="bg-card-bg h-48 flex items-center justify-center">
-          <span className="text-copy-primary">Imagen 2</span>
+        <div className="bg-card h-48 flex items-center justify-center">
+          <span className="text-primary-text">Imagen 2</span>
         </div>
       </div>
     </div>
