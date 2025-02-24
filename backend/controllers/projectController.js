@@ -93,6 +93,9 @@ export const createProject = async (req, res) => {
 
 export const getAllProjects = async (req, res) =>{
     try {
+        let role = "user";
+
+        //intentamos obtener el tken desde la scookies o el header authorization
         const projects = await Project.find();
 
         res.json(projects);

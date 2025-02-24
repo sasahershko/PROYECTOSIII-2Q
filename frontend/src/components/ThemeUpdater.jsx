@@ -32,11 +32,11 @@ export default function ThemeUpdater() {
       // Agrega la clase del tema actual
       document.documentElement.classList.add(className);
 
-      console.log(
-        "Estilo final del <html>:",
-        document.documentElement.getAttribute("style")
-      );
-      console.log("Clases del <html>:", document.documentElement.className);
+      // console.log(
+      //   "Estilo final del <html>:",
+      //   document.documentElement.getAttribute("style")
+      // );
+      // console.log("Clases del <html>:", document.documentElement.className);
     }
   }, [theme]);
 

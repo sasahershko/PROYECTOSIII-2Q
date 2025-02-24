@@ -24,7 +24,7 @@ export const loginUser = async (formData) => {
     const guardadoCookie = cookies();
     guardadoCookie.set("token", responseData.token, {
       path: "/",
-      httpOnly: true,
+      // httpOnly: true, si ponemos cookies en el cliente, no podemos poner httpOnly
     });
 
     return responseData;
@@ -54,3 +54,27 @@ export const registerUser = async (formData) => {
     throw new Error(error.message);
   }
 };
+
+
+// export async function getUserRole() {
+//   try {
+//     const res = await fetch("http://localhost:3000/api/auth/role", {
+//       method: "GET",
+//       credentials: "include",
+//       headers: { "Content-Type": "application/json" },
+//       cache: "no-store",
+//     });
+
+//     if (!res.ok) {
+//       return "guest";
+//     }
+
+//     const data = await res.json();
+//     console.log("Data obtenida:", data);
+//     return data.rol;
+
+//   } catch (error) {
+//     return "guest";
+//   }
+// }
+
