@@ -3,6 +3,7 @@ import {
   registerUser,
   loginUser,
   getUserProfile,
+  getAllUsers,
   deleteUser,
 } from "../controllers/userController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
@@ -156,5 +157,51 @@ userRouter.get("/profile", authMiddleware, getUserProfile);
  *         description: Error en el servidor.
  */
 userRouter.delete("/:id", authMiddleware, deleteUser);
+
+/**
+ * @swagger
+ * /api/users:
+ *   get:
+ *     summary: Obtener todos los usuarios (requiere autenticación)
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de todos los usuarios.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     example: "65a3f2e4b1c3e5a7d2a4c9b2"
+ *                   name:
+ *                     type: string
+ *                     example: "Juan"
+ *                   surname:
+ *                     type: string
+ *                     example: "Pérez"
+ *                   email:
+ *                     type: string
+ *                     example: "juan@example.com"
+ *                   dni:
+ *                     type: string
+ *                     example: "12345678A"
+ *                   grade:
+ *                     type: string
+ *                     example: "INSO"
+ *                   rol:
+ *                     type: string
+ *                     example: "user"
+ *       401:
+ *         description: No autorizado, falta el token.
+ *       500:
+ *         description: Error en el servidor.
+ */
+userRouter.get("/", verificarToken, getAllUsers);
 
 export default userRouter;
