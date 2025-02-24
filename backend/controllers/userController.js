@@ -58,7 +58,7 @@ export const registerUser = async (req, res) => {
  */
 export const loginUser = async (req, res) => {
   console.log(req.body);
-  
+
   try {
     const { email, password } = req.body;
 
@@ -84,7 +84,12 @@ export const loginUser = async (req, res) => {
 
     // 📌 Generar token JWT
     const token = jwt.sign(
-      { id: usuario._id, email: usuario.email, grade: usuario.grade, rol: usuario.rol},
+      {
+        id: usuario._id,
+        email: usuario.email,
+        grade: usuario.grade,
+        rol: usuario.rol,
+      },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN }
     );
@@ -97,7 +102,7 @@ export const loginUser = async (req, res) => {
         surname: usuario.surname,
         email: usuario.email,
         grade: usuario.grade,
-        rol: usuario.rol
+        rol: usuario.rol,
       },
       token,
     });
@@ -151,6 +156,23 @@ export const deleteUser = async (req, res) => {
 
     await usuarioAEliminar.deleteOne();
     res.status(200).json({ mensaje: "Usuario eliminado correctamente" });
+  } catch (error) {
+    console.error("❌ Error en el servidor:", error);
+    res.status(500).json({ mensaje: "Error en el servidor" });
+  }
+};
+
+/**
+ * @desc Obtener todos los usuarios (requiere autenticación)
+ * @route GET /api/users
+ * @access Private (requiere token)
+ */
+export const getAllUsers = async (req, res) => {
+  try {
+    // Buscar todos los usuarios excepto las contraseñas
+    const usuarios = await User.find().select("-password");
+
+    res.status(200).json(usuarios);
   } catch (error) {
     console.error("❌ Error en el servidor:", error);
     res.status(500).json({ mensaje: "Error en el servidor" });
