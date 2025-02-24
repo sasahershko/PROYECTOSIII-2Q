@@ -2,8 +2,11 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
-import userRouter from "./routes/userRoutes.js";
 import setupSwagger from "./config/swagger.js";
+
+//RUTAS
+import userRouter from "./routes/userRoutes.js";
+import projectRouter from "./routes/projectRoutes.js";
 
 dotenv.config();
 connectDB();
@@ -15,8 +18,9 @@ app.use(cors());
 //SWAGGER
 setupSwagger(app);
 
-// ✅ Registrar rutas de usuarios
+// ✅ Registrar rutas
 app.use("/api/users", userRouter);
+app.use("/api/projects", projectRouter);
 
 app.get("/", (req, res) => {
   res.send("API funcionando correctamente");

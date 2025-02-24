@@ -17,6 +17,7 @@ const userSchema = new mongoose.Schema({
     required: true,
     enum: ["INSO", "MAIS", "FIIS", "DIPI", "ANIV"], // Solo permite estos valores
   },
+  projects: [{ type: mongoose.Schema.Types.ObjectId, ref: "Project" }], //relacion inversa
 });
 
 const User = mongoose.model("User", userSchema);

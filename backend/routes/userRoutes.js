@@ -5,7 +5,7 @@ import {
   getUserProfile,
   deleteUser,
 } from "../controllers/userController.js";
-import verificarToken from "../middleware/authMiddleware.js";
+import authMiddleware from "../middleware/authMiddleware.js";
 
 const userRouter = express.Router();
 
@@ -128,7 +128,7 @@ userRouter.post("/login", loginUser);
  *       404:
  *         description: Usuario no encontrado.
  */
-userRouter.get("/profile", verificarToken, getUserProfile);
+userRouter.get("/profile", authMiddleware, getUserProfile);
 
 /**
  * @swagger
@@ -155,6 +155,6 @@ userRouter.get("/profile", verificarToken, getUserProfile);
  *       500:
  *         description: Error en el servidor.
  */
-userRouter.delete("/:id", verificarToken, deleteUser);
+userRouter.delete("/:id", authMiddleware, deleteUser);
 
 export default userRouter;
