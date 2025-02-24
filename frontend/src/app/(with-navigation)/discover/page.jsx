@@ -71,40 +71,10 @@ export default function ProjectDashboard() {
   }, []);
   
 
-  // async function fetchProjects() {
-  //   try {
-  //     const res = await fetch("http://localhost:5000/api/projects", {
-  //       credentials: "include",
-  //     });
-  //     const data = await res.json();
-  //     setProjects(data.projects);
-  //   } catch (error) {
-  //     console.error("Error al cargar proyectos", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // }
-
-  // fetchProjects();
-
 
   if (loading) {
     return <div className="min-h-screen bg-primary-bg text-primary-text flex items-center justify-center">Cargando...</div>;
   }
-
-  // return (
-  //   <div className="min-h-screen bg-primary-bg text-primary-text">
-  //     <AdminNavBar />
-
-  //     <main className="p-6">
-  //       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-  //         {projects.map((project) => (
-  //           <ProjectCard key={project.id} project={project} role={userRole} />
-  //         ))}
-  //       </div>
-  //     </main>
-  //   </div>
-  // );
 
   return (
     <div className="min-h-screen bg-primary-bg text-primary-text">
