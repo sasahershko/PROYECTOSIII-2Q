@@ -20,11 +20,11 @@ export const registerUser = async (req, res) => {
         .json({ mensaje: "Todos los campos son obligatorios" });
     }
 
-    const gradosPermitidos = ["INSO", "MAIS", "FIIS"];
+    const gradosPermitidos = ["INSO", "MAIS", "FIIS", "DIPI", "ANIV"];
     if (!gradosPermitidos.includes(grade)) {
-      return res
-        .status(400)
-        .json({ mensaje: "Grado no válido. Debe ser INSO, MAIS o FIIS." });
+      return res.status(400).json({
+        mensaje: "Grado no válido. Debe ser INSO, MAIS, FIIS, DIPI o ANIV.",
+      });
     }
 
     const usuarioExistente = await User.findOne({ email }).exec();

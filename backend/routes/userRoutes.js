@@ -3,6 +3,7 @@ import {
   registerUser,
   loginUser,
   getUserProfile,
+  getAllUsers,
   deleteUser,
 } from "../controllers/userController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
@@ -157,8 +158,6 @@ userRouter.get("/profile", authMiddleware, getUserProfile);
  */
 userRouter.delete("/:id", authMiddleware, deleteUser);
 
-import { getAllUsers } from "../controllers/userController.js";
-
 /**
  * @swagger
  * /api/users:
@@ -203,6 +202,8 @@ import { getAllUsers } from "../controllers/userController.js";
  *       500:
  *         description: Error en el servidor.
  */
+
 userRouter.get("/", authMiddleware, getAllUsers);
+
 
 export default userRouter;
