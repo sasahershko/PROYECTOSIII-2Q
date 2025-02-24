@@ -6,9 +6,9 @@ export default function Footer() {
 
   return (
     <>
-      <footer className="w-full bg-accent text-gray-400 py-6 flex justify-start items-left text-left flex-col px-80">
+      <footer className="w-full bg-secundary text-gray-400 py-6 flex justify-start items-left text-left flex-col px-80">
         <div>
-          <h3 className="bg-white/90 py-2 px-4 text-accent font-semibold w-fit justify-start">
+          <h3 className="bg-white/90 py-2 px-4 text-secundary font-semibold w-fit justify-start">
             MARCAS CON LAS QUE TRABAJAMOS
           </h3>
         </div>
@@ -45,7 +45,7 @@ export default function Footer() {
             <p>Calle Playa de Liencres, 2 bis. – Parque Europa Empresarial</p>
             <p>Edificio Bruselas – 28290 Las Rozas, Madrid</p>
             <p className="mt-2">Tel 999 999 999</p>
-            <h3 className="bg-white/90 py-2 px-4 text-accent font-semibold w-fit justify-start mt-2">
+            <h3 className="bg-white/90 py-2 px-4 text-secundary font-semibold w-fit justify-start mt-2">
               DESARROLLADO POR LA U-TAD
             </h3>
           </div>
