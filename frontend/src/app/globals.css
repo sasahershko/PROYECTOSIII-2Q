@@ -84,3 +84,13 @@ html {
     background-position: 0% 50%;
   }
 }
+
+
+/* Animación de crecimiento al pasar el mouse */
+.hover-grow{
+  transition: transform 0.3s ease-in-out;
+}
+
+.hover-grow:hover{
+  transform: scale(1.05);
+}

@@ -7,10 +7,10 @@ import Image from "next/image";
 
 export default function Register() {
   const [formData, setFormData] = useState({
-    nombre: "",
-    correo: "",
+    name: "",
+    email: "",
     password: "",
-    grado: "INSO",
+    grade: "INSO",
   });
   const [error, setError] = useState("");
   const router = useRouter();
@@ -22,7 +22,7 @@ export default function Register() {
 
     // Validación de correo u-tad
     const correoRegex = /@u-tad\.com$|@live\.u-tad\.com$/;
-    if (!correoRegex.test(formData.correo)) {
+    if (!correoRegex.test(formData.email)) {
       setError("El correo debe ser del dominio @u-tad.com o @live.u-tad.com.");
       return;
     }
@@ -30,6 +30,7 @@ export default function Register() {
     try {
       // Llamar a la función del archivo Auth.js para registrar al usuario
       const responseData = await registerUser(formData);
+      console.log(formData);
 
       if (responseData) {
         router.push("/login");
@@ -52,10 +53,10 @@ export default function Register() {
             <div>
               <input
                 type="text"
-                name="nombre"
-                value={formData.nombre}
+                name="name"
+                value={formData.name}
                 onChange={(e) =>
-                  setFormData({ ...formData, nombre: e.target.value })
+                  setFormData({ ...formData, name: e.target.value })
                 }
                 className="w-full px-4 py-3 rounded-md text-secundary bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500"
                 placeholder="Nombre y Apellidos"
@@ -66,10 +67,10 @@ export default function Register() {
             <div>
               <input
                 type="email"
-                name="correo"
-                value={formData.correo}
+                name="email"
+                value={formData.email}
                 onChange={(e) =>
-                  setFormData({ ...formData, correo: e.target.value })
+                  setFormData({ ...formData, email: e.target.value })
                 }
                 className="w-full px-4 py-3 rounded-md text-secundary bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500"
                 placeholder="Correo Electrónico"
@@ -93,17 +94,17 @@ export default function Register() {
 
             <div>
               <select
-                name="grado"
-                value={formData.grado}
+                name="grade"
+                value={formData.grade}
                 onChange={(e) =>
-                  setFormData({ ...formData, grado: e.target.value })
+                  setFormData({ ...formData, grade: e.target.value })
                 }
                 className="w-full px-4 py-3 rounded-md text-secundary bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               >
-                {gradosPermitidos.map((grado, index) => (
-                  <option key={index} value={grado}>
-                    {grado}
+                {gradosPermitidos.map((grade, index) => (
+                  <option key={index} value={grade}>
+                    {grade}
                   </option>
                 ))}
               </select>

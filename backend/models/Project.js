@@ -23,7 +23,7 @@ const projectSchema = new Schema({
     projectName: { type: String, required: true},
     contactPerson: {type: String, required: true},
     company: {type: String, required: true, enum: ["U-TAD", "ILION", "OTROS"]}, //!TENER MUY EN CUENTA ESTO
-    area: {type: String, required: true},
+    area: {type: String, required: true, enum: ["INSO", "MAIS", "FIIS", "DIPI", "ANIV"]},
     projectResponsibles: [{type: mongoose.Schema.Types.ObjectId, ref: "User"}], //array de usuarios
     benefit: {type: String},
     projectFolder: {type: String},

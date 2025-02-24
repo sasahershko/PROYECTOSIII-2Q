@@ -5,7 +5,7 @@ import { loginUser } from "@/lib/auth";
 import Image from "next/image";
 
 export default function Login() {
-  const [formData, setFormData] = useState({ correo: "", password: "" });
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const router = useRouter();
 
@@ -38,10 +38,10 @@ export default function Login() {
             <div>
               <input
                 type="email"
-                name="correo"
-                value={formData.correo}
+                name="email"
+                value={formData.email}
                 onChange={(e) =>
-                  setFormData({ ...formData, correo: e.target.value })
+                  setFormData({ ...formData, email: e.target.value })
                 }
                 className="w-full px-4 py-3 rounded-md text-secundary bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500"
                 placeholder="Correo Electrónico"
