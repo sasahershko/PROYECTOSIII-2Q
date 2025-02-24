@@ -202,6 +202,8 @@ userRouter.delete("/:id", authMiddleware, deleteUser);
  *       500:
  *         description: Error en el servidor.
  */
-userRouter.get("/", verificarToken, getAllUsers);
+
+userRouter.get("/", authMiddleware, getAllUsers);
+
 
 export default userRouter;
