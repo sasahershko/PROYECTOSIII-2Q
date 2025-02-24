@@ -1,7 +1,10 @@
 'use server'
- 
+
 import { cookies } from 'next/headers'
- 
-export async function deleteCookie(data) {
-  (await cookies()).delete('token')
+import { redirect } from 'next/navigation'
+
+export async function logout() {
+  const cookieStore = await cookies()
+  cookieStore.delete('token')
+  redirect('/')
 }
