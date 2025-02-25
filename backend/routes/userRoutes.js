@@ -5,6 +5,7 @@ import {
   getUserProfile,
   getAllUsers,
   deleteUser,
+  verifyRegistrationCode
 } from "../controllers/userController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
@@ -205,5 +206,36 @@ userRouter.delete("/:id", authMiddleware, deleteUser);
 
 userRouter.get("/", authMiddleware, getAllUsers);
 
+/**
+ * @swagger
+ * /api/users/verify-registration:
+ *   post:
+ *     summary: Verificar el código de registro
+ *     tags: [Usuarios]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, code]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: "usuario@example.com"
+ *               code:
+ *                 type: string
+ *                 example: "123456"
+ *     responses:
+ *       200:
+ *         description: Código correcto, usuario verificado.
+ *       400:
+ *         description: Código incorrecto o intentos agotados.
+ *       404:
+ *         description: Usuario no encontrado.
+ *       500:
+ *         description: Error en el servidor.
+ */
+userRouter.post("/verify-registration", verifyRegistrationCode);
 
 export default userRouter;

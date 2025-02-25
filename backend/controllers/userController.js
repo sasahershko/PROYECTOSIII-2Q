@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import User from "../models/User.js";
-
+import nodemailer from "nodemailer";
 
 dotenv.config();
 
@@ -12,16 +12,13 @@ function generateVerificationCode(){
 }
 
 //Configuracion de nodemailer(enviar correos con el codigo de verificacion)
-const transporter= nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
-  port: process.env.EMAIL_PORT,
-  secure: process.env.EMAIL_SECURE === "true", // Convertir a booleano
-  auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS
-  }
-})
-
+const transporter = nodemailer.createTransport({
+    service: 'gmail', // Usamos Gmail directamente
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    }
+});
 
 //(estos son solo informativos, no salen en Swagger)
 /**
@@ -50,6 +47,9 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({ mensaje: "El correo ya está en uso" });
     }
 
+    //Generar código de verificación
+    const verificationCode = generateVerificationCode();
+
     const salt = await bcrypt.genSalt(10);
     const passwordHasheada = await bcrypt.hash(password, salt);
 
@@ -60,15 +60,61 @@ export const registerUser = async (req, res) => {
       password: passwordHasheada,
       dni,
       grade,
+      isVerified: false, // NO ESTÁ VERIFICADO HASTA INGRESAR EL CÓDIGO
+      verificationCode,
+      verificationAttempts: 3
     });
 
     await nuevoUsuario.save();
+
+    //Enviar código al correo del usuario
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Código de Verificación",
+      text: `Tu código de verificación es: ${verificationCode}`
+    };
     res.status(201).json({ mensaje: "Usuario registrado exitosamente" });
   } catch (error) {
     console.error("❌ Error en el servidor:", error);
     res.status(500).json({ mensaje: "Error en el servidor" });
   }
 };
+
+/**
+ * @desc Verificar código de registro
+ * @route POST /api/users/verify-registration
+ */
+export const verifyRegistrationCode = async (req, res) => {
+  try {
+    const { email, code } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ mensaje: "Usuario no encontrado" });
+    }
+
+    if (user.verificationAttempts <= 0) {
+      return res.status(403).json({ mensaje: "Has superado el número de intentos" });
+    }
+
+    if (user.verificationCode === code) {
+      user.isVerified = true;
+      user.verificationCode = null;
+      await user.save();
+      return res.json({ mensaje: "Código correcto, usuario verificado" });
+    } else {
+      user.verificationAttempts -= 1;
+      await user.save();
+      return res.status(400).json({ mensaje: `Código incorrecto. Intentos restantes: ${user.verificationAttempts}` });
+    }
+  } catch (error) {
+    console.error("❌ Error en verifyRegistrationCode:", error);
+    res.status(500).json({ mensaje: "Error en el servidor" });
+  }
+};
+
+
 
 /**
  * @desc Iniciar sesión y obtener un token JWT
