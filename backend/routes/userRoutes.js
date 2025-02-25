@@ -167,7 +167,7 @@ userRouter.delete("/:id", authMiddleware, deleteUser);
  * @swagger
  * /api/users:
  *   get:
- *     summary: Obtener todos los usuarios (requiere permisos de moderador o admin)
+ *     summary: Obtener todos los usuarios
  *     tags: [Usuarios]
  *     security:
  *       - bearerAuth: []
@@ -207,7 +207,7 @@ userRouter.delete("/:id", authMiddleware, deleteUser);
  *       500:
  *         description: Error en el servidor.
  */
-userRouter.get("/", authMiddleware, moderatorMiddleware, getAllUsers);
+userRouter.get("/", authMiddleware, getAllUsers);
 
 /**
  * @swagger
