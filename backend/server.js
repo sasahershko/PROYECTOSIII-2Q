@@ -2,17 +2,31 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
+import setupSwagger from "./config/swagger.js";
+import cookieParser from "cookie-parser";
+
+//RUTAS
 import userRouter from "./routes/userRoutes.js";
+import projectRouter from "./routes/projectRoutes.js";
 
 dotenv.config();
 connectDB();
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  credentials: true, //permite enviar cookies desde el frontend
+}));
 
-// ✅ Registrar rutas de usuarios
+//SWAGGER
+setupSwagger(app);
+
+// ✅ Registrar rutas
 app.use("/api/users", userRouter);
+app.use("/api/projects", projectRouter);
+
+// middleware para cookies
+app.use(cookieParser());
 
 app.get("/", (req, res) => {
   res.send("API funcionando correctamente");

@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const verificarToken = (req, res, next) => {
+const authMiddleware = (req, res, next) => {
   const token = req.header("Authorization");
 
   if (!token) {
@@ -22,4 +22,4 @@ const verificarToken = (req, res, next) => {
   }
 };
 
-export default verificarToken;
+export default authMiddleware;
