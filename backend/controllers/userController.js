@@ -6,6 +6,23 @@ import User from "../models/User.js";
 
 dotenv.config();
 
+//Funcion para generar un codigo de 6 digitos aleatorios
+function generateVerificationCode(){
+  return Math.floor(100000 + Math.random()* 900000).toString();
+}
+
+//Configuracion de nodemailer(enviar correos con el codigo de verificacion)
+const transporter= nodemailer.createTransport({
+  host: process.env.EMAIL_HOST,
+  port: process.env.EMAIL_PORT,
+  secure: process.env.EMAIL_SECURE === "true", // Convertir a booleano
+  auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS
+  }
+})
+
+
 //(estos son solo informativos, no salen en Swagger)
 /**
  * @desc Registrar un nuevo usuario
