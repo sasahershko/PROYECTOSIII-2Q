@@ -5,8 +5,13 @@ import {
   getUserProfile,
   getAllUsers,
   deleteUser,
+  updateUserRole,
 } from "../controllers/userController.js";
-import authMiddleware from "../middleware/authMiddleware.js";
+import {
+  authMiddleware,
+  adminMiddleware,
+  moderatorMiddleware,
+} from "../middleware/authMiddleware.js";
 
 const userRouter = express.Router();
 
@@ -39,10 +44,10 @@ const userRouter = express.Router();
  *                 example: "Pérez"
  *               email:
  *                 type: string
- *                 example: "juan@example.com"
+ *                 example: "juan@u-tad.com"
  *               password:
  *                 type: string
- *                 example: "123456"
+ *                 example: "SecureP@ss123"
  *               dni:
  *                 type: string
  *                 example: "12345678A"
@@ -73,10 +78,10 @@ userRouter.post("/register", registerUser);
  *             properties:
  *               email:
  *                 type: string
- *                 example: "juan@example.com"
+ *                 example: "juan@u-tad.com"
  *               password:
  *                 type: string
- *                 example: "123456"
+ *                 example: "SecureP@ss123"
  *     responses:
  *       200:
  *         description: Login exitoso, devuelve el usuario y el token.
@@ -114,7 +119,7 @@ userRouter.post("/login", loginUser);
  *                   example: "Pérez"
  *                 email:
  *                   type: string
- *                   example: "juan@example.com"
+ *                   example: "juan@u-tad.com"
  *                 dni:
  *                   type: string
  *                   example: "12345678A"
@@ -143,7 +148,7 @@ userRouter.get("/profile", authMiddleware, getUserProfile);
  *       - in: path
  *         name: id
  *         required: true
- *         description: ID del usuario a eliminar
+ *         description: ID del usuario a eliminar (puede ser el propio usuario o un admin eliminando cualquier cuenta)
  *         schema:
  *           type: string
  *     responses:
@@ -162,7 +167,7 @@ userRouter.delete("/:id", authMiddleware, deleteUser);
  * @swagger
  * /api/users:
  *   get:
- *     summary: Obtener todos los usuarios (requiere autenticación)
+ *     summary: Obtener todos los usuarios
  *     tags: [Usuarios]
  *     security:
  *       - bearerAuth: []
@@ -187,7 +192,7 @@ userRouter.delete("/:id", authMiddleware, deleteUser);
  *                     example: "Pérez"
  *                   email:
  *                     type: string
- *                     example: "juan@example.com"
+ *                     example: "juan@u-tad.com"
  *                   dni:
  *                     type: string
  *                     example: "12345678A"
@@ -202,8 +207,52 @@ userRouter.delete("/:id", authMiddleware, deleteUser);
  *       500:
  *         description: Error en el servidor.
  */
-
 userRouter.get("/", authMiddleware, getAllUsers);
 
+/**
+ * @swagger
+ * /api/users/update-role/{id}:
+ *   put:
+ *     summary: Actualizar el rol de un usuario (requiere ser admin)
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID del usuario cuyo rol se actualizará
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [rol]
+ *             properties:
+ *               rol:
+ *                 type: string
+ *                 enum: [admin, moderator, user]
+ *                 example: "moderator"
+ *     responses:
+ *       200:
+ *         description: Rol actualizado correctamente.
+ *       400:
+ *         description: Rol no válido.
+ *       403:
+ *         description: No tienes permisos para actualizar el rol.
+ *       404:
+ *         description: Usuario no encontrado.
+ *       500:
+ *         description: Error en el servidor.
+ */
+userRouter.put(
+  "/update-role/:id",
+  authMiddleware,
+  adminMiddleware,
+  updateUserRole
+);
 
 export default userRouter;
