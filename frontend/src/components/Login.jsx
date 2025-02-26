@@ -30,10 +30,30 @@ export default function Login() {
 
   return (
     <div className="flex-1 flex justify-center items-center px-8 py-12">
+      {/* Alerta de error animada */}
+      {error && (
+        <div
+          onClick={() => setError("")}
+          className="absolute top-60 left-1/4 bg-red-600 text-white px-6 py-3 rounded shadow-lg z-50 animate-slideUp"
+        >
+          <div className="flex justify-between items-center">
+            <span>{error}</span>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setError("");
+              }}
+              className="ml-4 text-xl font-bold cursor-pointer"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
       <div className="bg-white p-12 rounded-lg shadow-lg w-full max-w-lg">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Iniciar Sesión</h2>
-        {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
-
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          Iniciar Sesión
+        </h2>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <input
@@ -65,7 +85,7 @@ export default function Login() {
 
           <button
             type="submit"
-            className="w-full bg-gray-800 text-white py-3 rounded-lg font-semibold hover:bg-gray-700"
+            className="w-full bg-accent text-white py-3 rounded-lg font-semibold hover:bg-gray-700"
           >
             Iniciar sesión
           </button>
@@ -73,7 +93,7 @@ export default function Login() {
 
         <p className="text-gray-600 text-sm mt-6 text-center">
           ¿No tienes cuenta?{" "}
-          <a href="/register" className="text-blue-500 font-semibold">
+          <a href="/register" className="text-accent font-semibold">
             Regístrate
           </a>
         </p>

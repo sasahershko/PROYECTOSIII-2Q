@@ -85,12 +85,25 @@ html {
   }
 }
 
+@keyframes slideUp {
+  0% {
+    transform: translate(-50%, 100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-50%, -50%);
+    opacity: 1;
+  }
+}
+.animate-slideUp {
+  animation: slideUp 0.5s ease-out forwards;
+}
 
 /* Animación de crecimiento al pasar el mouse */
-.hover-grow{
+.hover-grow {
   transition: transform 0.3s ease-in-out;
 }
 
-.hover-grow:hover{
+.hover-grow:hover {
   transform: scale(1.05);
 }
