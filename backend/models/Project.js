@@ -7,7 +7,7 @@ const {Schema, model} = mongoose;
 const projectStatusSchema = new Schema({
     date: {type: Date, default: Date.now},
     notes: {type : String, default: ""},
-    status: {type: String, required: true, enum: ["En proceso", "Completado", "Pendiente","Cancelado"]}
+    status: {type: String, required: true, enum: ["No iniciado", "En proceso", "Completado", "Pendiente","Cancelado"]}
 }, {_id: false}); //no neccesita id
 
 //HISTORIAL NOTAS PENDIENTES
@@ -20,18 +20,18 @@ const pendingNotesSchema = new Schema({
 }, {_id: false}); //no neccesita id
 
 const projectSchema = new Schema({
-    projectName: { type: String, required: true},
+    name: { type: String, required: true},
     contactPerson: {type: String, required: true},
     company: {type: String, required: true, enum: ["U-TAD", "ILION", "OTROS"]}, //!TENER MUY EN CUENTA ESTO
-    area: {type: String, required: true, enum: ["INSO", "MAIS", "FIIS", "DIPI", "ANIV"]},
-    projectResponsibles: [{type: mongoose.Schema.Types.ObjectId, ref: "User"}], //array de usuarios
+    area: {type: String, required: true, enum: ["INSO", "MAIS", "FIIS", "DIPI", "ANIV", "DIDI"]},
+    responsibles: [{type: mongoose.Schema.Types.ObjectId, ref: "User"}], //array de usuarios
     benefit: {type: String},
-    projectFolder: {type: String},
+    folder: {type: String},
 
-    projectStatus:{ type: [projectStatusSchema], default:[]}, //si lo pongo así, no debería ser obligatorio al principio
+    pStatus:{ type: [projectStatusSchema], default:[{status: "No iniciado"}]}, //si lo pongo así, no debería ser obligatorio al principio
     pendingNotes: {type: [pendingNotesSchema], default: []},
 
-    projectDescription: {type: String, required: true},
+    description: {type: String, required: true},
     practicesAgreement: {type: Boolean, default: false},
     practicesStudents: {type: Number, default: 0},
     sdpStudents: {type: Number, default: 0}, //nº de alumnos
@@ -41,5 +41,13 @@ const projectSchema = new Schema({
     users: [{type: mongoose.Schema.Types.ObjectId, ref: "User"}], 
 }, {timestamps: true});
 
+
+//con esto podemos hacer que status tenga un estado inicial si está vacío
+projectSchema.pre("save", function(next){
+    if (!this.pStatus || this.pStatus.length === 0) {
+        this.pStatus.push({ status: "No iniciado", date: Date.now(), notes: "" });
+    }
+    next();
+});
 
 export default model("Project", projectSchema); 
