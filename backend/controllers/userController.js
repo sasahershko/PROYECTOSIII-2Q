@@ -74,21 +74,21 @@ export const loginUser = async (req, res) => {
     if (!email || !password) {
       return res
         .status(400)
-        .json({ mensaje: "Correo y contraseña son obligatorios." });
+        .json({ mensaje: "Correo y contraseña son obligatorios" });
     }
 
     const usuario = await User.findOne({ email });
     if (!usuario) {
       return res
         .status(401)
-        .json({ mensaje: "Correo o contraseña incorrectos." });
+        .json({ mensaje: "Correo o contraseña incorrectos" });
     }
 
     const passwordValida = await bcrypt.compare(password, usuario.password);
     if (!passwordValida) {
       return res
         .status(401)
-        .json({ mensaje: "Correo o contraseña incorrectos." });
+        .json({ mensaje: "Correo o contraseña incorrectos" });
     }
 
     // Generar token JWT
@@ -103,6 +103,7 @@ export const loginUser = async (req, res) => {
       { expiresIn: "7d" }
     );
 
+    // 🔥 Configurar cookie en la respuesta HTTP
     res.setHeader(
       "Set-Cookie",
       `token=${token}; Path=/; HttpOnly; SameSite=Lax`
