@@ -108,22 +108,38 @@ export default function Register() {
 
   return (
     <div className="flex-1 flex justify-center items-center px-8 py-12">
+      {/* Alerta de error animada */}
+      {error && (
+        <div
+          onClick={() => setError("")}
+          className="absolute top-44 left-1/4 bg-red-600 text-white px-6 py-3 rounded shadow-lg z-50 animate-slideUp"
+        >
+          <div className="flex justify-between items-center">
+            <span>{error}</span>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setError("");
+              }}
+              className="ml-4 text-xl font-bold cursor-pointer"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
       <div className="bg-white p-12 rounded-lg shadow-lg w-full max-w-lg">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Registro</h2>
-        {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
-
-        {/* Barra de progreso */}
-        <div className="relative mb-10">
-          <div className="w-full bg-gray-300 rounded-full h-2.5">
+        <div className="relative mb-10 flex flex-col gap-1">
+          <div className="text-sm text-gray-700">{currentStep} de 4</div>
+          <div className="w-full bg-gray-300 rounded-full h-2.5 flex flex-col gap-6">
             <div
-              className="bg-blue-600 h-2.5 rounded-full"
+              className="bg-accent h-2.5 rounded-full transition-all duration-300 ease-in-out"
               style={{ width: `${progress}%` }}
             ></div>
           </div>
-          <div className="absolute top-4 left-0 w-full text-center text-sm text-gray-700">
-            {currentStep} de 4
-          </div>
         </div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Registro</h2>
+        {/* Barra de progreso */}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Vista 1: Nombre y Apellidos */}
@@ -136,7 +152,7 @@ export default function Register() {
                 onChange={(e) =>
                   setFormData({ ...formData, nombre: e.target.value })
                 }
-                className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500"
+                className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent placeholder-gray-500"
                 placeholder="Nombre"
                 required
               />
@@ -147,7 +163,7 @@ export default function Register() {
                 onChange={(e) =>
                   setFormData({ ...formData, apellido: e.target.value })
                 }
-                className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500"
+                className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent placeholder-gray-500"
                 placeholder="Apellidos"
                 required
               />
@@ -164,7 +180,7 @@ export default function Register() {
                 onChange={(e) =>
                   setFormData({ ...formData, correo: e.target.value })
                 }
-                className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500"
+                className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent placeholder-gray-500"
                 placeholder="Correo Electrónico"
                 required
               />
@@ -175,7 +191,7 @@ export default function Register() {
                 onChange={(e) =>
                   setFormData({ ...formData, dni: e.target.value })
                 }
-                className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500"
+                className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent placeholder-gray-500"
                 placeholder="DNI"
                 required
               />
@@ -192,7 +208,7 @@ export default function Register() {
                 onChange={(e) =>
                   setFormData({ ...formData, password: e.target.value })
                 }
-                className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500"
+                className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent placeholder-gray-500"
                 placeholder="Contraseña"
                 required
               />
@@ -203,7 +219,7 @@ export default function Register() {
                 onChange={(e) =>
                   setFormData({ ...formData, confirmPassword: e.target.value })
                 }
-                className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500"
+                className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent placeholder-gray-500"
                 placeholder="Confirmar Contraseña"
                 required
               />
@@ -218,7 +234,7 @@ export default function Register() {
               onChange={(e) =>
                 setFormData({ ...formData, grado: e.target.value })
               }
-              className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent"
               required
             >
               <option value="" disabled>
@@ -233,12 +249,12 @@ export default function Register() {
           )}
 
           {/* Botones de navegación */}
-          <div className="flex justify-between mt-6 gap-4">
+          <div className="flex flex-col justify-between mt-6 gap-4">
             {currentStep > 1 && (
               <button
                 type="button"
                 onClick={prevStep}
-                className="text-gray-700 font-semibold hover:text-blue-600"
+                className="w-full bg-secundary text-white py-3 rounded-lg font-semibold hover:bg-secundary/85"
               >
                 Atrás
               </button>
@@ -247,7 +263,7 @@ export default function Register() {
               <button
                 type="button"
                 onClick={nextStep}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700"
+                className="w-full bg-accent text-white py-3 rounded-lg font-semibold hover:bg-accent/85"
               >
                 Siguiente
               </button>
@@ -264,7 +280,7 @@ export default function Register() {
 
         <p className="text-gray-600 text-sm mt-6 text-center">
           ¿Ya tienes cuenta?{" "}
-          <a href="/login" className="text-blue-500 font-semibold">
+          <a href="/login" className="text-accent font-semibold">
             Inicia sesión
           </a>
         </p>
