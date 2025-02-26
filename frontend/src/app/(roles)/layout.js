@@ -11,7 +11,7 @@ export default function RootLayout({ children }) {
       <ThemeProvider attribute={"class"} enableColorScheme={false}>
         <ThemeUpdater />
         <Header />
-        <div className="w-auto h-auto pt-20 bg-primary-bg">{children}</div>
+        <div className="w-auto h-screen pt-20 bg-primary-bg">{children}</div>
         {/* <Footer /> */}
       </ThemeProvider>
     </div>

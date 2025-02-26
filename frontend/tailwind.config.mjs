@@ -26,12 +26,12 @@ const config = {
         card: "#f1f2f4",
       },
       dark: {
-        "primary-bg": "#080b12",
-        secundary: "#111827",
-        "primary-text": "#fff",
-        "secundary-text": "#d1d5db",
-        accent: "#14b55a",
-        card: "#1f2937",
+        "primary-bg": "#0D1117", // Fondo principal oscuro (azulado)
+        secundary: "#1E293B", // Secundario un poco más claro que el fondo
+        "primary-text": "#FFFFFF", // Texto principal en blanco
+        "secundary-text": "#9CA3AF", // Texto secundario en gris claro
+        accent: "#14b55a", // Se mantiene el verde que ya tenías
+        card: "#21262D", // Fondo de "tarjeta" gris azulado
       },
       pink: {
         "primary-bg": "#fff0f6", // Fondo rosa muy claro
