@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import User from "../models/User.js";
+import User, { validarEmail, validarDNI } from "../models/User.js";
 
 dotenv.config();
 
@@ -20,27 +20,16 @@ export const registerUser = async (req, res) => {
         .json({ mensaje: "Todos los campos son obligatorios" });
     }
 
-    if (!/@u-tad\.com$|@live\.u-tad\.com$/.test(email)) {
+    if (!validarEmail(email)) {
       return res
         .status(400)
         .json({ mensaje: "Solo se permiten correos de U-TAD." });
     }
 
-    const regexDNI = /^\d{8}[A-Z]$/;
-    if (!regexDNI.test(dni)) {
+    if (!validarDNI(dni)) {
       return res
         .status(400)
-        .json({ mensaje: "DNI inválido. Debe tener 8 números y una letra." });
-    }
-
-    const letrasDNI = "TRWAGMYFPDXBNJZSQVHLCKE";
-    const numDNI = parseInt(dni.slice(0, 8), 10);
-    const letraCorrecta = letrasDNI[numDNI % 23];
-
-    if (dni.charAt(8) !== letraCorrecta) {
-      return res
-        .status(400)
-        .json({ mensaje: "La letra del DNI no es correcta." });
+        .json({ mensaje: "DNI inválido. Debe seguir el formato correcto." });
     }
 
     const usuarioExistente = await User.findOne({ email });
@@ -56,7 +45,6 @@ export const registerUser = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const passwordHasheada = await bcrypt.hash(password, salt);
 
-    // 🔒 **Fuerza el rol a "user" sin importar lo que envíe el cliente**
     const nuevoUsuario = new User({
       name,
       surname,
@@ -64,7 +52,7 @@ export const registerUser = async (req, res) => {
       password: passwordHasheada,
       dni,
       grade,
-      rol: "user",
+      rol: "user", // Forzamos el rol para evitar registros no autorizados
     });
 
     await nuevoUsuario.save();
@@ -87,11 +75,6 @@ export const loginUser = async (req, res) => {
       return res
         .status(400)
         .json({ mensaje: "Correo y contraseña son obligatorios." });
-    }
-
-    // Validar email
-    if (!/@u-tad\.com$|@live\.u-tad\.com$/.test(email)) {
-      return res.status(400).json({ mensaje: "Correo no autorizado." });
     }
 
     const usuario = await User.findOne({ email });
@@ -173,7 +156,7 @@ export const getUserProfile = async (req, res) => {
       id: usuario._id,
       name: usuario.name,
       email: usuario.email,
-      rol: usuario.rol, // Importante para gestionar permisos
+      rol: usuario.rol, 
     });
   } catch (error) {
     console.error("❌ Error en el servidor:", error);
@@ -230,15 +213,15 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
+/**
+ * @desc Cambiar rol de un usuario (requiere ser admin y tener token)
+ * @route PUT /api/users/update-role/:id
+ * @access Private (requiere ser admin y tener token)
+ */
 export const updateUserRole = async (req, res) => {
   try {
     const { id } = req.params;
     const { rol } = req.body;
-
-    const rolesPermitidos = ["admin", "moderator", "user"];
-    if (!rolesPermitidos.includes(rol)) {
-      return res.status(400).json({ mensaje: "Rol no válido." });
-    }
 
     const usuario = await User.findById(id);
     if (!usuario) {

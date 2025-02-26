@@ -1,13 +1,13 @@
 import mongoose from "mongoose";
 
 // Función para calcular la letra correcta del DNI
-const calcularLetraDNI = (dni) => {
+export const calcularLetraDNI = (dni) => {
   const letras = "TRWAGMYFPDXBNJZSQVHLCKE";
   return letras[dni % 23];
 };
 
 // Función de validación del DNI
-const validarDNI = (dni) => {
+export const validarDNI = (dni) => {
   const regex = /^\d{8}[A-Z]$/;
   if (!regex.test(dni)) return false;
 
@@ -18,7 +18,7 @@ const validarDNI = (dni) => {
 };
 
 // Función de validación de email
-const validarEmail = (email) => {
+export const validarEmail = (email) => {
   return /@u-tad\.com$|@live\.u-tad\.com$/.test(email);
 };
 
