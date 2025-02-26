@@ -4,7 +4,7 @@ import {
   getProjectById,
   getAllProjects,
 } from "../controllers/projectController.js";
-import { authMiddleware } from "../middleware/authMiddleware.js";
+import { authMiddleware, authMiddlewareOptional } from "../middleware/authMiddleware.js";
 
 const projectRouter = express.Router();
 
@@ -34,7 +34,7 @@ const projectRouter = express.Router();
  *                   _id:
  *                     type: string
  *                     example: "67bc57737e86e4b15d13830b"
- *                   projectName:
+ *                   name:
  *                     type: string
  *                     example: "Proyecto de prueba"
  *                   contactPerson:
@@ -46,7 +46,7 @@ const projectRouter = express.Router();
  *                   area:
  *                     type: string
  *                     example: "Ingeniería del SW"
- *                   projectResponsibles:
+ *                   responsibles:
  *                     type: array
  *                     items:
  *                       type: string
@@ -67,7 +67,7 @@ const projectRouter = express.Router();
  *       500:
  *         description: Error interno del servidor.
  */
-projectRouter.get("/", getAllProjects);
+projectRouter.get("/", authMiddlewareOptional, getAllProjects);
 
 /**
  * @swagger
@@ -83,9 +83,9 @@ projectRouter.get("/", getAllProjects);
  *         application/json:
  *           schema:
  *             type: object
- *             required: [projectName, contactPerson, company, area, projectDescription, startDate, endDate]
+ *             required: [name, contactPerson, company, area, description, startDate, endDate]
  *             properties:
- *               projectName:
+ *               name:
  *                 type: string
  *                 example: "Nuevo Proyecto"
  *               contactPerson:
@@ -98,7 +98,7 @@ projectRouter.get("/", getAllProjects);
  *               area:
  *                 type: string
  *                 example: "Desarrollo Web"
- *               projectResponsibles:
+ *               responsibles:
  *                 type: array
  *                 items:
  *                   type: string
@@ -114,7 +114,7 @@ projectRouter.get("/", getAllProjects);
  *               projectFolder:
  *                 type: string
  *                 example: "/projects/proyecto1"
- *               projectDescription:
+ *               description:
  *                 type: string
  *                 example: "Este es un proyecto de desarrollo web."
  *               practicesAgreement:
@@ -170,7 +170,7 @@ projectRouter.post("/create", createProject);
  *                 _id:
  *                   type: string
  *                   example: "67bc57737e86e4b15d13830b"
- *                 projectName:
+ *                 name:
  *                   type: string
  *                   example: "Proyecto de prueba"
  *                 contactPerson:
@@ -182,7 +182,7 @@ projectRouter.post("/create", createProject);
  *                 area:
  *                   type: string
  *                   example: "Ingeniería del SW"
- *                 projectResponsibles:
+ *                 responsibles:
  *                   type: array
  *                   items:
  *                     type: string
