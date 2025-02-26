@@ -34,7 +34,7 @@ export default function Login() {
       {error && (
         <div
           onClick={() => setError("")}
-          className="absolute top-60 md:left-1/4 left-[50vw] min-w-[80%] md:min-w-min bg-red-600 text-white px-6 py-3 rounded shadow-lg z-50 animate-slideUp cursor-default"
+          className="absolute top-60 md:left-1/4 left-[50vw] min-w-[80%] md:min-w-min max-w-[80vw] md:max-w-[40vw] bg-red-600 text-white px-6 py-3 rounded shadow-lg z-50 animate-slideUp cursor-default"
         >
           <div className="flex justify-between items-center">
             <span>{error}</span>
