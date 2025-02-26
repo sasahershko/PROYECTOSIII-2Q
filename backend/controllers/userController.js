@@ -11,14 +11,15 @@ function generateVerificationCode() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-//Configuración de nodemailer con un SMTP externo (Ej: Gmail, SendGrid)
+//Configuración de nodemailer para enviar correos
 const transporter = nodemailer.createTransport({
   service: "gmail", 
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    user: process.env.EMAIL_USER, 
+    pass: process.env.EMAIL_PASS, 
   },
 });
+
 
 //(estos son solo informativos, no salen en Swagger)
 /**
@@ -86,6 +87,7 @@ export const registerUser = async (req, res) => {
       verificationAttempts: 3,
     });
 
+
     await nuevoUsuario.save();
 
     //Enviar correo con el código de verificación
@@ -139,28 +141,31 @@ export const verifyCode = async (req, res) => {
  * @desc Iniciar sesión y obtener un token JWT
  * @route POST /api/users/login
  */
-
 export const loginUser = async (req, res) => {
-  console.log(req.body);
-
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ mensaje: "Correo y contraseña son obligatorios" });
+      return res
+        .status(400)
+        .json({ mensaje: "Correo y contraseña son obligatorios" });
     }
 
-    const usuario = await User.findOne({ email }).exec();
+    const usuario = await User.findOne({ email });
     if (!usuario) {
-      return res.status(401).json({ mensaje: "Correo o contraseña incorrectos" });
+      return res
+        .status(401)
+        .json({ mensaje: "Correo o contraseña incorrectos" });
     }
 
     const passwordValida = await bcrypt.compare(password, usuario.password);
     if (!passwordValida) {
-      return res.status(401).json({ mensaje: "Correo o contraseña incorrectos" });
+      return res
+        .status(401)
+        .json({ mensaje: "Correo o contraseña incorrectos" });
     }
 
-    // 📌 Generar token JWT
+    // Generar token JWT
     const token = jwt.sign(
       {
         id: usuario._id,
@@ -169,11 +174,14 @@ export const loginUser = async (req, res) => {
         rol: usuario.rol,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "7d" } // 🔥 Define la expiración del token
+      { expiresIn: "7d" }
     );
 
     // 🔥 Configurar cookie en la respuesta HTTP
-    res.setHeader("Set-Cookie", `token=${token}; Path=/; HttpOnly; SameSite=Lax`);
+    res.setHeader(
+      "Set-Cookie",
+      `token=${token}; Path=/; HttpOnly; SameSite=Lax`
+    );
 
     return res.json({
       mensaje: "Login exitoso",
@@ -187,37 +195,22 @@ export const loginUser = async (req, res) => {
       },
       token,
     });
-
   } catch (error) {
     console.error("❌ Error en el servidor:", error);
-    res.status(500).json({ mensaje: "Error en el servidor" });
+    res.status(500).json({ mensaje: "Error en el servidor." });
   }
 };
-
 
 /**
  * @desc Obtener perfil del usuario autenticado
  * @route GET /api/users/profile
  * @access Private (requiere token)
  */
-// export const getUserProfile = async (req, res) => {
-//   try {
-//     const usuario = await User.findById(req.usuario.id).select("-password");
-//     if (!usuario) {
-//       return res.status(404).json({ mensaje: "Usuario no encontrado." });
-//     }
-
-//     res.status(200).json(usuario);
-//   } catch (error) {
-//     console.error("❌ Error en el servidor:", error);
-//     res.status(500).json({ mensaje: "Error en el servidor" });
-//   }
-// };
-
 export const getUserProfile = async (req, res) => {
   try {
     // Obtener el token desde las cookies o el header Authorization
-    const token = req.cookies?.token || req.headers.authorization?.split(" ")[1];
+    const token =
+      req.cookies?.token || req.headers.authorization?.split(" ")[1];
 
     if (!token) {
       return res.status(401).json({ mensaje: "No autorizado" });
@@ -240,7 +233,6 @@ export const getUserProfile = async (req, res) => {
       email: usuario.email,
       rol: usuario.rol, // Importante para gestionar permisos
     });
-
   } catch (error) {
     console.error("❌ Error en el servidor:", error);
     res.status(401).json({ mensaje: "Token inválido o expirado" });
@@ -254,27 +246,28 @@ export const getUserProfile = async (req, res) => {
  */
 export const deleteUser = async (req, res) => {
   try {
-    const usuarioAutenticado = req.usuario; // Usuario autenticado
-    const { id } = req.params; // ID del usuario a eliminar
+    const usuarioAutenticado = req.usuario; // Usuario autenticado (quien hace la petición)
+    const { id } = req.params; // ID del usuario que se quiere eliminar
 
     const usuarioAEliminar = await User.findById(id);
-
     if (!usuarioAEliminar) {
-      return res.status(404).json({ mensaje: "Usuario no encontrado" });
+      return res.status(404).json({ mensaje: "Usuario no encontrado." });
     }
 
-    // Permitir el delete solo si un usuario se borra a sí mismo o si es admin
-    if (usuarioAutenticado.rol !== "admin" && usuarioAutenticado.id !== id) {
+    if (
+      usuarioAutenticado.rol !== "admin" &&
+      usuarioAutenticado._id.toString() !== id
+    ) {
       return res
         .status(403)
-        .json({ mensaje: "No tienes permisos para eliminar este usuario" });
+        .json({ mensaje: "No tienes permisos para eliminar este usuario." });
     }
 
     await usuarioAEliminar.deleteOne();
-    res.status(200).json({ mensaje: "Usuario eliminado correctamente" });
+    res.status(200).json({ mensaje: "Usuario eliminado correctamente." });
   } catch (error) {
     console.error("❌ Error en el servidor:", error);
-    res.status(500).json({ mensaje: "Error en el servidor" });
+    res.status(500).json({ mensaje: "Error en el servidor." });
   }
 };
 
@@ -292,5 +285,30 @@ export const getAllUsers = async (req, res) => {
   } catch (error) {
     console.error("❌ Error en el servidor:", error);
     res.status(500).json({ mensaje: "Error en el servidor" });
+  }
+};
+
+export const updateUserRole = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rol } = req.body;
+
+    const rolesPermitidos = ["admin", "moderator", "user"];
+    if (!rolesPermitidos.includes(rol)) {
+      return res.status(400).json({ mensaje: "Rol no válido." });
+    }
+
+    const usuario = await User.findById(id);
+    if (!usuario) {
+      return res.status(404).json({ mensaje: "Usuario no encontrado." });
+    }
+
+    usuario.rol = rol;
+    await usuario.save();
+
+    res.status(200).json({ mensaje: `Rol actualizado a ${rol}.` });
+  } catch (error) {
+    console.error("❌ Error en el servidor:", error);
+    res.status(500).json({ mensaje: "Error en el servidor." });
   }
 };
