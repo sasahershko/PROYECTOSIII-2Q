@@ -1,13 +1,18 @@
 import express from "express";
 import {
   registerUser,
+  verifyCode,  //Nueva función para verificar código
   loginUser,
   getUserProfile,
   getAllUsers,
   deleteUser,
-  verifyRegistrationCode
+  updateUserRole,
 } from "../controllers/userController.js";
-import authMiddleware from "../middleware/authMiddleware.js";
+import {
+  authMiddleware,
+  adminMiddleware,
+  moderatorMiddleware,
+} from "../middleware/authMiddleware.js";
 
 const userRouter = express.Router();
 
@@ -40,10 +45,10 @@ const userRouter = express.Router();
  *                 example: "Pérez"
  *               email:
  *                 type: string
- *                 example: "juan@example.com"
+ *                 example: "juan@u-tad.com"
  *               password:
  *                 type: string
- *                 example: "123456"
+ *                 example: "SecureP@ss123"
  *               dni:
  *                 type: string
  *                 example: "12345678A"
@@ -57,6 +62,38 @@ const userRouter = express.Router();
  *         description: Algún campo es inválido o el correo ya está en uso.
  */
 userRouter.post("/register", registerUser);
+
+/**
+ * @swagger
+ * /api/users/verify-code:
+ *   post:
+ *     summary: Verificar el código de autenticación
+ *     tags: [Usuarios]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, code]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: "usuario@u-tad.com"
+ *               code:
+ *                 type: string
+ *                 example: "123456"
+ *     responses:
+ *       200:
+ *         description: Código correcto, usuario verificado.
+ *       400:
+ *         description: Código incorrecto o intentos agotados.
+ *       404:
+ *         description: Usuario no encontrado.
+ *       500:
+ *         description: Error en el servidor.
+ */
+userRouter.post("/verify-code", verifyCode); // 📌 Nueva ruta para verificar código
 
 /**
  * @swagger
@@ -74,10 +111,10 @@ userRouter.post("/register", registerUser);
  *             properties:
  *               email:
  *                 type: string
- *                 example: "juan@example.com"
+ *                 example: "juan@u-tad.com"
  *               password:
  *                 type: string
- *                 example: "123456"
+ *                 example: "SecureP@ss123"
  *     responses:
  *       200:
  *         description: Login exitoso, devuelve el usuario y el token.
@@ -115,7 +152,7 @@ userRouter.post("/login", loginUser);
  *                   example: "Pérez"
  *                 email:
  *                   type: string
- *                   example: "juan@example.com"
+ *                   example: "juan@u-tad.com"
  *                 dni:
  *                   type: string
  *                   example: "12345678A"
@@ -144,7 +181,7 @@ userRouter.get("/profile", authMiddleware, getUserProfile);
  *       - in: path
  *         name: id
  *         required: true
- *         description: ID del usuario a eliminar
+ *         description: ID del usuario a eliminar (puede ser el propio usuario o un admin eliminando cualquier cuenta)
  *         schema:
  *           type: string
  *     responses:
@@ -163,7 +200,7 @@ userRouter.delete("/:id", authMiddleware, deleteUser);
  * @swagger
  * /api/users:
  *   get:
- *     summary: Obtener todos los usuarios (requiere autenticación)
+ *     summary: Obtener todos los usuarios
  *     tags: [Usuarios]
  *     security:
  *       - bearerAuth: []
@@ -188,7 +225,7 @@ userRouter.delete("/:id", authMiddleware, deleteUser);
  *                     example: "Pérez"
  *                   email:
  *                     type: string
- *                     example: "juan@example.com"
+ *                     example: "juan@u-tad.com"
  *                   dni:
  *                     type: string
  *                     example: "12345678A"
@@ -203,39 +240,52 @@ userRouter.delete("/:id", authMiddleware, deleteUser);
  *       500:
  *         description: Error en el servidor.
  */
-
 userRouter.get("/", authMiddleware, getAllUsers);
 
 /**
  * @swagger
- * /api/users/verify-registration:
- *   post:
- *     summary: Verificar el código de registro
+ * /api/users/update-role/{id}:
+ *   put:
+ *     summary: Actualizar el rol de un usuario (requiere ser admin)
  *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID del usuario cuyo rol se actualizará
+ *         schema:
+ *           type: string
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required: [email, code]
+ *             required: [rol]
  *             properties:
- *               email:
+ *               rol:
  *                 type: string
- *                 example: "usuario@example.com"
- *               code:
- *                 type: string
- *                 example: "123456"
+ *                 enum: [admin, moderator, user]
+ *                 example: "moderator"
  *     responses:
  *       200:
- *         description: Código correcto, usuario verificado.
+ *         description: Rol actualizado correctamente.
  *       400:
- *         description: Código incorrecto o intentos agotados.
+ *         description: Rol no válido.
+ *       403:
+ *         description: No tienes permisos para actualizar el rol.
  *       404:
  *         description: Usuario no encontrado.
  *       500:
  *         description: Error en el servidor.
  */
-userRouter.post("/verify-registration", verifyRegistrationCode);
+userRouter.put(
+  "/update-role/:id",
+  authMiddleware,
+  adminMiddleware,
+  updateUserRole
+);
 
 export default userRouter;

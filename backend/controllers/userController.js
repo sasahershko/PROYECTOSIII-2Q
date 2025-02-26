@@ -6,6 +6,134 @@ import nodemailer from "nodemailer";
 
 dotenv.config();
 
+//Función para generar un código de 6 dígitos aleatorio
+function generateVerificationCode() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+//Configuración de nodemailer con un SMTP externo (Ej: Gmail, SendGrid)
+const transporter = nodemailer.createTransport({
+  service: "gmail", 
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
+//(estos son solo informativos, no salen en Swagger)
+/**
+ * @desc Registrar un nuevo usuario
+ * @route POST /api/users/register
+ */
+export const registerUser = async (req, res) => {
+  try {
+    const { name, surname, email, password, dni, grade } = req.body;
+
+    if (!name || !surname || !email || !password || !dni || !grade) {
+      return res
+        .status(400)
+        .json({ mensaje: "Todos los campos son obligatorios" });
+    }
+
+    if (!/@u-tad\.com$|@live\.u-tad\.com$/.test(email)) {
+      return res
+        .status(400)
+        .json({ mensaje: "Solo se permiten correos de U-TAD." });
+    }
+
+    const regexDNI = /^\d{8}[A-Z]$/;
+    if (!regexDNI.test(dni)) {
+      return res
+        .status(400)
+        .json({ mensaje: "DNI inválido. Debe tener 8 números y una letra." });
+    }
+
+    const letrasDNI = "TRWAGMYFPDXBNJZSQVHLCKE";
+    const numDNI = parseInt(dni.slice(0, 8), 10);
+    const letraCorrecta = letrasDNI[numDNI % 23];
+
+    if (dni.charAt(8) !== letraCorrecta) {
+      return res
+        .status(400)
+        .json({ mensaje: "La letra del DNI no es correcta." });
+    }
+
+    const usuarioExistente = await User.findOne({ email });
+    if (usuarioExistente) {
+      return res.status(400).json({ mensaje: "El correo ya está en uso." });
+    }
+
+    const dniExistente = await User.findOne({ dni });
+    if (dniExistente) {
+      return res.status(400).json({ mensaje: "El DNI ya está registrado." });
+    }
+
+    const verificationCode = generateVerificationCode(); //Generar código de verificación
+    const salt = await bcrypt.genSalt(10);
+    const passwordHasheada = await bcrypt.hash(password, salt);
+
+    // 🔒 **Fuerza el rol a "user" sin importar lo que envíe el cliente**
+    const nuevoUsuario = new User({
+      name,
+      surname,
+      email,
+      password: passwordHasheada,
+      dni,
+      grade,
+      rol: "user",
+      isVerified: false, //Usuario no verificado aún
+      verificationCode,
+      verificationAttempts: 3,
+    });
+
+    await nuevoUsuario.save();
+
+    //Enviar correo con el código de verificación
+    const mailOptions = {
+      from: `"Bildy" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "Código de Verificación",
+      text: `Tu código de verificación es: ${verificationCode}`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(201).json({ mensaje: "Usuario registrado exitosamente." });
+  } catch (error) {
+    console.error("❌ Error en el servidor:", error);
+    res.status(500).json({ mensaje: "Error en el servidor." });
+  }
+};
+
+//Verificar código de verificación
+export const verifyCode = async (req, res) => {
+  try {
+    const { email, code } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ mensaje: "Usuario no encontrado." });
+    }
+
+    if (user.verificationAttempts <= 0) {
+      return res.status(403).json({ mensaje: "Has agotado tus intentos de verificación." });
+    }
+
+    if (user.verificationCode === code) {
+      user.isVerified = true;
+      user.verificationCode = null;
+      await user.save();
+      return res.json({ mensaje: "Código correcto, usuario verificado." });
+    } else {
+      user.verificationAttempts -= 1;
+      await user.save();
+      return res.status(400).json({ mensaje: `Código incorrecto. Intentos restantes: ${user.verificationAttempts}` });
+    }
+  } catch (error) {
+    console.error("❌ Error en verifyCode:", error);
+    res.status(500).json({ mensaje: "Error en el servidor." });
+  }
+};
 
 /**
  * @desc Iniciar sesión y obtener un token JWT
