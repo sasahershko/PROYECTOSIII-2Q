@@ -1,117 +1,258 @@
 import express from "express";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-import User from "../models/User.js";
-import verificarToken from "../middleware/authMiddleware.js";
-
-dotenv.config();
+import {
+  registerUser,
+  loginUser,
+  getUserProfile,
+  getAllUsers,
+  deleteUser,
+  updateUserRole,
+} from "../controllers/userController.js";
+import {
+  authMiddleware,
+  adminMiddleware,
+  moderatorMiddleware,
+} from "../middleware/authMiddleware.js";
 
 const userRouter = express.Router();
 
-// 📌 Ruta para registrar usuarios
-userRouter.post("/register", async (req, res) => {
-  try {
-    const { nombre, correo, password, grado } = req.body;
+/**
+ * @swagger
+ * tags:
+ *   name: Usuarios
+ *   description: Endpoints para gestionar usuarios
+ */
 
-    if (!nombre || !correo || !password || !grado) {
-      return res
-        .status(400)
-        .json({ mensaje: "Todos los campos son obligatorios" });
-    }
+/**
+ * @swagger
+ * /api/users/register:
+ *   post:
+ *     summary: Registrar un nuevo usuario
+ *     tags: [Usuarios]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name, surname, email, password, dni, grade]
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: "Juan"
+ *               surname:
+ *                 type: string
+ *                 example: "Pérez"
+ *               email:
+ *                 type: string
+ *                 example: "juan@u-tad.com"
+ *               password:
+ *                 type: string
+ *                 example: "SecureP@ss123"
+ *               dni:
+ *                 type: string
+ *                 example: "12345678A"
+ *               grade:
+ *                 type: string
+ *                 enum: [INSO, MAIS, FIIS, DIPI, ANIV]
+ *     responses:
+ *       201:
+ *         description: Usuario registrado exitosamente.
+ *       400:
+ *         description: Algún campo es inválido o el correo ya está en uso.
+ */
+userRouter.post("/register", registerUser);
 
-    const gradosPermitidos = ["INSO", "MAIS", "FIIS"];
-    if (!gradosPermitidos.includes(grado)) {
-      return res
-        .status(400)
-        .json({ mensaje: "Grado no válido. Debe ser INSO, MAIS o FIIS." });
-    }
+/**
+ * @swagger
+ * /api/users/login:
+ *   post:
+ *     summary: Iniciar sesión
+ *     tags: [Usuarios]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, password]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: "juan@u-tad.com"
+ *               password:
+ *                 type: string
+ *                 example: "SecureP@ss123"
+ *     responses:
+ *       200:
+ *         description: Login exitoso, devuelve el usuario y el token.
+ *       400:
+ *         description: Campos faltantes.
+ *       401:
+ *         description: Credenciales incorrectas.
+ */
+userRouter.post("/login", loginUser);
 
-    const usuarioExistente = await User.findOne({ correo }).exec();
-    if (usuarioExistente) {
-      return res.status(400).json({ mensaje: "El correo ya está en uso" });
-    }
+/**
+ * @swagger
+ * /api/users/profile:
+ *   get:
+ *     summary: Obtener el perfil del usuario autenticado
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Devuelve el perfil del usuario autenticado.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                   example: "65a3f2e4b1c3e5a7d2a4c9b2"
+ *                 name:
+ *                   type: string
+ *                   example: "Juan"
+ *                 surname:
+ *                   type: string
+ *                   example: "Pérez"
+ *                 email:
+ *                   type: string
+ *                   example: "juan@u-tad.com"
+ *                 dni:
+ *                   type: string
+ *                   example: "12345678A"
+ *                 grade:
+ *                   type: string
+ *                   example: "INSO"
+ *                 rol:
+ *                   type: string
+ *                   example: "user"
+ *       401:
+ *         description: No autorizado, falta el token.
+ *       404:
+ *         description: Usuario no encontrado.
+ */
+userRouter.get("/profile", authMiddleware, getUserProfile);
 
-    const salt = await bcrypt.genSalt(10);
-    const passwordHasheada = await bcrypt.hash(password, salt);
+/**
+ * @swagger
+ * /api/users/{id}:
+ *   delete:
+ *     summary: Eliminar un usuario (propio o por admin)
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID del usuario a eliminar (puede ser el propio usuario o un admin eliminando cualquier cuenta)
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Usuario eliminado correctamente.
+ *       403:
+ *         description: No tienes permisos para eliminar este usuario.
+ *       404:
+ *         description: Usuario no encontrado.
+ *       500:
+ *         description: Error en el servidor.
+ */
+userRouter.delete("/:id", authMiddleware, deleteUser);
 
-    const nuevoUsuario = new User({
-      nombre,
-      correo,
-      password: passwordHasheada,
-      grado,
-    });
+/**
+ * @swagger
+ * /api/users:
+ *   get:
+ *     summary: Obtener todos los usuarios
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de todos los usuarios.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     example: "65a3f2e4b1c3e5a7d2a4c9b2"
+ *                   name:
+ *                     type: string
+ *                     example: "Juan"
+ *                   surname:
+ *                     type: string
+ *                     example: "Pérez"
+ *                   email:
+ *                     type: string
+ *                     example: "juan@u-tad.com"
+ *                   dni:
+ *                     type: string
+ *                     example: "12345678A"
+ *                   grade:
+ *                     type: string
+ *                     example: "INSO"
+ *                   rol:
+ *                     type: string
+ *                     example: "user"
+ *       401:
+ *         description: No autorizado, falta el token.
+ *       500:
+ *         description: Error en el servidor.
+ */
+userRouter.get("/", authMiddleware, getAllUsers);
 
-    await nuevoUsuario.save();
-
-    res.status(201).json({ mensaje: "Usuario registrado exitosamente" });
-  } catch (error) {
-    console.error("❌ Error en el servidor:", error);
-    res.status(500).json({ mensaje: "Error en el servidor" });
-  }
-});
-
-// 📌 Ruta para iniciar sesión (login) con JWT
-userRouter.post("/login", async (req, res) => {
-  try {
-    const { correo, password } = req.body;
-
-    if (!correo || !password) {
-      return res
-        .status(400)
-        .json({ mensaje: "Correo y contraseña son obligatorios" });
-    }
-
-    const usuario = await User.findOne({ correo }).exec();
-    if (!usuario) {
-      return res
-        .status(401)
-        .json({ mensaje: "Correo o contraseña incorrectos" });
-    }
-
-    const passwordValida = await bcrypt.compare(password, usuario.password);
-    if (!passwordValida) {
-      return res
-        .status(401)
-        .json({ mensaje: "Correo o contraseña incorrectos" });
-    }
-
-    // 📌 Generar token JWT
-    const token = jwt.sign(
-      { id: usuario._id, correo: usuario.correo, grado: usuario.grado },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN }
-    );
-
-    res.status(200).json({
-      mensaje: "Login exitoso",
-      usuario: {
-        id: usuario._id,
-        nombre: usuario.nombre,
-        correo: usuario.correo,
-        grado: usuario.grado,
-      },
-      token,
-    });
-  } catch (error) {
-    console.error("❌ Error en el servidor:", error);
-    res.status(500).json({ mensaje: "Error en el servidor" });
-  }
-});
-
-// 📌 Ruta protegida de ejemplo (requiere token)
-userRouter.get("/perfil", verificarToken, async (req, res) => {
-  try {
-    const usuario = await User.findById(req.usuario.id).select("-password");
-    if (!usuario) {
-      return res.status(404).json({ mensaje: "Usuario no encontrado." });
-    }
-
-    res.status(200).json(usuario);
-  } catch (error) {
-    console.error("❌ Error en el servidor:", error);
-    res.status(500).json({ mensaje: "Error en el servidor" });
-  }
-});
+/**
+ * @swagger
+ * /api/users/update-role/{id}:
+ *   put:
+ *     summary: Actualizar el rol de un usuario (requiere ser admin)
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID del usuario cuyo rol se actualizará
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [rol]
+ *             properties:
+ *               rol:
+ *                 type: string
+ *                 enum: [admin, moderator, user]
+ *                 example: "moderator"
+ *     responses:
+ *       200:
+ *         description: Rol actualizado correctamente.
+ *       400:
+ *         description: Rol no válido.
+ *       403:
+ *         description: No tienes permisos para actualizar el rol.
+ *       404:
+ *         description: Usuario no encontrado.
+ *       500:
+ *         description: Error en el servidor.
+ */
+userRouter.put(
+  "/update-role/:id",
+  authMiddleware,
+  adminMiddleware,
+  updateUserRole
+);
 
 export default userRouter;
