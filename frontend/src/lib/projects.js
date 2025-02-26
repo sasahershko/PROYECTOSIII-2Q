@@ -7,7 +7,7 @@ export async function getProjects() {
         const token = cookies().get("token")?.value;
 
         // hacer petición con el token si existe
-        const response = await fetch(`${process.env.LOCAL_URL}/api/projects`, {
+        const response = await fetch(`${process.env.BACK_URL}/api/projects`, {
             method: "GET",
             headers: token
                 ? { Authorization: `Bearer ${token}` } // Enviar  token solo si existe
