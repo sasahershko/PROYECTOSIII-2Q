@@ -20,21 +20,43 @@ export const registerUser = async (req, res) => {
         .json({ mensaje: "Todos los campos son obligatorios" });
     }
 
-    const gradosPermitidos = ["INSO", "MAIS", "FIIS", "DIPI", "ANIV"];
-    if (!gradosPermitidos.includes(grade)) {
-      return res.status(400).json({
-        mensaje: "Grado no válido. Debe ser INSO, MAIS, FIIS, DIPI o ANIV.",
-      });
+    if (!/@u-tad\.com$|@live\.u-tad\.com$/.test(email)) {
+      return res
+        .status(400)
+        .json({ mensaje: "Solo se permiten correos de U-TAD." });
     }
 
-    const usuarioExistente = await User.findOne({ email }).exec();
+    const regexDNI = /^\d{8}[A-Z]$/;
+    if (!regexDNI.test(dni)) {
+      return res
+        .status(400)
+        .json({ mensaje: "DNI inválido. Debe tener 8 números y una letra." });
+    }
+
+    const letrasDNI = "TRWAGMYFPDXBNJZSQVHLCKE";
+    const numDNI = parseInt(dni.slice(0, 8), 10);
+    const letraCorrecta = letrasDNI[numDNI % 23];
+
+    if (dni.charAt(8) !== letraCorrecta) {
+      return res
+        .status(400)
+        .json({ mensaje: "La letra del DNI no es correcta." });
+    }
+
+    const usuarioExistente = await User.findOne({ email });
     if (usuarioExistente) {
-      return res.status(400).json({ mensaje: "El correo ya está en uso" });
+      return res.status(400).json({ mensaje: "El correo ya está en uso." });
+    }
+
+    const dniExistente = await User.findOne({ dni });
+    if (dniExistente) {
+      return res.status(400).json({ mensaje: "El DNI ya está registrado." });
     }
 
     const salt = await bcrypt.genSalt(10);
     const passwordHasheada = await bcrypt.hash(password, salt);
 
+    // 🔒 **Fuerza el rol a "user" sin importar lo que envíe el cliente**
     const nuevoUsuario = new User({
       name,
       surname,
@@ -42,13 +64,14 @@ export const registerUser = async (req, res) => {
       password: passwordHasheada,
       dni,
       grade,
+      rol: "user",
     });
 
     await nuevoUsuario.save();
-    res.status(201).json({ mensaje: "Usuario registrado exitosamente" });
+    res.status(201).json({ mensaje: "Usuario registrado exitosamente." });
   } catch (error) {
     console.error("❌ Error en el servidor:", error);
-    res.status(500).json({ mensaje: "Error en el servidor" });
+    res.status(500).json({ mensaje: "Error en el servidor." });
   }
 };
 
@@ -56,10 +79,7 @@ export const registerUser = async (req, res) => {
  * @desc Iniciar sesión y obtener un token JWT
  * @route POST /api/users/login
  */
-
 export const loginUser = async (req, res) => {
-  console.log(req.body);
-
   try {
     const { email, password } = req.body;
 
@@ -69,7 +89,7 @@ export const loginUser = async (req, res) => {
         .json({ mensaje: "Correo y contraseña son obligatorios" });
     }
 
-    const usuario = await User.findOne({ email }).exec();
+    const usuario = await User.findOne({ email });
     if (!usuario) {
       return res
         .status(401)
@@ -83,7 +103,7 @@ export const loginUser = async (req, res) => {
         .json({ mensaje: "Correo o contraseña incorrectos" });
     }
 
-    // 📌 Generar token JWT
+    // Generar token JWT
     const token = jwt.sign(
       {
         id: usuario._id,
@@ -92,7 +112,7 @@ export const loginUser = async (req, res) => {
         rol: usuario.rol,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "7d" } // 🔥 Define la expiración del token
+      { expiresIn: "7d" }
     );
 
     // 🔥 Configurar cookie en la respuesta HTTP
@@ -115,7 +135,7 @@ export const loginUser = async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Error en el servidor:", error);
-    res.status(500).json({ mensaje: "Error en el servidor" });
+    res.status(500).json({ mensaje: "Error en el servidor." });
   }
 };
 
@@ -124,20 +144,6 @@ export const loginUser = async (req, res) => {
  * @route GET /api/users/profile
  * @access Private (requiere token)
  */
-// export const getUserProfile = async (req, res) => {
-//   try {
-//     const usuario = await User.findById(req.usuario.id).select("-password");
-//     if (!usuario) {
-//       return res.status(404).json({ mensaje: "Usuario no encontrado." });
-//     }
-
-//     res.status(200).json(usuario);
-//   } catch (error) {
-//     console.error("❌ Error en el servidor:", error);
-//     res.status(500).json({ mensaje: "Error en el servidor" });
-//   }
-// };
-
 export const getUserProfile = async (req, res) => {
   try {
     // Obtener el token desde las cookies o el header Authorization
@@ -178,27 +184,28 @@ export const getUserProfile = async (req, res) => {
  */
 export const deleteUser = async (req, res) => {
   try {
-    const usuarioAutenticado = req.usuario; // Usuario autenticado
-    const { id } = req.params; // ID del usuario a eliminar
+    const usuarioAutenticado = req.usuario; // Usuario autenticado (quien hace la petición)
+    const { id } = req.params; // ID del usuario que se quiere eliminar
 
     const usuarioAEliminar = await User.findById(id);
-
     if (!usuarioAEliminar) {
-      return res.status(404).json({ mensaje: "Usuario no encontrado" });
+      return res.status(404).json({ mensaje: "Usuario no encontrado." });
     }
 
-    // Permitir el delete solo si un usuario se borra a sí mismo o si es admin
-    if (usuarioAutenticado.rol !== "admin" && usuarioAutenticado.id !== id) {
+    if (
+      usuarioAutenticado.rol !== "admin" &&
+      usuarioAutenticado._id.toString() !== id
+    ) {
       return res
         .status(403)
-        .json({ mensaje: "No tienes permisos para eliminar este usuario" });
+        .json({ mensaje: "No tienes permisos para eliminar este usuario." });
     }
 
     await usuarioAEliminar.deleteOne();
-    res.status(200).json({ mensaje: "Usuario eliminado correctamente" });
+    res.status(200).json({ mensaje: "Usuario eliminado correctamente." });
   } catch (error) {
     console.error("❌ Error en el servidor:", error);
-    res.status(500).json({ mensaje: "Error en el servidor" });
+    res.status(500).json({ mensaje: "Error en el servidor." });
   }
 };
 
@@ -216,5 +223,30 @@ export const getAllUsers = async (req, res) => {
   } catch (error) {
     console.error("❌ Error en el servidor:", error);
     res.status(500).json({ mensaje: "Error en el servidor" });
+  }
+};
+
+export const updateUserRole = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rol } = req.body;
+
+    const rolesPermitidos = ["admin", "moderator", "user"];
+    if (!rolesPermitidos.includes(rol)) {
+      return res.status(400).json({ mensaje: "Rol no válido." });
+    }
+
+    const usuario = await User.findById(id);
+    if (!usuario) {
+      return res.status(404).json({ mensaje: "Usuario no encontrado." });
+    }
+
+    usuario.rol = rol;
+    await usuario.save();
+
+    res.status(200).json({ mensaje: `Rol actualizado a ${rol}.` });
+  } catch (error) {
+    console.error("❌ Error en el servidor:", error);
+    res.status(500).json({ mensaje: "Error en el servidor." });
   }
 };
