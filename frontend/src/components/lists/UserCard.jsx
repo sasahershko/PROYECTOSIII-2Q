@@ -25,7 +25,7 @@ export default function UserCard({ user, reloadUsers }) {
     <>
       {/* Fila de usuario con border-b para separar */}
       <div
-        className="grid gap-4 items-center py-2 border-b"
+        className="grid gap-4 items-center py-2 border-b border-secundary-text/20"
         style={{
           gridTemplateColumns: "2fr 2fr 3fr 2fr 0.8fr 0.8fr 1fr",
         }}
