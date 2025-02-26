@@ -31,7 +31,9 @@ export const loginUser = async (formData) => {
         throw new Error(responseData.mensaje || "Faltan datos obligatorios.");
       }
       if (res.status === 401) {
-        throw new Error(responseData.mensaje || "Correo o contraseña incorrectos.");
+        throw new Error(
+          responseData.mensaje || "Correo o contraseña incorrectos."
+        );
       }
       throw new Error(responseData.mensaje || "Error desconocido.");
     }
@@ -74,7 +76,9 @@ export const registerUser = async (formData) => {
         throw new Error(responseData.mensaje || "Faltan datos obligatorios.");
       }
       if (res.status === 401) {
-        throw new Error(responseData.mensaje || "Correo o contraseña incorrectos.");
+        throw new Error(
+          responseData.mensaje || "Correo o contraseña incorrectos."
+        );
       }
       throw new Error(responseData.mensaje || "Error desconocido.");
     }

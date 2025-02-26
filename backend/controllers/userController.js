@@ -3,7 +3,6 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import User from "../models/User.js";
 
-
 dotenv.config();
 
 //(estos son solo informativos, no salen en Swagger)
@@ -65,17 +64,23 @@ export const loginUser = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ mensaje: "Correo y contraseña son obligatorios" });
+      return res
+        .status(400)
+        .json({ mensaje: "Correo y contraseña son obligatorios" });
     }
 
     const usuario = await User.findOne({ email }).exec();
     if (!usuario) {
-      return res.status(401).json({ mensaje: "Correo o contraseña incorrectos" });
+      return res
+        .status(401)
+        .json({ mensaje: "Correo o contraseña incorrectos" });
     }
 
     const passwordValida = await bcrypt.compare(password, usuario.password);
     if (!passwordValida) {
-      return res.status(401).json({ mensaje: "Correo o contraseña incorrectos" });
+      return res
+        .status(401)
+        .json({ mensaje: "Correo o contraseña incorrectos" });
     }
 
     // 📌 Generar token JWT
@@ -91,7 +96,10 @@ export const loginUser = async (req, res) => {
     );
 
     // 🔥 Configurar cookie en la respuesta HTTP
-    res.setHeader("Set-Cookie", `token=${token}; Path=/; HttpOnly; SameSite=Lax`);
+    res.setHeader(
+      "Set-Cookie",
+      `token=${token}; Path=/; HttpOnly; SameSite=Lax`
+    );
 
     return res.json({
       mensaje: "Login exitoso",
@@ -105,13 +113,11 @@ export const loginUser = async (req, res) => {
       },
       token,
     });
-
   } catch (error) {
     console.error("❌ Error en el servidor:", error);
     res.status(500).json({ mensaje: "Error en el servidor" });
   }
 };
-
 
 /**
  * @desc Obtener perfil del usuario autenticado
@@ -135,7 +141,8 @@ export const loginUser = async (req, res) => {
 export const getUserProfile = async (req, res) => {
   try {
     // Obtener el token desde las cookies o el header Authorization
-    const token = req.cookies?.token || req.headers.authorization?.split(" ")[1];
+    const token =
+      req.cookies?.token || req.headers.authorization?.split(" ")[1];
 
     if (!token) {
       return res.status(401).json({ mensaje: "No autorizado" });
@@ -158,7 +165,6 @@ export const getUserProfile = async (req, res) => {
       email: usuario.email,
       rol: usuario.rol, // Importante para gestionar permisos
     });
-
   } catch (error) {
     console.error("❌ Error en el servidor:", error);
     res.status(401).json({ mensaje: "Token inválido o expirado" });

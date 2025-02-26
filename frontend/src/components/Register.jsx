@@ -26,7 +26,7 @@ export default function Register() {
     // Validación de correo u-tad
     const correoRegex = /@u-tad\.com$|@live\.u-tad\.com$/;
     if (!correoRegex.test(formData.correo)) {
-      setError("El correo debe ser del dominio @u-tad.com o @live.u-tad.com.");
+      setError("El correo debe ser de la Universidad.");
       return;
     }
 
@@ -66,7 +66,7 @@ export default function Register() {
       // Validación de correo electrónico
       const correoRegex = /@u-tad\.com$|@live\.u-tad\.com$/;
       if (!formData.correo || !correoRegex.test(formData.correo)) {
-        setError("El correo debe ser del dominio @u-tad.com o @live.u-tad.com.");
+        setError("El correo debe ser de la Universidad.");
         return;
       }
 
@@ -133,7 +133,9 @@ export default function Register() {
                 type="text"
                 name="nombre"
                 value={formData.nombre}
-                onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, nombre: e.target.value })
+                }
                 className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500"
                 placeholder="Nombre"
                 required
@@ -142,7 +144,9 @@ export default function Register() {
                 type="text"
                 name="apellido"
                 value={formData.apellido}
-                onChange={(e) => setFormData({ ...formData, apellido: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, apellido: e.target.value })
+                }
                 className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500"
                 placeholder="Apellidos"
                 required
@@ -157,7 +161,9 @@ export default function Register() {
                 type="email"
                 name="correo"
                 value={formData.correo}
-                onChange={(e) => setFormData({ ...formData, correo: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, correo: e.target.value })
+                }
                 className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500"
                 placeholder="Correo Electrónico"
                 required
@@ -166,7 +172,9 @@ export default function Register() {
                 type="text"
                 name="dni"
                 value={formData.dni}
-                onChange={(e) => setFormData({ ...formData, dni: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, dni: e.target.value })
+                }
                 className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500"
                 placeholder="DNI"
                 required
@@ -181,7 +189,9 @@ export default function Register() {
                 type="password"
                 name="password"
                 value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
                 className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500"
                 placeholder="Contraseña"
                 required
@@ -190,7 +200,9 @@ export default function Register() {
                 type="password"
                 name="confirmPassword"
                 value={formData.confirmPassword}
-                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, confirmPassword: e.target.value })
+                }
                 className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500"
                 placeholder="Confirmar Contraseña"
                 required
@@ -203,11 +215,15 @@ export default function Register() {
             <select
               name="grado"
               value={formData.grado}
-              onChange={(e) => setFormData({ ...formData, grado: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, grado: e.target.value })
+              }
               className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             >
-              <option value="" disabled>Selecciona un grado</option>
+              <option value="" disabled>
+                Selecciona un grado
+              </option>
               {gradosPermitidos.map((grado, index) => (
                 <option key={index} value={grado}>
                   {grado}
@@ -248,7 +264,9 @@ export default function Register() {
 
         <p className="text-gray-600 text-sm mt-6 text-center">
           ¿Ya tienes cuenta?{" "}
-          <a href="/login" className="text-blue-500 font-semibold">Inicia sesión</a>
+          <a href="/login" className="text-blue-500 font-semibold">
+            Inicia sesión
+          </a>
         </p>
       </div>
     </div>
