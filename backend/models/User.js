@@ -56,6 +56,12 @@ const userSchema = new mongoose.Schema({
     enum: ["INSO", "MAIS", "FIIS", "DIPI", "ANIV"], // Solo permite estos valores
   },
   projects: [{ type: mongoose.Schema.Types.ObjectId, ref: "Project" }], //relacion inversa
+
+  //Campos para la verificación del código de 6 dígitos
+  isVerified: { type: Boolean, default: false }, // Indica si el usuario ya verificó su cuenta
+  verificationCode: { type: String, default: null }, // Código de verificación temporal
+  verificationAttempts: { type: Number, default: 3 }, // Número de intentos para ingresar el código
+ 
 });
 
 const User = mongoose.model("User", userSchema);
