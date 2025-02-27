@@ -93,7 +93,7 @@ userRouter.post("/register", registerUser);
  *       500:
  *         description: Error en el servidor.
  */
-userRouter.post("/verify-code", verifyCode); // 📌 Nueva ruta para verificar código
+userRouter.post("/verify-code", verifyCode); //Nueva ruta para verificar código
 
 /**
  * @swagger

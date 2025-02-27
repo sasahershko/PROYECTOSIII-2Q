@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import User from "../models/User.js";
+import User, { validarEmail, validarDNI } from "../models/User.js";
 import nodemailer from "nodemailer";
 
 dotenv.config();
@@ -19,7 +19,6 @@ const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASS, 
   },
 });
-
 
 //(estos son solo informativos, no salen en Swagger)
 /**
@@ -69,12 +68,11 @@ export const registerUser = async (req, res) => {
       password: passwordHasheada,
       dni,
       grade,
-      rol: "user",
+      rol: "user", // Forzamos el rol para evitar registros no autorizados
       isVerified: false, //Usuario no verificado aún
       verificationCode,
       verificationAttempts: 3,
     });
-
 
     await nuevoUsuario.save();
 
@@ -124,6 +122,7 @@ export const verifyCode = async (req, res) => {
     res.status(500).json({ mensaje: "Error en el servidor." });
   }
 };
+
 
 /**
  * @desc Iniciar sesión y obtener un token JWT
