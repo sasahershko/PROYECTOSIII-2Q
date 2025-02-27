@@ -42,7 +42,7 @@ export const loginUser = async (formData) => {
     const guardadoCookie = cookies();
     guardadoCookie.set("token", responseData.token, {
       path: "/",
-      httpOnly: true,
+      // httpOnly: true, si ponemos cookies en el cliente, no podemos poner httpOnly
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
     });
@@ -89,3 +89,4 @@ export const registerUser = async (formData) => {
     throw new Error(error.message || "No se pudo completar el registro.");
   }
 };
+

@@ -35,6 +35,34 @@ export const authMiddleware = async (req, res, next) => {
 };
 
 /**
+ * Middleware para verificar si el usuario está autenticado (opcional), para tratarlo como un usuario anónimo
+ */
+export const authMiddlewareOptional = async (req, res, next) => {
+  
+  try {
+    const token = req.cookies?.token || req.headers.authorization?.split(" ")[1];
+
+    if (!token) {
+      req.usuario = null;
+      return next();
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.usuario = await User.findById(decoded.id).select("-password");
+
+    if (!req.usuario) {
+      req.usuario = null; //si el usuario no se encuentra, tratarlo como anónimo
+    }
+
+    next();
+  } catch (error) {
+    console.error("⚠ Error en autenticación opcional:", error);
+    req.usuario = null; //anónimo
+    next();
+  }
+}
+
+/**
  * Middleware para verificar si el usuario es administrador
  */
 export const adminMiddleware = (req, res, next) => {

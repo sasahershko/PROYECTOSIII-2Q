@@ -11,17 +11,17 @@ export const createProject = async (req, res) => {
         const { userId } = req; //usuario autenticado que está creando el proyecto
 
         const {
-            projectName,
+            name,
             contactPerson,
             company,
             area,
-            projectResponsibles = [], // IDs de responsables
+            responsibles = [], // IDs de responsables
             users = [], // IDs de usuarios
             benefit = "",
-            projectFolder = "",
-            projectStatus = [],
+            folder = "",
+            pStatus = [],
             pendingNotes = [],
-            projectDescription,
+            description,
             practicesAgreement = false,
             practicesStudents = 0,
             sdpStudents = 0,
@@ -30,7 +30,7 @@ export const createProject = async (req, res) => {
             endDate
         } = req.body;
 
-        if (!projectName || !contactPerson || !company || !area || !projectDescription || !startDate || !endDate) {
+        if (!name || !contactPerson || !company || !area || !description || !startDate || !endDate) {
             return res.status(400).json({ mensaje: "Todos los campos obligatorios" });
         }
 
@@ -39,9 +39,9 @@ export const createProject = async (req, res) => {
         }
 
         //validar si los responsables existen
-        const validResponsibles = await User.find({ _id: { $in: projectResponsibles } }); //busca en mongo todos los usuarios cuyo sid están en el array de projectResponsibles
+        const validResponsibles = await User.find({ _id: { $in: responsibles } }); //busca en mongo todos los usuarios cuyo sid están en el array de responsibles
 
-        if (validResponsibles.length !== projectResponsibles.length) {
+        if (validResponsibles.length !== responsibles.length) {
             return res.status(400).json({ mensaje: "Alguno de los responsables no existen" });
         }
 
@@ -51,20 +51,20 @@ export const createProject = async (req, res) => {
             return res.status(400).json({ mensaje: "Alguno de los usuarios no existen" });
         }
 
-        const uniqueUsers = [...new Set([...projectResponsibles, ...users])];  //elimina duplicados (esto es porque al poner a un usuario tanto en responsable como en usuario, se duplica)
+        const uniqueUsers = [...new Set([...responsibles, ...users])];  //elimina duplicados (esto es porque al poner a un usuario tanto en responsable como en usuario, se duplica)
 
         const newProject = new Project({
-            projectName,
+            name,
             contactPerson,
             company,
             area,
-            projectResponsibles,
+            responsibles,
             users: uniqueUsers, //!esto es para que no se dupliquen los usuarios
             benefit,
-            projectFolder,
-            projectStatus,
+            folder,
+            pStatus,
             pendingNotes,
-            projectDescription,
+            description,
             practicesAgreement,
             practicesStudents,
             sdpStudents,
@@ -75,12 +75,6 @@ export const createProject = async (req, res) => {
 
 
         const savedProject = await newProject.save();
-
-        // //asignar el proyecto a los responsables
-        // await User.updateMany({ _id: { $in: projectResponsibles } }, { $push: { projects: savedProject._id } });
-
-        // //asignar el proyecto a los usuarios
-        // await User.updateMany({ _id: { $in: users } }, { $push: { projects: savedProject._id } });
 
         //para que no se dupliquen
         await User.updateMany({_id: {$in: uniqueUsers}}, {$addToSet: {projects: savedProject._id}});
@@ -93,10 +87,22 @@ export const createProject = async (req, res) => {
 
 export const getAllProjects = async (req, res) =>{
     try {
-        let role = "user";
+        let projects;
 
-        //intentamos obtener el tken desde la scookies o el header authorization
-        const projects = await Project.find();
+        if(!req.usuario){
+            //intentamos obtener el tken desde la scookies o el header authorization
+            projects = await Project.find().select('area name description');
+        }else if (req.usuario.rol === 'admin'){
+            projects = await Project.find();
+        }else{
+            //!mirar -> si es moderador/usuario, puede ver los proyectos que es responsable, y en los que participa
+            projects = await Project.find({ 
+                $or: [
+                    {responsibles: req.usuario._id},
+                    {users: req.usuario._id}
+                ]
+            });
+        }
 
         res.json(projects);
     } catch (error) {
@@ -109,7 +115,7 @@ export const getProjectById = async (req, res) => {
         const {id} = req.params;
 
         const project = await Project.findById(id)
-            .populate("projectResponsibles", "name")
+            .populate("responsibles", "name")
             .populate("users", "name");
 
             if (!project) {

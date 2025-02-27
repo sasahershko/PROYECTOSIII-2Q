@@ -16,7 +16,6 @@ export async function getUserRole() {
   try {
     const token = getTokenFromClient();
     if (!token) {
-      console.log("No hay token, devolviendo guest");
       return "guest";
     }
 
