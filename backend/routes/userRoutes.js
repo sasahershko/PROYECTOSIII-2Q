@@ -1,7 +1,8 @@
 import express from "express";
 import {
   registerUser,
-  verifyCode,  //Nueva función para verificar código
+  //verifyCode, //Nueva función para verificar código
+  //resendVerificationCode, //Reenviar codigo
   loginUser,
   getUserProfile,
   getAllUsers,
@@ -93,7 +94,9 @@ userRouter.post("/register", registerUser);
  *       500:
  *         description: Error en el servidor.
  */
-userRouter.post("/verify-code", verifyCode); //Nueva ruta para verificar código
+// userRouter.post("/verify-code", verifyCode); //Nueva ruta para verificar código
+
+// userRouter.post("/resend-code", resendVerificationCode);
 
 /**
  * @swagger
