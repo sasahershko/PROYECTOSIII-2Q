@@ -9,7 +9,11 @@ export default function ProjectDashboard() {
   const userRole = useUserRole(); // Obtener rol del usuario
 
   if (loading) {
-    return <p className="min-h-screen bg-primary-bg text-primary-text">Cargando proyectos...</p>;
+    return (
+      <p className="min-h-screen bg-primary-bg text-primary-text">
+        Cargando proyectos...
+      </p>
+    );
   }
 
   return (
@@ -20,7 +24,11 @@ export default function ProjectDashboard() {
             <p>No existen proyectos</p>
           ) : (
             projects.map((project) => (
-              <ProjectCard key={project._id} project={project} role={userRole} />
+              <ProjectCard
+                key={project._id}
+                project={project}
+                role={userRole}
+              />
             ))
           )}
         </div>
