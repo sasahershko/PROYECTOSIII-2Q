@@ -3,6 +3,7 @@
 import useProjects from "@/hooks/useProjects";
 import useUserRole from "@/hooks/useUserRole";
 import ProjectCard from "@/components/ProjectCard";
+import SpinLoader from "@/components/SpinLoader";
 
 export default function ProjectDashboard() {
   const { projects, loading } = useProjects();
@@ -10,9 +11,9 @@ export default function ProjectDashboard() {
 
   if (loading) {
     return (
-      <p className="min-h-screen bg-primary-bg text-primary-text">
-        Cargando proyectos...
-      </p>
+      <div className="pt-44 flex items-center justify-center">
+        <SpinLoader size="48px" />
+      </div>
     );
   }
 
