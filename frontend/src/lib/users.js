@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 
 export async function getUsers() {
   try {
-    const token = getToken();
+    const token = await getToken();
 
     const response = await fetch(`${process.env.BACK_URL}/api/users`, {
       method: "GET",
@@ -26,7 +26,7 @@ export async function getUsers() {
 
 export async function deleteUser(id) {
   try {
-    const token = getToken();
+    const token = await getToken();
 
     const response = await fetch(`${process.env.BACK_URL}/api/users/${id}`, {
       method: "DELETE",
@@ -42,13 +42,13 @@ export async function deleteUser(id) {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Error deleting users:", error);
+    console.error("Error deleting user:", error);
     throw error;
   }
 }
 
-function getToken() {
-  const token = cookies().get("token")?.value;
+async function getToken() {
+  const token = (await cookies()).get("token")?.value;
   if (!token) {
     throw new Error("Token not found in cookies");
   }
