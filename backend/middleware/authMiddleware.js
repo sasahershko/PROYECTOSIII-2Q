@@ -38,9 +38,9 @@ export const authMiddleware = async (req, res, next) => {
  * Middleware para verificar si el usuario está autenticado (opcional), para tratarlo como un usuario anónimo
  */
 export const authMiddlewareOptional = async (req, res, next) => {
-  
   try {
-    const token = req.cookies?.token || req.headers.authorization?.split(" ")[1];
+    const token =
+      req.cookies?.token || req.headers.authorization?.split(" ")[1];
 
     if (!token) {
       req.usuario = null;
@@ -60,18 +60,16 @@ export const authMiddlewareOptional = async (req, res, next) => {
     req.usuario = null; //anónimo
     next();
   }
-}
+};
 
 /**
  * Middleware para verificar si el usuario es administrador
  */
 export const adminMiddleware = (req, res, next) => {
   if (!req.usuario || req.usuario.rol !== "admin") {
-    return res
-      .status(403)
-      .json({
-        mensaje: "Acceso denegado. Se requieren permisos de administrador.",
-      });
+    return res.status(403).json({
+      mensaje: "Acceso denegado. Se requieren permisos de administrador.",
+    });
   }
   next();
 };
@@ -84,11 +82,9 @@ export const moderatorMiddleware = (req, res, next) => {
     !req.usuario ||
     (req.usuario.rol !== "admin" && req.usuario.rol !== "moderator")
   ) {
-    return res
-      .status(403)
-      .json({
-        mensaje: "Acceso denegado. Se requieren permisos de moderador o admin.",
-      });
+    return res.status(403).json({
+      mensaje: "Acceso denegado. Se requieren permisos de moderador o admin.",
+    });
   }
   next();
 };
