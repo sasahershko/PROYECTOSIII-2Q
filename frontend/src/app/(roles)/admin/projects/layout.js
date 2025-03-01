@@ -1,11 +1,11 @@
 // app/layout.js
 import "@/app/globals.css";
-import AdminNavBar from "@/components/admin/ProjectsNavBar";
+import ProjectsNavBar from "@/components/projects/ProjectsNavBar";
 
 export default function RootLayout({ children }) {
   return (
     <div>
-      <AdminNavBar />
+      <ProjectsNavBar role="admin" />
       <div className="w-auto h-auto bg-primary-bg">{children}</div>
     </div>
   );
