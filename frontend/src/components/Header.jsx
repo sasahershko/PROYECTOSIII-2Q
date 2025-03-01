@@ -31,7 +31,7 @@ export default function Header() {
 
       {/* Menú alineado a la derecha */}
       <div className="flex-1 flex justify-end items-center gap-5 font-semibold text-sm">
-        {(userRole === "admin" || userRole === "user") && (
+        {(userRole === "admin" || userRole === "user") ? (
           <>
             <Link
               href={userRole === "admin" ? "/admin/projects" : "/user/projects"}
@@ -55,12 +55,17 @@ export default function Header() {
                 </Link>
               </>
             )}
+
+
+            <ThemeToggle />
+            <UserCircle />
+          </>
+        ) : (
+          <>
+            <Link href="/login" className="">LOGIN</Link>
+            <ThemeToggle />
           </>
         )}
-
-
-        <ThemeToggle />
-        <UserCircle/>
       </div>
     </div>
   );
