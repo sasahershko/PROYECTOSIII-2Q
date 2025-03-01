@@ -1,6 +1,7 @@
 import express from "express";
 import {
   registerUser,
+  verifyCode,  //Nueva función para verificar código
   loginUser,
   getUserProfile,
   getAllUsers,
@@ -61,6 +62,38 @@ const userRouter = express.Router();
  *         description: Algún campo es inválido o el correo ya está en uso.
  */
 userRouter.post("/register", registerUser);
+
+/**
+ * @swagger
+ * /api/users/verify-code:
+ *   post:
+ *     summary: Verificar el código de autenticación
+ *     tags: [Usuarios]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, code]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: "usuario@u-tad.com"
+ *               code:
+ *                 type: string
+ *                 example: "123456"
+ *     responses:
+ *       200:
+ *         description: Código correcto, usuario verificado.
+ *       400:
+ *         description: Código incorrecto o intentos agotados.
+ *       404:
+ *         description: Usuario no encontrado.
+ *       500:
+ *         description: Error en el servidor.
+ */
+userRouter.post("/verify-code", verifyCode); //Nueva ruta para verificar código
 
 /**
  * @swagger
