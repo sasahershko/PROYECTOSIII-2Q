@@ -41,6 +41,7 @@ const userSchema = new mongoose.Schema({
   verificationCode: { type: String, default: null }, // Código de verificación temporal
   verificationAttempts: { type: Number, default: 3 }, // Número de intentos
   verificationCodeExpires: { type: Date }, // Expiración del código
+  createdAt: { type: Date, default: Date.now }, // Fecha de creación
 });
 
 const User = mongoose.model("User", userSchema);

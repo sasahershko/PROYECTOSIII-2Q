@@ -59,7 +59,7 @@ export const registerUser = async (req, res) => {
       dni,
       grade,
       rol: "user",
-      isVerified: false, // 🔥 Usuario provisional hasta que verifique
+      isVerified: false, // Usuario provisional hasta que verifique
       verificationCode,
       verificationAttempts: 3,
       verificationCodeExpires,
@@ -68,11 +68,9 @@ export const registerUser = async (req, res) => {
     await nuevoUsuario.save();
     await sendVerificationEmail(email, verificationCode);
 
-    res
-      .status(201)
-      .json({
-        mensaje: "Usuario registrado. Verifica tu correo en 10 minutos.",
-      });
+    res.status(201).json({
+      mensaje: "Usuario registrado. Verifica tu correo en 10 minutos.",
+    });
   } catch (error) {
     console.error("❌ Error en el servidor:", error);
     res.status(500).json({ mensaje: "Error en el servidor." });
@@ -95,8 +93,9 @@ export const verifyCode = async (req, res) => {
     }
 
     // Si el código ha expirado, eliminar el usuario
-    if (new Date() > user.verificationCodeExpires) {
-      await User.deleteOne({ email }); // 🔥 Elimina el usuario de la BD
+    const now = new Date();
+    if (now > new Date(user.verificationCodeExpires)) {
+      await User.deleteOne({ email }); // Elimina el usuario de la BD
       return res
         .status(400)
         .json({ mensaje: "Código expirado. Regístrate de nuevo." });
@@ -112,7 +111,7 @@ export const verifyCode = async (req, res) => {
       user.verificationAttempts -= 1;
 
       if (user.verificationAttempts <= 0) {
-        await User.deleteOne({ email }); // 🔥 Elimina el usuario si agotó intentos
+        await User.deleteOne({ email }); // Elimina el usuario si agotó intentos
         return res.status(400).json({
           mensaje: "Demasiados intentos fallidos. Regístrate de nuevo.",
         });
@@ -154,7 +153,9 @@ export const loginUser = async (req, res) => {
     if (!usuario.isVerified) {
       return res
         .status(403)
-        .json({ mensaje: "Debes verificar tu cuenta antes de iniciar sesión." });
+        .json({
+          mensaje: "Debes verificar tu cuenta antes de iniciar sesión.",
+        });
     }
 
     const passwordValida = await bcrypt.compare(password, usuario.password);
