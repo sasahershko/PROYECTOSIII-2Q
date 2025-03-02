@@ -1,0 +1,14 @@
+###
+POST http://localhost:3001/storage HTTP/1.1
+Content-Type: multipart/form-data; boundary=boundary123
+
+--boundary123
+Content-Disposition: form-data; name="image"; filename="Raccoon.jpg"
+Content-Type: image/jpeg
+
+< ./Raccoon.jpg
+--boundary123--
+
+
+###
+GET http://localhost:3001/

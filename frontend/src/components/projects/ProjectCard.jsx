@@ -53,7 +53,7 @@ export default function ProjectCard({ project, role }) {
         <p className="text-sm text-gray-700 mt-2">{project.description}</p>
 
 
-        {role === "admin" && (
+        {(role === "admin" || role==="user") && (
           <>
             {/* Avatares PROVISIONALES HASTA QUE TENGAMOS FOTOS DE PERFIL */}
             <div className="absolute top-7 right-10 flex -space-x-5">

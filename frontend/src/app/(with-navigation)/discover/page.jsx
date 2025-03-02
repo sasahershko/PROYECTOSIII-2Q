@@ -2,7 +2,7 @@
 
 import useProjects from "@/hooks/useProjects";
 import useUserRole from "@/hooks/useUserRole";
-import ProjectCard from "@/components/ProjectCard";
+import ProjectCard from "@/components/projects/ProjectCard";
 
 export default function ProjectDashboard() {
   const { projects, loading } = useProjects();

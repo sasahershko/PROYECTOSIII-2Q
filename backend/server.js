@@ -10,6 +10,8 @@ import { deleteExpiredUsers } from "./utils/deleteExpiredUsers.js";
 //RUTAS
 import userRouter from "./routes/userRoutes.js";
 import projectRouter from "./routes/projectRoutes.js";
+//import storageRouter from "./routes/storage.cjs";
+import storageRouter from "./routes/storage.js";
 
 dotenv.config();
 connectDB();
@@ -28,6 +30,7 @@ setupSwagger(app);
 // ✅ Registrar rutas
 app.use("/api/users", userRouter);
 app.use("/api/projects", projectRouter);
+app.use("/storage", storageRouter);
 
 // middleware para cookies
 app.use(cookieParser());
