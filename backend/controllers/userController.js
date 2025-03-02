@@ -1,22 +1,19 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import User, { validarEmail, validarDNI } from "../models/User.js";
 import nodemailer from "nodemailer";
+import User from "../models/User.js";
+import { generateVerificationCode } from "../utils/verification.js";
+import { sendVerificationEmail } from "../utils/emailService.js";
 
 dotenv.config();
 
-//Función para generar un código de 6 dígitos aleatorio
-function generateVerificationCode() {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-}
-
 //Configuración de nodemailer para enviar correos
 const transporter = nodemailer.createTransport({
-  service: "gmail", 
+  service: "gmail",
   auth: {
-    user: process.env.EMAIL_USER, 
-    pass: process.env.EMAIL_PASS, 
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
   },
 });
 
@@ -35,18 +32,6 @@ export const registerUser = async (req, res) => {
         .json({ mensaje: "Todos los campos son obligatorios" });
     }
 
-    if (!validarEmail(email)) {
-      return res
-        .status(400)
-        .json({ mensaje: "Solo se permiten correos de U-TAD." });
-    }
-
-    if (!validarDNI(dni)) {
-      return res
-        .status(400)
-        .json({ mensaje: "DNI inválido. Debe seguir el formato correcto." });
-    }
-
     const usuarioExistente = await User.findOne({ email });
     if (usuarioExistente) {
       return res.status(400).json({ mensaje: "El correo ya está en uso." });
@@ -57,9 +42,14 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({ mensaje: "El DNI ya está registrado." });
     }
 
-    const verificationCode = generateVerificationCode(); //Generar código de verificación
+    const verificationCode = generateVerificationCode();
     const salt = await bcrypt.genSalt(10);
     const passwordHasheada = await bcrypt.hash(password, salt);
+
+    const verificationCodeExpires = new Date();
+    verificationCodeExpires.setMinutes(
+      verificationCodeExpires.getMinutes() + 10
+    ); // Expira en 10 minutos
 
     const nuevoUsuario = new User({
       name,
@@ -68,32 +58,25 @@ export const registerUser = async (req, res) => {
       password: passwordHasheada,
       dni,
       grade,
-      rol: "user", // Forzamos el rol para evitar registros no autorizados
-      isVerified: false, //Usuario no verificado aún
+      rol: "user",
+      isVerified: false, // Usuario provisional hasta que verifique
       verificationCode,
       verificationAttempts: 3,
+      verificationCodeExpires,
     });
 
     await nuevoUsuario.save();
+    await sendVerificationEmail(email, verificationCode);
 
-    //Enviar correo con el código de verificación
-    const mailOptions = {
-      from: `"Bildy" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: "Código de Verificación",
-      text: `Tu código de verificación es: ${verificationCode}`,
-    };
-
-    await transporter.sendMail(mailOptions);
-
-    res.status(201).json({ mensaje: "Usuario registrado exitosamente." });
+    res.status(201).json({
+      mensaje: "Usuario registrado. Verifica tu correo en 10 minutos.",
+    });
   } catch (error) {
     console.error("❌ Error en el servidor:", error);
     res.status(500).json({ mensaje: "Error en el servidor." });
   }
 };
 
-//Verificar código de verificación
 export const verifyCode = async (req, res) => {
   try {
     const { email, code } = req.body;
@@ -103,26 +86,47 @@ export const verifyCode = async (req, res) => {
       return res.status(404).json({ mensaje: "Usuario no encontrado." });
     }
 
-    if (user.verificationAttempts <= 0) {
-      return res.status(403).json({ mensaje: "Has agotado tus intentos de verificación." });
+    if (user.isVerified) {
+      return res
+        .status(400)
+        .json({ mensaje: "Este usuario ya está verificado." });
+    }
+
+    // Si el código ha expirado, eliminar el usuario
+    const now = new Date();
+    if (now > new Date(user.verificationCodeExpires)) {
+      await User.deleteOne({ email }); // Elimina el usuario de la BD
+      return res
+        .status(400)
+        .json({ mensaje: "Código expirado. Regístrate de nuevo." });
     }
 
     if (user.verificationCode === code) {
       user.isVerified = true;
       user.verificationCode = null;
+      user.verificationAttempts = null;
       await user.save();
       return res.json({ mensaje: "Código correcto, usuario verificado." });
     } else {
       user.verificationAttempts -= 1;
+
+      if (user.verificationAttempts <= 0) {
+        await User.deleteOne({ email }); // Elimina el usuario si agotó intentos
+        return res.status(400).json({
+          mensaje: "Demasiados intentos fallidos. Regístrate de nuevo.",
+        });
+      }
+
       await user.save();
-      return res.status(400).json({ mensaje: `Código incorrecto. Intentos restantes: ${user.verificationAttempts}` });
+      return res.status(400).json({
+        mensaje: `Código incorrecto. Intentos restantes: ${user.verificationAttempts}`,
+      });
     }
   } catch (error) {
     console.error("❌ Error en verifyCode:", error);
     res.status(500).json({ mensaje: "Error en el servidor." });
   }
 };
-
 
 /**
  * @desc Iniciar sesión y obtener un token JWT
@@ -143,6 +147,15 @@ export const loginUser = async (req, res) => {
       return res
         .status(401)
         .json({ mensaje: "Correo o contraseña incorrectos" });
+    }
+
+    // **Bloqueo de login si el usuario no está verificado**
+    if (!usuario.isVerified) {
+      return res
+        .status(403)
+        .json({
+          mensaje: "Debes verificar tu cuenta antes de iniciar sesión.",
+        });
     }
 
     const passwordValida = await bcrypt.compare(password, usuario.password);
@@ -218,7 +231,7 @@ export const getUserProfile = async (req, res) => {
       id: usuario._id,
       name: usuario.name,
       email: usuario.email,
-      rol: usuario.rol, 
+      rol: usuario.rol,
     });
   } catch (error) {
     console.error("❌ Error en el servidor:", error);
