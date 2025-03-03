@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { registerUser } from "@/lib/auth";
+import { registerUser, verifyUserCode } from "@/lib/auth";
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -12,10 +12,13 @@ export default function Register() {
     password: "",
     confirmPassword: "",
     grado: "",
+    codigoVerificacion: "",
   });
 
   const [currentStep, setCurrentStep] = useState(1);
   const [error, setError] = useState("");
+  const [usuarioTemporal, setUsuarioTemporal] = useState(null);
+  const [intentosRestantes, setIntentosRestantes] = useState(3); // Control de intentos
   const router = useRouter();
 
   const gradosPermitidos = ["INSO", "MAIS", "FIIS", "DIPI", "ANIV"];
@@ -48,9 +51,38 @@ export default function Register() {
 
     try {
       const response = await registerUser(userData);
-      router.push("/login");
+      setUsuarioTemporal(userData);
+      setCurrentStep(5); // Pasamos a la pantalla de verificación de código
     } catch (error) {
       setError(error.message);
+    }
+  };
+
+  const handleVerifyCode = async () => {
+    if (!formData.codigoVerificacion) {
+      setError("Por favor, introduce el código de verificación.");
+      return;
+    }
+
+    try {
+      const response = await verifyUserCode({
+        email: usuarioTemporal.email,
+        code: formData.codigoVerificacion,
+      });
+
+      alert("Verificación exitosa. Redirigiendo...");
+      router.push("/login");
+    } catch (error) {
+      setIntentosRestantes(intentosRestantes - 1);
+
+      if (intentosRestantes - 1 <= 0) {
+        setError("Demasiados intentos fallidos. Regístrate de nuevo.");
+        setTimeout(() => router.push("/register"), 2000); // Redirigir al usuario
+      } else {
+        setError(
+          `Código incorrecto. Intentos restantes: ${intentosRestantes - 1}`
+        );
+      }
     }
   };
 
@@ -246,6 +278,36 @@ export default function Register() {
                 </option>
               ))}
             </select>
+          )}
+
+          {/* Paso 5: Verificación de código */}
+          {currentStep === 5 && (
+            <>
+              <p>
+                Te hemos enviado un código de verificación a {formData.correo}.
+                Tienes 10 minutos y 3 intentos.
+              </p>
+              <input
+                type="text"
+                name="codigoVerificacion"
+                value={formData.codigoVerificacion}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    codigoVerificacion: e.target.value,
+                  })
+                }
+                placeholder="Código de Verificación"
+                required
+              />
+              <button
+                type="button"
+                onClick={handleVerifyCode}
+                className="bg-blue-600 text-white py-3 rounded-lg font-semibold"
+              >
+                Verificar Código
+              </button>
+            </>
           )}
 
           {/* Botones de navegación */}
