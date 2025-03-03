@@ -56,7 +56,7 @@ export default function ProjectCard({ project, role }) {
         {(role === "admin" || role==="user") && (
           <>
             {/* Avatares PROVISIONALES HASTA QUE TENGAMOS FOTOS DE PERFIL */}
-            <div className="absolute top-7 right-10 flex -space-x-5">
+            <div className="absolute top-1 right-5 flex -space-x-5">
               {project.users.map((user, i) => {
                 const avatarURL = `https://ui-avatars.com/api/?name=User+${i + 1}&background=random&color=fff`;
                 return (

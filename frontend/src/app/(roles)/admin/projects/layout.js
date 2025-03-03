@@ -5,7 +5,6 @@ import ProjectsNavBar from "@/components/projects/ProjectsNavBar";
 export default function RootLayout({ children }) {
   return (
     <div>
-      <ProjectsNavBar role="admin" />
       <div className="w-auto h-auto bg-primary-bg">{children}</div>
     </div>
   );
