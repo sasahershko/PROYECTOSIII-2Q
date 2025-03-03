@@ -63,6 +63,8 @@ export const registerUser = async (formData) => {
       body: JSON.stringify(formData),
     });
 
+
+
     const contentType = res.headers.get("content-type");
 
     if (!contentType || !contentType.includes("application/json")) {

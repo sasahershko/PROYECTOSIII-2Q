@@ -13,30 +13,34 @@ export const formatDate = (date) => {
   };
   
 
-// 📌 Obtiene la fecha de revisión más próxima
-export const getUpcomingReviewDate = (reviewDates) => {
-  if (!reviewDates || !Array.isArray(reviewDates)) return "Sin revisiones";
-
-  let upcomingReviewDate = reviewDates
-    .filter(Boolean) // Evitar valores `undefined`
-    .map(r => r.date)
-    .sort((a, b) => new Date(a) - new Date(b)) // Ordenar de más antigua a más nueva
-    .find(date => isAfter(new Date(date), new Date())); // Tomar la más próxima
-
-  if (!upcomingReviewDate && reviewDates.length > 0) {
-    upcomingReviewDate = reviewDates[reviewDates.length - 1].date;
-  }
-
-  return upcomingReviewDate || "Sin revisiones";
-};
-
-// 📌 Crea el array de fechas con sus íconos
-export const getProjectDates = (project) => {
-  const upcomingReviewDate = getUpcomingReviewDate(project.reviewDates);
-
-  return [
-    { icon: "calendar", date: project.startDate },
-    { icon: "clock", date: upcomingReviewDate },
-    { icon: "hourglass", date: project.endDate }
-  ];
-};
+  export const getUpcomingReviewDate = (reviewDates) => {
+    if (!reviewDates || !Array.isArray(reviewDates) || reviewDates.length === 0) {
+      return "Sin revisiones";
+    }
+  
+    // Convertimos a Date asegurándonos de que reviewDates es un array de strings
+    let upcomingReviewDate = reviewDates
+      .filter(date => !!date) // Evitar valores `null` o `undefined`
+      .map(date => new Date(date)) // Convertir strings en objetos Date
+      .sort((a, b) => a - b) // Ordenar de más antigua a más nueva
+      .find(date => isAfter(date, new Date())); // Buscar la próxima fecha futura
+  
+    // Si no hay fechas futuras, devolver la última revisión disponible
+    if (!upcomingReviewDate && reviewDates.length > 0) {
+      upcomingReviewDate = new Date(reviewDates[reviewDates.length - 1]);
+    }
+  
+    return upcomingReviewDate ? upcomingReviewDate.toISOString() : "Sin revisiones";
+  };
+  
+  // 📌 Función que genera las fechas del proyecto con sus íconos
+  export const getProjectDates = (project) => {
+    const upcomingReviewDate = getUpcomingReviewDate(project.reviewDates);
+  
+    return [
+      { icon: "calendar", date: new Date(project.startDate).toISOString().split("T")[0] },
+      { icon: "clock", date: upcomingReviewDate !== "Sin revisiones" ? new Date(upcomingReviewDate).toISOString().split("T")[0] : "Sin revisiones" },
+      { icon: "hourglass", date: new Date(project.endDate).toISOString().split("T")[0] }
+    ];
+  };
+  
