@@ -110,8 +110,8 @@ export default function Register() {
       }
     }
     if (currentStep === 3) {
-      if (!formData.password || !formData.confirmPassword) {
-        setError("Por favor, completa todos los campos de esta sección.");
+      if (formData.password !== formData.confirmPassword) {
+        setError("Las contraseñas no coinciden.");
         return;
       }
     }
@@ -283,27 +283,57 @@ export default function Register() {
           {/* Paso 5: Verificación de código */}
           {currentStep === 5 && (
             <>
-              <p>
-                Te hemos enviado un código de verificación a {formData.correo}.
+              <p className="text-gray-700 text-center mb-4">
+                Te hemos enviado un código de verificación a <br />
+                <strong className="block">{formData.correo}</strong>
                 Tienes 10 minutos y 3 intentos.
               </p>
-              <input
-                type="text"
-                name="codigoVerificacion"
-                value={formData.codigoVerificacion}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    codigoVerificacion: e.target.value,
-                  })
-                }
-                placeholder="Código de Verificación"
-                required
-              />
+              <div className="flex justify-center gap-2">
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <input
+                    key={index}
+                    type="text"
+                    maxLength="1"
+                    className="w-12 h-12 text-xl text-center border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={formData.codigoVerificacion[index] || ""}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9]/g, ""); // Solo permite números
+                      if (!value) return;
+
+                      const newCode = formData.codigoVerificacion.split("");
+                      newCode[index] = value;
+                      setFormData({
+                        ...formData,
+                        codigoVerificacion: newCode.join(""),
+                      });
+
+                      // Mover al siguiente input si hay un valor
+                      if (e.target.nextSibling) {
+                        e.target.nextSibling.focus();
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Backspace") {
+                        const newCode = formData.codigoVerificacion.split("");
+                        newCode[index] = "";
+                        setFormData({
+                          ...formData,
+                          codigoVerificacion: newCode.join(""),
+                        });
+
+                        // Mover al input anterior si se borra
+                        if (e.target.previousSibling) {
+                          e.target.previousSibling.focus();
+                        }
+                      }
+                    }}
+                  />
+                ))}
+              </div>
               <button
                 type="button"
                 onClick={handleVerifyCode}
-                className="bg-blue-600 text-white py-3 rounded-lg font-semibold"
+                className="w-full bg-accent text-white py-3 rounded-lg font-semibold hover:bg-accent/85"
               >
                 Verificar Código
               </button>
@@ -329,14 +359,14 @@ export default function Register() {
               >
                 Siguiente
               </button>
-            ) : (
+            ) : currentStep != 5 ? (
               <button
                 type="submit"
                 className="w-full bg-gray-800 text-white py-3 rounded-lg font-semibold hover:bg-gray-700"
               >
                 Registrarse
               </button>
-            )}
+            ) : null}
           </div>
         </form>
 
