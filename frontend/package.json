@@ -12,6 +12,7 @@
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.7",
     "format": "^0.2.2",
+    "formik": "^2.4.6",
     "jose": "^5.9.6",
     "jsonwebtoken": "^9.0.2",
     "next": "^15.1.7",
@@ -19,7 +20,8 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-slick": "^0.30.3",
-    "slick-carousel": "^1.8.1"
+    "slick-carousel": "^1.8.1",
+    "yup": "^1.6.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

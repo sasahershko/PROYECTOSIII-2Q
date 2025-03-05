@@ -26,12 +26,48 @@ export const registerUser = async (req, res) => {
   try {
     const { name, surname, email, password, dni, grade } = req.body;
 
+    // Validación de campos obligatorios
     if (!name || !surname || !email || !password || !dni || !grade) {
       return res
         .status(400)
         .json({ mensaje: "Todos los campos son obligatorios" });
     }
 
+    // Validación de email (debe ser de U-TAD)
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@(?:live\.u-tad\.com|u-tad\.com)$/;
+    if (!emailRegex.test(email)) {
+      return res
+        .status(400)
+        .json({ mensaje: "El correo debe ser de la Universidad." });
+    }
+
+    // Validación de formato de DNI (8 números + 1 letra correcta)
+    const dniRegex = /^[0-9]{8}[A-Za-z]$/;
+    const letrasDNI = "TRWAGMYFPDXBNJZSQVHLCKE";
+    const numeroDNI = parseInt(dni.slice(0, -1), 10);
+    const letraDNI = dni.slice(-1).toUpperCase();
+    if (!dniRegex.test(dni) || letrasDNI[numeroDNI % 23] !== letraDNI) {
+      return res.status(400).json({ mensaje: "El DNI no es válido." });
+    }
+
+    // Validación de la contraseña (mínimo 8 caracteres, una mayúscula, una minúscula y un número)
+    // const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    // if (!passwordRegex.test(password)) {
+    //   return res.status(400).json({
+    //     mensaje:
+    //       "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número.",
+    //   });
+    // }
+
+    // Validación de grado permitido
+    const gradosPermitidos = ["INSO", "MAIS", "FIIS", "DIPI", "ANIV"];
+    if (!gradosPermitidos.includes(grade)) {
+      return res
+        .status(400)
+        .json({ mensaje: "El grado seleccionado no es válido." });
+    }
+
+    // Comprobar si el usuario ya existe por email o DNI
     const usuarioExistente = await User.findOne({ email });
     if (usuarioExistente) {
       return res.status(400).json({ mensaje: "El correo ya está en uso." });
@@ -42,6 +78,7 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({ mensaje: "El DNI ya está registrado." });
     }
 
+    // Si pasa todas las validaciones, continuar con el registro provisional
     const verificationCode = generateVerificationCode();
     const salt = await bcrypt.genSalt(10);
     const passwordHasheada = await bcrypt.hash(password, salt);
@@ -151,11 +188,9 @@ export const loginUser = async (req, res) => {
 
     // **Bloqueo de login si el usuario no está verificado**
     if (!usuario.isVerified) {
-      return res
-        .status(403)
-        .json({
-          mensaje: "Debes verificar tu cuenta antes de iniciar sesión.",
-        });
+      return res.status(403).json({
+        mensaje: "Debes verificar tu cuenta antes de iniciar sesión.",
+      });
     }
 
     const passwordValida = await bcrypt.compare(password, usuario.password);
