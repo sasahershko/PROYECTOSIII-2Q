@@ -8,6 +8,6 @@ storageRouter.post("/local", uploadMiddleware.single("image"), createItem);
 storageRouter.post("/", uploadMiddlewareMemory.single("image"), (err, req, res, next) => {
     console.log("ERROR:::::", err.code);
     res.status(413).send('Error capturado');
-});
+}, updateImage);
 
 export default storageRouter;

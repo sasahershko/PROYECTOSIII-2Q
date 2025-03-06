@@ -30,7 +30,7 @@ setupSwagger(app);
 // ✅ Registrar rutas
 app.use("/api/users", userRouter);
 app.use("/api/projects", projectRouter);
-app.use("/storage", storageRouter);
+app.use("/api/storage", storageRouter);
 
 // middleware para cookies
 app.use(cookieParser());

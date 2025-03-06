@@ -1,12 +1,12 @@
 ###
-POST http://localhost:3001/storage HTTP/1.1
+POST http://localhost:3001/api/storage HTTP/1.1
 Content-Type: multipart/form-data; boundary=boundary123
 
 --boundary123
 Content-Disposition: form-data; name="image"; filename="Raccoon.jpg"
 Content-Type: image/jpeg
 
-< ./Raccoon.jpg
+< ./RaccoonV2.jpg
 --boundary123--
 
 
