@@ -8,23 +8,24 @@ const ParticipantsList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const router = useRouter();
-  const { projectId } = router.query;
+  const { projectId } = router.query; // Extrae el id del proyecto desde la url
 
   useEffect(() => {
-    if (!projectId) return; // No ejecutar si no hay projectId
+    if (!projectId) return; // No ejecuta la peticion si no hay projectId
 
     const fetchParticipants = async () => {
       try {
+        // Llamada a la api para obtener los participantes del proyecto
         const response = await fetch(
           `https://surviving-poppy-sasahershko-72589d6b.koyeb.app/api/users?projectId=${projectId}`
         );
+
         if (!response.ok) throw new Error("Error al obtener los datos");
 
         const data = await response.json();
-        setParticipants(data);
+        setParticipants(data); // Guarda los participantes en el estado
       } catch (error) {
-        console.error("Error en fetchParticipants:", error);
-        setError(error.message || "No se pudieron obtener los participantes.");
+        setError("No se pudieron obtener los participantes.");
       } finally {
         setLoading(false);
       }
@@ -42,6 +43,7 @@ const ParticipantsList = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {participants.map((participant) => (
           <div key={participant.id} className="flex items-center bg-gray-300 p-4 rounded-lg shadow-md">
+            {/* Si no hay imagen de perfil se muestra una por defecto */}
             <img
               src={participant.avatar || "https://via.placeholder.com/50"}
               alt={participant.name}

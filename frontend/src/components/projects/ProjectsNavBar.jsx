@@ -1,10 +1,10 @@
 "use client";  // 
 
 import Link from "next/link";
-import { useParams } from "next/navigation"; // Cambio aquí
+import { useParams } from "next/navigation"; 
 
 export default function ProjectsNavBar({ role }) {
-    const { id: projectId } = useParams(); // Obtiene el ID del proyecto
+    const { id: projectId } = useParams(); 
 
     return (
         <div className="border-b px-6 py-4 bg-primary text-white flex items-center justify-between">

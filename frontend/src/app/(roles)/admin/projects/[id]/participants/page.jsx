@@ -4,12 +4,12 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 
 const ParticipantsPage = () => {
-  const { id: projectId } = useParams();
+  const { id: projectId } = useParams(); // Obtiene el ID del proyecto desde la URL
   const [participants, setParticipants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // 🔍 Función para obtener el token desde las cookies
+  // Funcion para recuperar el token de autenticacion desde las cookies
   const getTokenFromCookies = () => {
     const cookies = document.cookie.split("; ");
     const tokenCookie = cookies.find(row => row.startsWith("token="));
@@ -17,18 +17,14 @@ const ParticipantsPage = () => {
   };
 
   useEffect(() => {
-    if (!projectId) return;
+    if (!projectId) return; // Evita ejecutar la funcion si no hay un ID de proyecto
 
     const fetchParticipants = async () => {
       try {
-        console.log(`Obteniendo participantes del proyecto ${projectId}...`);
-
-        // 🔍 Obtener el token desde las cookies
         const token = getTokenFromCookies();
-
         if (!token) throw new Error("No hay token disponible. Inicia sesión primero.");
 
-        // 1️⃣ Obtener los detalles del proyecto
+        // Solicita los datos del proyecto para obtener la lista de usuarios asociados
         const projectResponse = await fetch(
           `https://surviving-poppy-sasahershko-72589d6b.koyeb.app/api/projects/${projectId}`,
           { headers: { Authorization: `Bearer ${token}` } }
@@ -40,34 +36,26 @@ const ParticipantsPage = () => {
         const userIds = projectData.users?.map(user => user._id) || [];
 
         if (userIds.length === 0) {
-          setParticipants([]);
+          setParticipants([]); // Si no hay usuarios se actualiza el estado y se detiene la carga
           setLoading(false);
           return;
         }
 
-        console.log("IDs de usuarios en el proyecto:", userIds);
-
-        // 2️⃣ Obtener todos los usuarios con autenticación
+        // Obtiene la lista de todos los usuarios
         const usersResponse = await fetch(
           "https://surviving-poppy-sasahershko-72589d6b.koyeb.app/api/users",
-          {
-            headers: { Authorization: `Bearer ${token}` }
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
 
         if (!usersResponse.ok) throw new Error("Error al obtener los usuarios");
 
         const allUsers = await usersResponse.json();
 
-        console.log("Usuarios obtenidos de API:", allUsers);
-
-        // 3️⃣ Filtrar los usuarios del proyecto (Comparar `_id` con `id`)
+        // Filtra solo los usuarios que pertenecen a este proyecto
         const projectParticipants = allUsers.filter(user => userIds.includes(user._id));
 
-        console.log("Participantes filtrados:", projectParticipants);
         setParticipants(projectParticipants);
       } catch (error) {
-        console.error("Error en fetchParticipants:", error);
         setError(error.message || "No se pudieron obtener los participantes.");
       } finally {
         setLoading(false);
@@ -88,7 +76,7 @@ const ParticipantsPage = () => {
           participants.map((participant) => (
             <div key={participant._id} className="flex items-center bg-gray-300 p-4 rounded-lg shadow-md">
               <img
-                src={participant.avatar || "https://via.placeholder.com/50"}
+                src={participant.avatar || "https://via.placeholder.com/50"} // Si no hay imagen usa una por defecto
                 alt={participant.name}
                 className="w-12 h-12 rounded-full mr-4"
               />
