@@ -3,8 +3,7 @@ import {
     uploadMiddleware,
     uploadMiddlewareMemory,
 } from "../utils/handle_storage.js";
-import { createItem, updateImage } from "../controllers/storage.js";
-import User from "../models/User.js";
+import { createItem, updateImage, uploadAndUpdateUserImage } from "../controllers/storage.js";
 
 const storageRouter = express.Router();
 
@@ -19,6 +18,7 @@ storageRouter.post(
     updateImage
 );
 
+/*
 storageRouter.post(
     "/:userId",
     uploadMiddlewareMemory.single("image"),
@@ -67,5 +67,8 @@ storageRouter.post(
         }
     }
 );
+*/
+storageRouter.post("/:userId", uploadMiddlewareMemory.single("image"), uploadAndUpdateUserImage);
+
 
 export default storageRouter;
