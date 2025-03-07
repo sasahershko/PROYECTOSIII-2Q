@@ -27,7 +27,7 @@ const CarruselProyectos = () => {
             <div className="absolute top-2 left-2 bg-secundary text-white px-4 py-1 w-36 text-nowrap overflow-hidden">
               {proyecto.titulo}
             </div>
-            <span>{proyecto.imagen}</span>
+            {proyecto.imagen}
             {/*Le añado los proyectos, con el titulo de proyecto y la imagen de este*/}
           </div>
         ))}

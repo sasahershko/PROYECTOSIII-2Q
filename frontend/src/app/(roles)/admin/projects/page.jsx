@@ -7,7 +7,7 @@ import SpinLoader from "@/components/SpinLoader";
 import Link from 'next/link';
 import { useRouter } from 'next/navigation'
 
-export default function ProjectDashboard() {
+export default function AdminProjectDashboard() {
   const { projects, loading } = useProjects();
   const userRole = useUserRole();
   const router = useRouter();
@@ -43,9 +43,8 @@ export default function ProjectDashboard() {
             <p>No existen proyectos</p>
           ) : (
             projects.map((project) => (
-              <div onClick={() => router.push(`/admin/projects/${project._id}`)}>
+              <div key={project._id} onClick={() => router.push(`/admin/projects/${project._id}`)}>
                 <ProjectCard
-                  key={project._id}
                   project={project}
                   role={userRole}
                 />

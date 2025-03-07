@@ -2,6 +2,7 @@ import React from "react";
 import Carrusel from "@/components/landing/Carrusel";
 import InfoLanding from "@/components/landing/InfoLanding";
 import CarruselProyectos from "@/components/landing/CarruselProyectos";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -15,7 +16,7 @@ export default function Home() {
         className="h-20 min-w-full content-center flex justify-center items-center"
         id="info"
       >
-        <a href="#info">
+        <Link href="#info">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -36,7 +37,7 @@ export default function Home() {
               ></path>{" "}
             </g>
           </svg>
-        </a>
+        </Link>
       </div>
 
       {/* Llamada a info */}
