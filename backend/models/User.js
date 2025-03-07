@@ -42,6 +42,11 @@ const userSchema = new mongoose.Schema({
   verificationAttempts: { type: Number, default: 3 }, // Número de intentos
   verificationCodeExpires: { type: Date }, // Expiración del código
   createdAt: { type: Date, default: Date.now }, // Fecha de creación
+
+
+
+  //CAMPO PARA LA URL DE LA IAMGEN
+  profileImage: { type: String, default: null },
 });
 
 const User = mongoose.model("User", userSchema);
