@@ -4,6 +4,7 @@ import {
   verifyCode, //Nueva función para verificar código
   loginUser,
   getUserProfile,
+  getUserProfileById,
   getAllUsers,
   deleteUser,
   updateUserRole,
@@ -127,6 +128,52 @@ userRouter.post("/login", loginUser);
 
 /**
  * @swagger
+ * /api/users:
+ *   get:
+ *     summary: Obtener todos los usuarios
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de todos los usuarios.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     example: "65a3f2e4b1c3e5a7d2a4c9b2"
+ *                   name:
+ *                     type: string
+ *                     example: "Juan"
+ *                   surname:
+ *                     type: string
+ *                     example: "Pérez"
+ *                   email:
+ *                     type: string
+ *                     example: "juan@u-tad.com"
+ *                   dni:
+ *                     type: string
+ *                     example: "12345678A"
+ *                   grade:
+ *                     type: string
+ *                     example: "INSO"
+ *                   rol:
+ *                     type: string
+ *                     example: "user"
+ *       401:
+ *         description: No autorizado, falta el token.
+ *       500:
+ *         description: Error en el servidor.
+ */
+userRouter.get("/", authMiddleware, getAllUsers);
+
+/**
+ * @swagger
  * /api/users/profile:
  *   get:
  *     summary: Obtener el perfil del usuario autenticado
@@ -171,6 +218,47 @@ userRouter.get("/profile", authMiddleware, getUserProfile);
 
 /**
  * @swagger
+ * /api/users/profile/{id}:
+ *   get:
+ *     summary: Obtener el perfil público de un usuario por ID
+ *     tags: [Usuarios]
+ *     description: Permite a cualquier usuario obtener información pública de otro usuario mediante su ID.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID del usuario que se quiere consultar.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Datos del usuario obtenidos exitosamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 _id:
+ *                   type: string
+ *                   description: ID del usuario.
+ *                 nombre:
+ *                   type: string
+ *                   description: Nombre del usuario.
+ *                 apellidos:
+ *                   type: string
+ *                   description: Apellidos del usuario.
+ *                 foto:
+ *                   type: string
+ *                   description: URL de la foto de perfil.
+ *       404:
+ *         description: Usuario no encontrado.
+ *       500:
+ *         description: Error en el servidor.
+ */
+userRouter.get("/profile/:id", getUserProfileById);
+
+/**
+ * @swagger
  * /api/users/{id}:
  *   delete:
  *     summary: Eliminar un usuario (propio o por admin)
@@ -195,52 +283,6 @@ userRouter.get("/profile", authMiddleware, getUserProfile);
  *         description: Error en el servidor.
  */
 userRouter.delete("/:id", authMiddleware, deleteUser);
-
-/**
- * @swagger
- * /api/users:
- *   get:
- *     summary: Obtener todos los usuarios
- *     tags: [Usuarios]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Lista de todos los usuarios.
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: string
- *                     example: "65a3f2e4b1c3e5a7d2a4c9b2"
- *                   name:
- *                     type: string
- *                     example: "Juan"
- *                   surname:
- *                     type: string
- *                     example: "Pérez"
- *                   email:
- *                     type: string
- *                     example: "juan@u-tad.com"
- *                   dni:
- *                     type: string
- *                     example: "12345678A"
- *                   grade:
- *                     type: string
- *                     example: "INSO"
- *                   rol:
- *                     type: string
- *                     example: "user"
- *       401:
- *         description: No autorizado, falta el token.
- *       500:
- *         description: Error en el servidor.
- */
-userRouter.get("/", authMiddleware, getAllUsers);
 
 /**
  * @swagger
