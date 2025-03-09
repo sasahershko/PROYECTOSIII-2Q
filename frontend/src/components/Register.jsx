@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { registerUser, verifyUserCode } from "@/lib/auth";
+import { validarDNI } from "@/utils/validators";
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -25,21 +26,51 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(""); // Limpiar errores anteriores
 
-    // Validación de correo u-tad
+    // Validación de email
     const correoRegex = /@u-tad\.com$|@live\.u-tad\.com$/;
     if (!correoRegex.test(formData.correo)) {
       setError("El correo debe ser de la Universidad.");
       return;
     }
 
-    // Validación de contraseña
+    // Validación de DNI (8 números + 1 letra correcta)
+    const dniRegex = /^[0-9]{8}[A-Za-z]$/;
+    const letrasDNI = "TRWAGMYFPDXBNJZSQVHLCKE";
+    const numeroDNI = parseInt(formData.dni.slice(0, -1), 10);
+    const letraDNI = formData.dni.slice(-1).toUpperCase();
+    if (
+      !dniRegex.test(formData.dni) ||
+      letrasDNI[numeroDNI % 23] !== letraDNI
+    ) {
+      setError("El DNI no es válido.");
+      return;
+    }
+
+    // Validación de la contraseña
+    // const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    // if (!passwordRegex.test(formData.password)) {
+    //   setError(
+    //     "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número."
+    //   );
+    //   return;
+    // }
+
+    // Validación de confirmación de contraseña
     if (formData.password !== formData.confirmPassword) {
       setError("Las contraseñas no coinciden.");
       return;
     }
 
-    // Construcción del objeto según el backend
+    // Validación de grado permitido
+    const gradosPermitidos = ["INSO", "MAIS", "FIIS", "DIPI", "ANIV"];
+    if (!gradosPermitidos.includes(formData.grado)) {
+      setError("El grado seleccionado no es válido.");
+      return;
+    }
+
+    // Si todo está correcto, enviar la solicitud
     const userData = {
       name: formData.nombre,
       surname: formData.apellido,
@@ -95,21 +126,32 @@ export default function Register() {
       }
     }
     if (currentStep === 2) {
-      // Validación de correo electrónico
+      // Validar correo
       const correoRegex = /@u-tad\.com$|@live\.u-tad\.com$/;
       if (!formData.correo || !correoRegex.test(formData.correo)) {
         setError("El correo debe ser de la Universidad.");
         return;
       }
 
-      // Validación de DNI (8 números seguidos de 1 letra)
+      // Validar DNI (formato y letra correcta)
       const dniRegex = /^[0-9]{8}[A-Za-z]$/;
-      if (!formData.dni || !dniRegex.test(formData.dni)) {
-        setError("El DNI debe tener 8 números seguidos de una letra.");
+      const letrasDNI = "TRWAGMYFPDXBNJZSQVHLCKE";
+      const numeroDNI = parseInt(formData.dni.slice(0, -1), 10);
+      const letraDNI = formData.dni.slice(-1).toUpperCase();
+      if (
+        !dniRegex.test(formData.dni) ||
+        letrasDNI[numeroDNI % 23] !== letraDNI
+      ) {
+        setError("El DNI no es válido.");
         return;
       }
     }
     if (currentStep === 3) {
+      if (!formData.password || !formData.confirmPassword) {
+        setError("Por favor, completa todos los campos de esta sección.");
+        return;
+      }
+
       if (formData.password !== formData.confirmPassword) {
         setError("Las contraseñas no coinciden.");
         return;
@@ -136,7 +178,7 @@ export default function Register() {
   };
 
   // Progreso de la barra (porcentaje)
-  const progress = Math.min(((currentStep - 1) / 3) * 100, 100);
+  const progress = Math.min(((currentStep - 1) / 4) * 100, 100);
 
   return (
     <div className="flex-1 flex justify-center items-center px-8 py-12">
@@ -162,7 +204,7 @@ export default function Register() {
       )}
       <div className="bg-white p-12 rounded-lg shadow-lg w-full max-w-lg">
         <div className="relative mb-10 flex flex-col gap-1">
-          <div className="text-sm text-gray-700">{currentStep} de 4</div>
+          <div className="text-sm text-gray-700">{currentStep} de 5</div>
           <div className="w-full bg-gray-300 rounded-full h-2.5 flex flex-col gap-6">
             <div
               className="bg-accent h-2.5 rounded-full transition-all duration-300 ease-in-out"
@@ -283,60 +325,35 @@ export default function Register() {
           {/* Paso 5: Verificación de código */}
           {currentStep === 5 && (
             <>
-              <p className="text-gray-700 text-center mb-4">
-                Te hemos enviado un código de verificación a <br />
-                <strong className="block">{formData.correo}</strong>
+              <p>
+                Te hemos enviado un código de verificación a {formData.correo}.
                 Tienes 10 minutos y 3 intentos.
               </p>
-              <div className="flex justify-center gap-2">
-                {Array.from({ length: 6 }).map((_, index) => (
-                  <input
-                    key={index}
-                    type="text"
-                    maxLength="1"
-                    className="w-12 h-12 text-xl text-center border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={formData.codigoVerificacion[index] || ""}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/[^0-9]/g, ""); // Solo permite números
-                      if (!value) return;
 
-                      const newCode = formData.codigoVerificacion.split("");
-                      newCode[index] = value;
-                      setFormData({
-                        ...formData,
-                        codigoVerificacion: newCode.join(""),
-                      });
-
-                      // Mover al siguiente input si hay un valor
-                      if (e.target.nextSibling) {
-                        e.target.nextSibling.focus();
-                      }
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Backspace") {
-                        const newCode = formData.codigoVerificacion.split("");
-                        newCode[index] = "";
-                        setFormData({
-                          ...formData,
-                          codigoVerificacion: newCode.join(""),
-                        });
-
-                        // Mover al input anterior si se borra
-                        if (e.target.previousSibling) {
-                          e.target.previousSibling.focus();
-                        }
-                      }
-                    }}
-                  />
-                ))}
+              {/* Contenedor en fila */}
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  name="codigoVerificacion"
+                  value={formData.codigoVerificacion}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      codigoVerificacion: e.target.value,
+                    })
+                  }
+                  className="flex-1 px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent placeholder-gray-500"
+                  placeholder="Código de Verificación"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={handleVerifyCode}
+                  className="bg-accent text-white px-6 py-3 rounded-lg font-semibold hover:bg-accent/85"
+                >
+                  Verificar
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={handleVerifyCode}
-                className="w-full bg-accent text-white py-3 rounded-lg font-semibold hover:bg-accent/85"
-              >
-                Verificar Código
-              </button>
             </>
           )}
 
@@ -351,7 +368,9 @@ export default function Register() {
                 Atrás
               </button>
             )}
-            {currentStep < 4 ? (
+
+            {/* Mostrar el botón "Siguiente" hasta el paso 4 */}
+            {currentStep < 4 && (
               <button
                 type="button"
                 onClick={nextStep}
@@ -359,14 +378,17 @@ export default function Register() {
               >
                 Siguiente
               </button>
-            ) : currentStep != 5 ? (
+            )}
+
+            {/* Mostrar "Registrarse" solo en el paso 4 */}
+            {currentStep === 4 && (
               <button
                 type="submit"
                 className="w-full bg-gray-800 text-white py-3 rounded-lg font-semibold hover:bg-gray-700"
               >
                 Registrarse
               </button>
-            ) : null}
+            )}
           </div>
         </form>
 
