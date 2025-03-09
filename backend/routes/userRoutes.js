@@ -261,7 +261,7 @@ userRouter.get("/profile/:id", getUserProfileById);
  * @swagger
  * /api/users/{id}:
  *   delete:
- *     summary: Eliminar un usuario (propio o por admin)
+ *     summary: Eliminar usuario (propio o admin) y limpiar referencias en proyectos
  *     tags: [Usuarios]
  *     security:
  *       - bearerAuth: []

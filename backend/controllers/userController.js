@@ -298,7 +298,7 @@ export const getUserProfileById = async (req, res) => {
 };
 
 /**
- * @desc Eliminar usuario (propio o admin)
+ * @desc Eliminar usuario (propio o admin) y limpiar referencias en proyectos
  * @route DELETE /api/users/:id
  * @access Private (usuario autenticado o admin)
  */
@@ -312,6 +312,7 @@ export const deleteUser = async (req, res) => {
       return res.status(404).json({ mensaje: "Usuario no encontrado." });
     }
 
+    // Verificar permisos
     if (
       usuarioAutenticado.rol !== "admin" &&
       usuarioAutenticado._id.toString() !== id
@@ -321,8 +322,32 @@ export const deleteUser = async (req, res) => {
         .json({ mensaje: "No tienes permisos para eliminar este usuario." });
     }
 
+    // Eliminar usuario de los proyectos en los que participa
+    await Project.updateMany(
+      {
+        $or: [
+          { users: id },
+          { responsibles: id },
+          { "pendingNotes.userWhoWrites": id },
+        ],
+      },
+      {
+        $pull: {
+          users: id,
+          responsibles: id,
+          "pendingNotes.$[].userWhoWrites": id,
+        },
+      }
+    );
+
+    // Finalmente, eliminar el usuario
     await usuarioAEliminar.deleteOne();
-    res.status(200).json({ mensaje: "Usuario eliminado correctamente." });
+
+    res
+      .status(200)
+      .json({
+        mensaje: "Usuario eliminado correctamente y referencias limpiadas.",
+      });
   } catch (error) {
     console.error("❌ Error en el servidor:", error);
     res.status(500).json({ mensaje: "Error en el servidor." });

@@ -2,7 +2,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { registerUser, verifyUserCode } from "@/lib/auth";
-import { validarDNI } from "@/utils/validators";
+import {
+  validarCorreo,
+  validarDNI,
+  validarPassword,
+  validarConfirmacionPassword,
+  validarGrado,
+} from "../utils/validations";
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -28,44 +34,31 @@ export default function Register() {
     e.preventDefault();
     setError(""); // Limpiar errores anteriores
 
-    // Validación de email
-    const correoRegex = /@u-tad\.com$|@live\.u-tad\.com$/;
-    if (!correoRegex.test(formData.correo)) {
+    if (!validarCorreo(formData.correo)) {
       setError("El correo debe ser de la Universidad.");
       return;
     }
 
-    // Validación de DNI (8 números + 1 letra correcta)
-    const dniRegex = /^[0-9]{8}[A-Za-z]$/;
-    const letrasDNI = "TRWAGMYFPDXBNJZSQVHLCKE";
-    const numeroDNI = parseInt(formData.dni.slice(0, -1), 10);
-    const letraDNI = formData.dni.slice(-1).toUpperCase();
-    if (
-      !dniRegex.test(formData.dni) ||
-      letrasDNI[numeroDNI % 23] !== letraDNI
-    ) {
+    if (!validarDNI(formData.dni)) {
       setError("El DNI no es válido.");
       return;
     }
 
-    // Validación de la contraseña
-    // const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
-    // if (!passwordRegex.test(formData.password)) {
+    // if (!validarPassword(formData.password)) {
     //   setError(
     //     "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número."
     //   );
     //   return;
     // }
 
-    // Validación de confirmación de contraseña
-    if (formData.password !== formData.confirmPassword) {
+    if (
+      !validarConfirmacionPassword(formData.password, formData.confirmPassword)
+    ) {
       setError("Las contraseñas no coinciden.");
       return;
     }
 
-    // Validación de grado permitido
-    const gradosPermitidos = ["INSO", "MAIS", "FIIS", "DIPI", "ANIV"];
-    if (!gradosPermitidos.includes(formData.grado)) {
+    if (!validarGrado(formData.grado)) {
       setError("El grado seleccionado no es válido.");
       return;
     }
@@ -83,7 +76,7 @@ export default function Register() {
     try {
       const response = await registerUser(userData);
       setUsuarioTemporal(userData);
-      setCurrentStep(5); // Pasamos a la pantalla de verificación de código
+      setCurrentStep(5);
     } catch (error) {
       setError(error.message);
     }
@@ -118,53 +111,44 @@ export default function Register() {
   };
 
   const nextStep = () => {
-    // Validación de los campos según el paso actual
-    if (currentStep === 1) {
-      if (!formData.nombre || !formData.apellido) {
-        setError("Por favor, completa todos los campos de esta sección.");
-        return;
-      }
+    if (currentStep === 1 && (!formData.nombre || !formData.apellido)) {
+      setError("Por favor, completa todos los campos de esta sección.");
+      return;
     }
+
     if (currentStep === 2) {
-      // Validar correo
-      const correoRegex = /@u-tad\.com$|@live\.u-tad\.com$/;
-      if (!formData.correo || !correoRegex.test(formData.correo)) {
+      if (!validarCorreo(formData.correo)) {
         setError("El correo debe ser de la Universidad.");
         return;
       }
-
-      // Validar DNI (formato y letra correcta)
-      const dniRegex = /^[0-9]{8}[A-Za-z]$/;
-      const letrasDNI = "TRWAGMYFPDXBNJZSQVHLCKE";
-      const numeroDNI = parseInt(formData.dni.slice(0, -1), 10);
-      const letraDNI = formData.dni.slice(-1).toUpperCase();
-      if (
-        !dniRegex.test(formData.dni) ||
-        letrasDNI[numeroDNI % 23] !== letraDNI
-      ) {
+      if (!validarDNI(formData.dni)) {
         setError("El DNI no es válido.");
         return;
       }
     }
+
     if (currentStep === 3) {
       if (!formData.password || !formData.confirmPassword) {
         setError("Por favor, completa todos los campos de esta sección.");
         return;
       }
-
-      if (formData.password !== formData.confirmPassword) {
+      if (
+        !validarConfirmacionPassword(
+          formData.password,
+          formData.confirmPassword
+        )
+      ) {
         setError("Las contraseñas no coinciden.");
         return;
       }
     }
-    if (currentStep === 4) {
-      if (!formData.grado) {
-        setError("Por favor, selecciona un grado.");
-        return;
-      }
+
+    if (currentStep === 4 && !validarGrado(formData.grado)) {
+      setError("Por favor, selecciona un grado válido.");
+      return;
     }
 
-    // Si pasa la validación, avanzar al siguiente paso
+    // Avanzar al siguiente paso si no hay errores
     if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
       setError("");
