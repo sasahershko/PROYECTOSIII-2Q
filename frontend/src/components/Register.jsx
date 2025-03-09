@@ -80,12 +80,14 @@ export default function Register() {
       grade: formData.grado,
     };
 
+    setUsuarioTemporal(userData);
+    setCurrentStep(5);
+
     try {
-      const response = await registerUser(userData);
-      setUsuarioTemporal(userData);
-      setCurrentStep(5); // Pasamos a la pantalla de verificación de código
+      await registerUser(userData);
     } catch (error) {
       setError(error.message);
+      setCurrentStep(4); // Si hay error, volver al paso 4
     }
   };
 
@@ -114,6 +116,18 @@ export default function Register() {
           `Código incorrecto. Intentos restantes: ${intentosRestantes - 1}`
         );
       }
+    }
+  };
+
+  const handleCodeChange = (index, value) => {
+    if (!/^\d?$/.test(value)) return; // Solo permitir números
+
+    const updatedCode = formData.codigoVerificacion.split("");
+    updatedCode[index] = value;
+    setFormData({ ...formData, codigoVerificacion: updatedCode.join("") });
+
+    if (value && index < 5) {
+      document.getElementById(`code-${index + 1}`).focus();
     }
   };
 
@@ -322,44 +336,37 @@ export default function Register() {
             </select>
           )}
 
-          {/* Paso 5: Verificación de código */}
           {currentStep === 5 && (
-            <>
-              <p>
-                Te hemos enviado un código de verificación a {formData.correo}.
-                Tienes 10 minutos y 3 intentos.
-              </p>
-
-              {/* Contenedor en fila */}
-              <div className="flex items-center gap-2">
+          <>
+            <p className="mb-4 text-gray-700">
+              Te hemos enviado un código de verificación a {formData.correo}. Introduce el código para continuar.
+            </p>
+            <div className="flex justify-center gap-2 mb-4">
+              {[...Array(6)].map((_, index) => (
                 <input
+                  key={index}
+                  id={`code-${index}`}
                   type="text"
-                  name="codigoVerificacion"
-                  value={formData.codigoVerificacion}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      codigoVerificacion: e.target.value,
-                    })
-                  }
-                  className="flex-1 px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent placeholder-gray-500"
-                  placeholder="Código de Verificación"
-                  required
+                  maxLength="1"
+                  className="w-10 h-12 text-center text-lg font-bold border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-accent"
+                  value={formData.codigoVerificacion[index] || ""}
+                  onChange={(e) => handleCodeChange(index, e.target.value)}
                 />
-                <button
-                  type="button"
-                  onClick={handleVerifyCode}
-                  className="bg-accent text-white px-6 py-3 rounded-lg font-semibold hover:bg-accent/85"
-                >
-                  Verificar
-                </button>
-              </div>
-            </>
-          )}
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={handleVerifyCode}
+              className="w-full bg-accent text-white py-3 rounded-lg font-semibold hover:bg-accent/85 relative top-3"
+            >
+              Verificar Código
+            </button>
+          </>
+        )}
 
           {/* Botones de navegación */}
           <div className="flex flex-col justify-between mt-6 gap-4">
-            {currentStep > 1 && (
+            {currentStep > 1 && currentStep < 5 && (
               <button
                 type="button"
                 onClick={prevStep}
