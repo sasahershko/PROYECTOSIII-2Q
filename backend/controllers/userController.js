@@ -114,6 +114,11 @@ export const registerUser = async (req, res) => {
   }
 };
 
+/**
+ * @desc Verificar el código de autenticación enviado al correo del usuario
+ * @route POST /api/users/verify-code
+ * @access Public
+ */
 export const verifyCode = async (req, res) => {
   try {
     const { email, code } = req.body;
@@ -161,6 +166,62 @@ export const verifyCode = async (req, res) => {
     }
   } catch (error) {
     console.error("❌ Error en verifyCode:", error);
+    res.status(500).json({ mensaje: "Error en el servidor." });
+  }
+};
+
+/**
+ * @desc Reenviar código de verificación al correo del usuario
+ * @route POST /api/users/resend-verification
+ * @access Public
+ */
+export const resendVerificationCode = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Buscar usuario por email
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ mensaje: "Usuario no encontrado." });
+    }
+
+    if (user.isVerified) {
+      return res
+        .status(400)
+        .json({ mensaje: "El usuario ya está verificado." });
+    }
+
+    const now = new Date();
+
+    // Verificar si el usuario ya ha solicitado un reenvío recientemente (cooldown de 50s)
+    if (
+      user.lastResendRequest &&
+      now - new Date(user.lastResendRequest) < 50000
+    ) {
+      return res
+        .status(400)
+        .json({ mensaje: "Espera antes de solicitar un nuevo código." });
+    }
+
+    // Generar un nuevo código de verificación
+    const newVerificationCode = generateVerificationCode();
+    const verificationCodeExpires = new Date();
+    verificationCodeExpires.setMinutes(
+      verificationCodeExpires.getMinutes() + 10
+    );
+
+    // Actualizar usuario con el nuevo código y timestamp de reenvío
+    user.verificationCode = newVerificationCode;
+    user.verificationCodeExpires = verificationCodeExpires;
+    user.lastResendRequest = now; // Guardamos la última solicitud de reenvío
+
+    await user.save();
+    await sendVerificationEmail(email, newVerificationCode);
+
+    res.json({ mensaje: "Código reenviado. Revisa tu correo." });
+  } catch (error) {
+    console.error("❌ Error en resendVerificationCode:", error);
     res.status(500).json({ mensaje: "Error en el servidor." });
   }
 };
@@ -343,11 +404,9 @@ export const deleteUser = async (req, res) => {
     // Finalmente, eliminar el usuario
     await usuarioAEliminar.deleteOne();
 
-    res
-      .status(200)
-      .json({
-        mensaje: "Usuario eliminado correctamente y referencias limpiadas.",
-      });
+    res.status(200).json({
+      mensaje: "Usuario eliminado correctamente y referencias limpiadas.",
+    });
   } catch (error) {
     console.error("❌ Error en el servidor:", error);
     res.status(500).json({ mensaje: "Error en el servidor." });

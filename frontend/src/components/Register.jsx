@@ -1,7 +1,11 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { registerUser, verifyUserCode } from "@/lib/auth";
+import {
+  registerUser,
+  verifyUserCode,
+  resendVerificationCode,
+} from "@/lib/auth";
 import {
   validarCorreo,
   validarDNI,
@@ -26,6 +30,7 @@ export default function Register() {
   const [error, setError] = useState("");
   const [usuarioTemporal, setUsuarioTemporal] = useState(null);
   const [intentosRestantes, setIntentosRestantes] = useState(3); // Control de intentos
+  const [cooldown, setCooldown] = useState(0); // Estado para el cooldown del botón
   const router = useRouter();
 
   const gradosPermitidos = ["INSO", "MAIS", "FIIS", "DIPI", "ANIV"];
@@ -109,6 +114,27 @@ export default function Register() {
       }
     }
   };
+
+  const handleResendCode = async () => {
+    if (cooldown > 0) return; // Si el cooldown está activo, no hacer nada
+
+    try {
+      await resendVerificationCode({ email: usuarioTemporal.email });
+      setCooldown(50); // Iniciar cooldown de 50 segundos
+    } catch (error) {
+      setError("No se pudo reenviar el código. Intenta de nuevo.");
+    }
+  };
+
+  useEffect(() => {
+    if (cooldown > 0) {
+      const interval = setInterval(() => {
+        setCooldown((prev) => (prev > 0 ? prev - 1 : 0)); // Evita valores negativos
+      }, 1000);
+
+      return () => clearInterval(interval); // Limpieza del intervalo cuando cambia el cooldown
+    }
+  }, [cooldown]);
 
   const nextStep = () => {
     if (currentStep === 1 && (!formData.nombre || !formData.apellido)) {
@@ -343,7 +369,7 @@ export default function Register() {
 
           {/* Botones de navegación */}
           <div className="flex flex-col justify-between mt-6 gap-4">
-            {currentStep > 1 && (
+            {currentStep < 5 && (
               <button
                 type="button"
                 onClick={prevStep}
@@ -371,6 +397,21 @@ export default function Register() {
                 className="w-full bg-gray-800 text-white py-3 rounded-lg font-semibold hover:bg-gray-700"
               >
                 Registrarse
+              </button>
+            )}
+            {/* Mostrar "Reenviar código" solo en el paso 5 */}
+            {currentStep === 5 && (
+              <button
+                type="button"
+                onClick={handleResendCode}
+                disabled={cooldown > 0} // Bloquear mientras el cooldown esté activo
+                className={`w-full py-3 rounded-lg font-semibold text-white ${
+                  cooldown > 0
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-secundary hover:bg-secundary/85"
+                }`}
+              >
+                {cooldown > 0 ? `Reenviar en ${cooldown}s` : "Reenviar código"}
               </button>
             )}
           </div>

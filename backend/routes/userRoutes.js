@@ -1,7 +1,8 @@
 import express from "express";
 import {
   registerUser,
-  verifyCode, //Nueva función para verificar código
+  verifyCode,
+  resendVerificationCode,
   loginUser,
   getUserProfile,
   getUserProfileById,
@@ -70,6 +71,7 @@ userRouter.post("/register", registerUser);
  *   post:
  *     summary: Verificar el código de autenticación
  *     tags: [Usuarios]
+ *     description: Permite a un usuario verificar su cuenta con un código de 6 dígitos enviado a su correo.
  *     requestBody:
  *       required: true
  *       content:
@@ -95,6 +97,36 @@ userRouter.post("/register", registerUser);
  *         description: Error en el servidor.
  */
 userRouter.post("/verify-code", verifyCode);
+
+/**
+ * @swagger
+ * /api/users/resend-verification:
+ *   post:
+ *     summary: Reenviar el código de verificación al correo del usuario
+ *     tags: [Usuarios]
+ *     description: Permite reenviar el código de verificación si el usuario aún no está verificado. Tiene un cooldown de 50 segundos entre cada reenvío.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: "usuario@u-tad.com"
+ *     responses:
+ *       200:
+ *         description: Código reenviado exitosamente.
+ *       400:
+ *         description: El usuario ya está verificado o hay que esperar antes de reenviar el código.
+ *       404:
+ *         description: Usuario no encontrado.
+ *       500:
+ *         description: Error en el servidor.
+ */
+userRouter.post("/resend-verification", resendVerificationCode);
 
 /**
  * @swagger
