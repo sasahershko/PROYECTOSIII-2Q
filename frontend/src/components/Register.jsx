@@ -187,6 +187,48 @@ export default function Register() {
     }
   };
 
+  const handleCodeChange = (index, value) => {
+    if (!/^\d?$/.test(value)) return; // Solo permitir números
+
+    const updatedCode = formData.codigoVerificacion.split("");
+    updatedCode[index] = value;
+    setFormData({ ...formData, codigoVerificacion: updatedCode.join("") });
+
+    // Mover el foco al siguiente input automáticamente si el usuario ingresa un número
+    if (value && index < 5) {
+      document.getElementById(`code-${index + 1}`).focus();
+    }
+  };
+
+  const handleKeyDown = (index, e) => {
+    if (e.key === "Backspace") {
+      const updatedCode = formData.codigoVerificacion.split("");
+
+      if (!updatedCode[index] && index > 0) {
+        // Si la casilla está vacía y se presiona "Backspace", eliminar el anterior y mover foco atrás
+        updatedCode[index - 1] = "";
+        setFormData({ ...formData, codigoVerificacion: updatedCode.join("") });
+        document.getElementById(`code-${index - 1}`).focus();
+      } else {
+        // Si hay un número en la casilla actual, simplemente vaciarlo
+        updatedCode[index] = "";
+        setFormData({ ...formData, codigoVerificacion: updatedCode.join("") });
+      }
+    }
+  };
+
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData("text").trim();
+    if (!/^\d{6}$/.test(pastedData)) return; // Solo permitir un código numérico de 6 dígitos
+
+    const updatedCode = pastedData.split("");
+    setFormData({ ...formData, codigoVerificacion: updatedCode.join("") });
+
+    // Enfocar el último input automáticamente
+    document.getElementById(`code-${Math.min(updatedCode.length, 5)}`).focus();
+  };
+
   // Progreso de la barra (porcentaje)
   const progress = Math.min(((currentStep - 1) / 4) * 100, 100);
 
@@ -335,41 +377,40 @@ export default function Register() {
           {/* Paso 5: Verificación de código */}
           {currentStep === 5 && (
             <>
-              <p>
+              <p className="mb-4 text-gray-700">
                 Te hemos enviado un código de verificación a {formData.correo}.
-                Tienes 10 minutos y 3 intentos.
+                Introduce el código para continuar.
               </p>
-
-              {/* Contenedor en fila */}
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  name="codigoVerificacion"
-                  value={formData.codigoVerificacion}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      codigoVerificacion: e.target.value,
-                    })
-                  }
-                  className="flex-1 px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent placeholder-gray-500"
-                  placeholder="Código de Verificación"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={handleVerifyCode}
-                  className="bg-accent text-white px-6 py-3 rounded-lg font-semibold hover:bg-accent/85"
-                >
-                  Verificar
-                </button>
+              <div className="flex justify-center gap-3 mb-4">
+                {[...Array(6)].map((_, index) => (
+                  <input
+                    key={index}
+                    id={`code-${index}`}
+                    type="text"
+                    maxLength="1"
+                    className="w-12 h-14 text-center text-2xl font-semibold border border-gray-300 
+                 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-500 
+                 transition-all duration-200 shadow-md bg-gray-100"
+                    value={formData.codigoVerificacion[index] || ""}
+                    onChange={(e) => handleCodeChange(index, e.target.value)}
+                    onKeyDown={(e) => handleKeyDown(index, e)}
+                    onPaste={handlePaste}
+                  />
+                ))}
               </div>
+              <button
+                type="button"
+                onClick={handleVerifyCode}
+                className="w-full bg-accent text-white py-3 rounded-lg font-semibold hover:bg-accent/85 relative top-3"
+              >
+                Verificar Código
+              </button>
             </>
           )}
 
           {/* Botones de navegación */}
-          <div className="flex flex-col justify-between mt-6 gap-4">
-            {currentStep < 5 && (
+          <div className="flex justify-between mt-6 gap-4">
+            {currentStep > 1 && currentStep < 5 && (
               <button
                 type="button"
                 onClick={prevStep}
