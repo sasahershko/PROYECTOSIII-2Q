@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import nodemailer from "nodemailer";
 import User from "../models/User.js";
+import Project from "../models/Project.js";
 import { generateVerificationCode } from "../utils/verification.js";
 import { sendVerificationEmail } from "../utils/emailService.js";
 
@@ -383,30 +384,43 @@ export const deleteUser = async (req, res) => {
         .json({ mensaje: "No tienes permisos para eliminar este usuario." });
     }
 
-    // Eliminar usuario de los proyectos en los que participa
-    await Project.updateMany(
-      {
-        $or: [
-          { users: id },
-          { responsibles: id },
-          { "pendingNotes.userWhoWrites": id },
-        ],
-      },
-      {
-        $pull: {
-          users: id,
-          responsibles: id,
-          "pendingNotes.$[].userWhoWrites": id,
+    // Comprobar si hay proyectos con el usuario antes de hacer updateMany
+    const proyectosConUsuario = await Project.findOne({
+      $or: [
+        { users: id },
+        { responsibles: id },
+        { "pendingNotes.userWhoWrites": id },
+      ],
+    });
+
+    if (proyectosConUsuario) {
+      await Project.updateMany(
+        {
+          $or: [
+            { users: id },
+            { responsibles: id },
+            { "pendingNotes.userWhoWrites": id },
+          ],
         },
-      }
-    );
+        {
+          $pull: {
+            users: id,
+            responsibles: id,
+            "pendingNotes.$[].userWhoWrites": id,
+          },
+        }
+      );
+    }
 
     // Finalmente, eliminar el usuario
     await usuarioAEliminar.deleteOne();
 
-    res.status(200).json({
-      mensaje: "Usuario eliminado correctamente y referencias limpiadas.",
-    });
+    res
+      .status(200)
+      .json({
+        mensaje:
+          "Usuario eliminado correctamente y referencias limpiadas (si existían).",
+      });
   } catch (error) {
     console.error("❌ Error en el servidor:", error);
     res.status(500).json({ mensaje: "Error en el servidor." });
