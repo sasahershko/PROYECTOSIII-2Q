@@ -15,7 +15,7 @@ export default function AdminProjectDashboard() {
   if (loading) {
     return (
       <div className="pt-44 flex items-center justify-center">
-        <SpinLoader size="48px" />
+        <SpinLoader size="49px" />
       </div>
     );
   }
