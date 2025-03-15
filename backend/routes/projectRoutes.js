@@ -3,8 +3,12 @@ import {
   createProject,
   getProjectById,
   getAllProjects,
+  deleteProject,
 } from "../controllers/projectController.js";
-import { authMiddleware, authMiddlewareOptional } from "../middleware/authMiddleware.js";
+import {
+  adminMiddleware,
+  authMiddlewareOptional,
+} from "../middleware/authMiddleware.js";
 
 const projectRouter = express.Router();
 
@@ -206,5 +210,34 @@ projectRouter.post("/create", createProject);
  *         description: Error interno del servidor.
  */
 projectRouter.get("/:id", getProjectById);
+
+/**
+ * @swagger
+ * /api/projects/{id}:
+ *   delete:
+ *     summary: Eliminar un proyecto
+ *     description: Permite a un administrador o a un responsable del proyecto eliminarlo. También se eliminan las referencias del proyecto en los usuarios asociados.
+ *     tags:
+ *       - Proyectos
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del proyecto a eliminar
+ *     responses:
+ *       200:
+ *         description: Proyecto eliminado correctamente y referencias en usuarios limpiadas.
+ *       403:
+ *         description: No tienes permisos para eliminar este proyecto.
+ *       404:
+ *         description: Proyecto no encontrado.
+ *       500:
+ *         description: Error en el servidor.
+ */
+projectRouter.delete("/:id", adminMiddleware, deleteProject);
 
 export default projectRouter;
