@@ -5,10 +5,8 @@ import {
   getAllProjects,
   deleteProject,
 } from "../controllers/projectController.js";
-import {
-  adminMiddleware,
-  authMiddlewareOptional,
-} from "../middleware/authMiddleware.js";
+import { authMiddleware, authMiddlewareOptional } from "../middleware/authMiddleware.js";
+import { verificarPermisoProyecto } from "../middleware/projectAuthMiddleware.js";
 
 const projectRouter = express.Router();
 
@@ -148,7 +146,7 @@ projectRouter.get("/", authMiddlewareOptional, getAllProjects);
  *       500:
  *         description: Error interno del servidor.
  */
-projectRouter.post("/create", createProject);
+projectRouter.post("/create", authMiddleware, createProject);
 
 /**
  * @swagger
@@ -238,6 +236,6 @@ projectRouter.get("/:id", getProjectById);
  *       500:
  *         description: Error en el servidor.
  */
-projectRouter.delete("/:id", adminMiddleware, deleteProject);
+projectRouter.delete("/:id", verificarPermisoProyecto, deleteProject);
 
 export default projectRouter;

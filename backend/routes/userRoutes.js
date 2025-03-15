@@ -10,11 +10,8 @@ import {
   deleteUser,
   updateUserRole,
 } from "../controllers/userController.js";
-import {
-  authMiddleware,
-  adminMiddleware,
-  moderatorMiddleware,
-} from "../middleware/authMiddleware.js";
+import { authMiddleware } from "../middleware/authMiddleware.js";
+import { adminMiddleware } from "../middleware/roleMiddleware.js";
 
 const userRouter = express.Router();
 
