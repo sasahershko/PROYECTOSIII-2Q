@@ -7,11 +7,11 @@ import cookieParser from "cookie-parser";
 import cron from "node-cron";
 import { deleteExpiredUsers } from "./utils/deleteExpiredUsers.js";
 
-//RUTAS
+// RUTAS
 import userRouter from "./routes/userRoutes.js";
 import projectRouter from "./routes/projectRoutes.js";
-//import storageRouter from "./routes/storage.cjs";
 import storageRouter from "./routes/storage.js";
+import ideaRoutes from "./routes/ideaRoutes.js"; //Importamos las rutas de ideas
 
 dotenv.config();
 connectDB();
@@ -24,16 +24,18 @@ app.use(
   })
 );
 
-//SWAGGER
+// SWAGGER
 setupSwagger(app);
 
 // ✅ Registrar rutas
 app.use("/api/users", userRouter);
 app.use("/api/projects", projectRouter);
 app.use("/api/storage", storageRouter);
+app.use("/api/ideas", ideaRoutes); //Añadimos la nueva ruta para ideas
 
-// middleware para cookies
+// Middleware para cookies
 app.use(cookieParser());
+
 
 app.get("/", (req, res) => {
   res.send("API funcionando correctamente");
