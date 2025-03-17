@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import nodemailer from "nodemailer";
 import User from "../models/User.js";
+import Project from "../models/Project.js";
 import { generateVerificationCode } from "../utils/verification.js";
 import { sendVerificationEmail } from "../utils/emailService.js";
 
@@ -114,6 +115,11 @@ export const registerUser = async (req, res) => {
   }
 };
 
+/**
+ * @desc Verificar el código de autenticación enviado al correo del usuario
+ * @route POST /api/users/verify-code
+ * @access Public
+ */
 export const verifyCode = async (req, res) => {
   try {
     const { email, code } = req.body;
@@ -161,6 +167,62 @@ export const verifyCode = async (req, res) => {
     }
   } catch (error) {
     console.error("❌ Error en verifyCode:", error);
+    res.status(500).json({ mensaje: "Error en el servidor." });
+  }
+};
+
+/**
+ * @desc Reenviar código de verificación al correo del usuario
+ * @route POST /api/users/resend-verification
+ * @access Public
+ */
+export const resendVerificationCode = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Buscar usuario por email
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ mensaje: "Usuario no encontrado." });
+    }
+
+    if (user.isVerified) {
+      return res
+        .status(400)
+        .json({ mensaje: "El usuario ya está verificado." });
+    }
+
+    const now = new Date();
+
+    // Verificar si el usuario ya ha solicitado un reenvío recientemente (cooldown de 50s)
+    if (
+      user.lastResendRequest &&
+      now - new Date(user.lastResendRequest) < 50000
+    ) {
+      return res
+        .status(400)
+        .json({ mensaje: "Espera antes de solicitar un nuevo código." });
+    }
+
+    // Generar un nuevo código de verificación
+    const newVerificationCode = generateVerificationCode();
+    const verificationCodeExpires = new Date();
+    verificationCodeExpires.setMinutes(
+      verificationCodeExpires.getMinutes() + 10
+    );
+
+    // Actualizar usuario con el nuevo código y timestamp de reenvío
+    user.verificationCode = newVerificationCode;
+    user.verificationCodeExpires = verificationCodeExpires;
+    user.lastResendRequest = now; // Guardamos la última solicitud de reenvío
+
+    await user.save();
+    await sendVerificationEmail(email, newVerificationCode);
+
+    res.json({ mensaje: "Código reenviado. Revisa tu correo." });
+  } catch (error) {
+    console.error("❌ Error en resendVerificationCode:", error);
     res.status(500).json({ mensaje: "Error en el servidor." });
   }
 };
@@ -275,7 +337,30 @@ export const getUserProfile = async (req, res) => {
 };
 
 /**
- * @desc Eliminar usuario (propio o admin)
+ * @desc Obtener el perfil de un usuario por su ID (público)
+ * @route GET /api/users/profile/:id
+ * @access Public (no requiere autenticación)
+ */
+export const getUserProfileById = async (req, res) => {
+  try {
+    // Buscar el usuario por ID excluyendo la contraseña y el email
+    const user = await User.findById(req.params.id).select("-password -email");
+
+    // Si el usuario no existe, devolver un error 404
+    if (!user) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    // Responder con la información del usuario
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("❌ Error en el servidor:", error);
+    res.status(500).json({ message: "Error en el servidor" });
+  }
+};
+
+/**
+ * @desc Eliminar usuario (propio o admin) y limpiar referencias en proyectos
  * @route DELETE /api/users/:id
  * @access Private (usuario autenticado o admin)
  */
@@ -289,6 +374,7 @@ export const deleteUser = async (req, res) => {
       return res.status(404).json({ mensaje: "Usuario no encontrado." });
     }
 
+    // Verificar permisos
     if (
       usuarioAutenticado.rol !== "admin" &&
       usuarioAutenticado._id.toString() !== id
@@ -298,8 +384,43 @@ export const deleteUser = async (req, res) => {
         .json({ mensaje: "No tienes permisos para eliminar este usuario." });
     }
 
+    // Comprobar si hay proyectos con el usuario antes de hacer updateMany
+    const proyectosConUsuario = await Project.findOne({
+      $or: [
+        { users: id },
+        { responsibles: id },
+        { "pendingNotes.userWhoWrites": id },
+      ],
+    });
+
+    if (proyectosConUsuario) {
+      await Project.updateMany(
+        {
+          $or: [
+            { users: id },
+            { responsibles: id },
+            { "pendingNotes.userWhoWrites": id },
+          ],
+        },
+        {
+          $pull: {
+            users: id,
+            responsibles: id,
+            "pendingNotes.$[].userWhoWrites": id,
+          },
+        }
+      );
+    }
+
+    // Finalmente, eliminar el usuario
     await usuarioAEliminar.deleteOne();
-    res.status(200).json({ mensaje: "Usuario eliminado correctamente." });
+
+    res
+      .status(200)
+      .json({
+        mensaje:
+          "Usuario eliminado correctamente y referencias limpiadas (si existían).",
+      });
   } catch (error) {
     console.error("❌ Error en el servidor:", error);
     res.status(500).json({ mensaje: "Error en el servidor." });

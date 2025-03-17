@@ -7,11 +7,8 @@ import cookieParser from "cookie-parser";
 import cron from "node-cron";
 import { deleteExpiredUsers } from "./utils/deleteExpiredUsers.js";
 
-//RUTAS
-import userRouter from "./routes/userRoutes.js";
-import projectRouter from "./routes/projectRoutes.js";
-//import storageRouter from "./routes/storage.cjs";
-import storageRouter from "./routes/storage.js";
+// Importamos las rutas centralizadas
+import routes from "./routes/index.js";
 
 dotenv.config();
 connectDB();
@@ -20,19 +17,17 @@ const app = express();
 app.use(express.json());
 app.use(
   cors({
-    credentials: true, //permite enviar cookies desde el frontend
+    credentials: true, // Permite enviar cookies desde el frontend
   })
 );
 
-//SWAGGER
+// SWAGGER
 setupSwagger(app);
 
-// ✅ Registrar rutas
-app.use("/api/users", userRouter);
-app.use("/api/projects", projectRouter);
-app.use("/storage", storageRouter);
+// ✅ Usamos las rutas centralizadas
+app.use("/api", routes);
 
-// middleware para cookies
+// Middleware para cookies
 app.use(cookieParser());
 
 app.get("/", (req, res) => {
