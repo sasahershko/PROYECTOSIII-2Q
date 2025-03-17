@@ -2,60 +2,43 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import useProjects from "@/hooks/useProjects";
+import ProjectsNavBar from "@/components/projects/ProjectsNavBar";
 
 const ParticipantsPage = () => {
-  const { id: projectId } = useParams(); // Obtiene el ID del proyecto desde la URL
+  // Obtiene el id del proyecto desde la url
+  const { id: projectId } = useParams();
+
+
   const [participants, setParticipants] = useState([]);
+
+  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Funcion para recuperar el token de autenticacion desde las cookies
-  const getTokenFromCookies = () => {
-    const cookies = document.cookie.split("; ");
-    const tokenCookie = cookies.find(row => row.startsWith("token="));
-    return tokenCookie ? tokenCookie.split("=")[1] : null;
-  };
+  // Obtiene la lista de proyectos
+  const { projects, loading: projectsLoading } = useProjects();
 
   useEffect(() => {
-    if (!projectId) return; // Evita ejecutar la funcion si no hay un ID de proyecto
+    // Evita la ejecucion si los proyectos aun estan cargando o no hay projectId
+    if (!projectId || projectsLoading) return;
 
     const fetchParticipants = async () => {
       try {
-        const token = getTokenFromCookies();
-        if (!token) throw new Error("No hay token disponible. Inicia sesión primero.");
+        // Busca el proyecto por su id dentro de la lista de proyectos
+        const projectData = projects.find(p => p._id === projectId);
+        if (!projectData) throw new Error("No se encontró el proyecto.");
 
-        // Solicita los datos del proyecto para obtener la lista de usuarios asociados
-        const projectResponse = await fetch(
-          `https://surviving-poppy-sasahershko-72589d6b.koyeb.app/api/projects/${projectId}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-
-        if (!projectResponse.ok) throw new Error("Error al obtener el proyecto");
-
-        const projectData = await projectResponse.json();
-        const userIds = projectData.users?.map(user => user._id) || [];
-
-        if (userIds.length === 0) {
-          setParticipants([]); // Si no hay usuarios se actualiza el estado y se detiene la carga
+        // Se detiene la carga si el proyecto no tiene usuarios asociados 
+        if (!projectData.users || projectData.users.length === 0) {
+          setParticipants([]);
           setLoading(false);
           return;
         }
 
-        // Obtiene la lista de todos los usuarios
-        const usersResponse = await fetch(
-          "https://surviving-poppy-sasahershko-72589d6b.koyeb.app/api/users",
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-
-        if (!usersResponse.ok) throw new Error("Error al obtener los usuarios");
-
-        const allUsers = await usersResponse.json();
-
-        // Filtra solo los usuarios que pertenecen a este proyecto
-        const projectParticipants = allUsers.filter(user => userIds.includes(user._id));
-
-        setParticipants(projectParticipants);
+        setParticipants(projectData.users);
       } catch (error) {
+        
         setError(error.message || "No se pudieron obtener los participantes.");
       } finally {
         setLoading(false);
@@ -63,34 +46,46 @@ const ParticipantsPage = () => {
     };
 
     fetchParticipants();
-  }, [projectId]);
+  }, [projectId, projects, projectsLoading]);
 
   if (loading) return <p className="text-center">Cargando...</p>;
   if (error) return <p className="text-center text-red-500">{error}</p>;
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-6">
-      <h2 className="text-3xl font-bold mb-6">Participantes</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {participants.length > 0 ? (
-          participants.map((participant) => (
-            <div key={participant._id} className="flex items-center bg-gray-300 p-4 rounded-lg shadow-md">
-              <img
-                src={participant.avatar || "https://via.placeholder.com/50"} // Si no hay imagen usa una por defecto
-                alt={participant.name}
-                className="w-12 h-12 rounded-full mr-4"
-              />
-              <div>
-                <p className="font-semibold">{participant.name} {participant.surname}</p>
-                <p className="text-gray-600">{participant.role || "Estudiante"}</p>
+    <>
+      {/* Mantiene la barra de navegacion del proyecto con "Participantes" como pestaña activa */}
+      <ProjectsNavBar role="admin" activeTab="participantes" />
+
+      <div className="w-full max-w-6xl mx-auto p-6">
+        <h2 className="text-3xl font-bold mb-6">Participantes</h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {participants.length > 0 ? (
+            participants.map((participant) => (
+              <div 
+                key={participant._id} 
+                className="flex items-center bg-gray-300 p-4 rounded-lg shadow-md"
+              >
+                {/* Imagen del participante o imagen por defecto */}
+                <img
+                  src={participant.avatar || "https://via.placeholder.com/50"}
+                  alt={participant.name}
+                  className="w-12 h-12 rounded-full mr-4"
+                />
+                <div>
+
+                  <p className="font-semibold">{participant.name} {participant.surname}</p>
+                  <p className="text-gray-600">{participant.role || "Estudiante"}</p>
+
+                </div>
               </div>
-            </div>
-          ))
-        ) : (
-          <p className="text-center text-gray-600">No hay participantes en este proyecto.</p>
-        )}
+            ))
+          ) : (
+            <p className="text-center text-gray-600">No hay participantes en este proyecto.</p>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

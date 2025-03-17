@@ -3,6 +3,13 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 
+// Funcion para obtener el token desde las cookies
+const getTokenFromCookies = () => {
+  const cookies = document.cookie.split("; ");
+  const tokenCookie = cookies.find(row => row.startsWith("token="));
+  return tokenCookie ? tokenCookie.split("=")[1] : null;
+};
+
 const ParticipantsList = () => {
   const [participants, setParticipants] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,9 +22,13 @@ const ParticipantsList = () => {
 
     const fetchParticipants = async () => {
       try {
+        const token = getTokenFromCookies();
+        if (!token) throw new Error("No hay token disponible. Inicia sesión primero.");
+
         // Llamada a la api para obtener los participantes del proyecto
         const response = await fetch(
-          `https://surviving-poppy-sasahershko-72589d6b.koyeb.app/api/users?projectId=${projectId}`
+          `https://surviving-poppy-sasahershko-72589d6b.koyeb.app/api/users?projectId=${projectId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
         );
 
         if (!response.ok) throw new Error("Error al obtener los datos");
