@@ -1,8 +1,18 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { registerUser, verifyUserCode } from "@/lib/auth";
-import { validarDNI } from "@/utils/validators";
+import {
+  registerUser,
+  verifyUserCode,
+  resendVerificationCode,
+} from "@/lib/auth";
+import {
+  validarCorreo,
+  validarDNI,
+  validarPassword,
+  validarConfirmacionPassword,
+  validarGrado,
+} from "../utils/validations";
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -20,6 +30,7 @@ export default function Register() {
   const [error, setError] = useState("");
   const [usuarioTemporal, setUsuarioTemporal] = useState(null);
   const [intentosRestantes, setIntentosRestantes] = useState(3); // Control de intentos
+  const [cooldown, setCooldown] = useState(0); // Estado para el cooldown del botón
   const router = useRouter();
 
   const gradosPermitidos = ["INSO", "MAIS", "FIIS", "DIPI", "ANIV"];
@@ -28,44 +39,31 @@ export default function Register() {
     e.preventDefault();
     setError(""); // Limpiar errores anteriores
 
-    // Validación de email
-    const correoRegex = /@u-tad\.com$|@live\.u-tad\.com$/;
-    if (!correoRegex.test(formData.correo)) {
+    if (!validarCorreo(formData.correo)) {
       setError("El correo debe ser de la Universidad.");
       return;
     }
 
-    // Validación de DNI (8 números + 1 letra correcta)
-    const dniRegex = /^[0-9]{8}[A-Za-z]$/;
-    const letrasDNI = "TRWAGMYFPDXBNJZSQVHLCKE";
-    const numeroDNI = parseInt(formData.dni.slice(0, -1), 10);
-    const letraDNI = formData.dni.slice(-1).toUpperCase();
-    if (
-      !dniRegex.test(formData.dni) ||
-      letrasDNI[numeroDNI % 23] !== letraDNI
-    ) {
+    if (!validarDNI(formData.dni)) {
       setError("El DNI no es válido.");
       return;
     }
 
-    // Validación de la contraseña
-    // const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
-    // if (!passwordRegex.test(formData.password)) {
+    // if (!validarPassword(formData.password)) {
     //   setError(
     //     "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número."
     //   );
     //   return;
     // }
 
-    // Validación de confirmación de contraseña
-    if (formData.password !== formData.confirmPassword) {
+    if (
+      !validarConfirmacionPassword(formData.password, formData.confirmPassword)
+    ) {
       setError("Las contraseñas no coinciden.");
       return;
     }
 
-    // Validación de grado permitido
-    const gradosPermitidos = ["INSO", "MAIS", "FIIS", "DIPI", "ANIV"];
-    if (!gradosPermitidos.includes(formData.grado)) {
+    if (!validarGrado(formData.grado)) {
       setError("El grado seleccionado no es válido.");
       return;
     }
@@ -83,7 +81,7 @@ export default function Register() {
     try {
       const response = await registerUser(userData);
       setUsuarioTemporal(userData);
-      setCurrentStep(5); // Pasamos a la pantalla de verificación de código
+      setCurrentStep(5);
     } catch (error) {
       setError(error.message);
     }
@@ -117,54 +115,66 @@ export default function Register() {
     }
   };
 
-  const nextStep = () => {
-    // Validación de los campos según el paso actual
-    if (currentStep === 1) {
-      if (!formData.nombre || !formData.apellido) {
-        setError("Por favor, completa todos los campos de esta sección.");
-        return;
-      }
+  const handleResendCode = async () => {
+    if (cooldown > 0) return; // Si el cooldown está activo, no hacer nada
+
+    try {
+      await resendVerificationCode({ email: usuarioTemporal.email });
+      setCooldown(50); // Iniciar cooldown de 50 segundos
+    } catch (error) {
+      setError("No se pudo reenviar el código. Intenta de nuevo.");
     }
+  };
+
+  useEffect(() => {
+    if (cooldown > 0) {
+      const interval = setInterval(() => {
+        setCooldown((prev) => (prev > 0 ? prev - 1 : 0)); // Evita valores negativos
+      }, 1000);
+
+      return () => clearInterval(interval); // Limpieza del intervalo cuando cambia el cooldown
+    }
+  }, [cooldown]);
+
+  const nextStep = () => {
+    if (currentStep === 1 && (!formData.nombre || !formData.apellido)) {
+      setError("Por favor, completa todos los campos de esta sección.");
+      return;
+    }
+
     if (currentStep === 2) {
-      // Validar correo
-      const correoRegex = /@u-tad\.com$|@live\.u-tad\.com$/;
-      if (!formData.correo || !correoRegex.test(formData.correo)) {
+      if (!validarCorreo(formData.correo)) {
         setError("El correo debe ser de la Universidad.");
         return;
       }
-
-      // Validar DNI (formato y letra correcta)
-      const dniRegex = /^[0-9]{8}[A-Za-z]$/;
-      const letrasDNI = "TRWAGMYFPDXBNJZSQVHLCKE";
-      const numeroDNI = parseInt(formData.dni.slice(0, -1), 10);
-      const letraDNI = formData.dni.slice(-1).toUpperCase();
-      if (
-        !dniRegex.test(formData.dni) ||
-        letrasDNI[numeroDNI % 23] !== letraDNI
-      ) {
+      if (!validarDNI(formData.dni)) {
         setError("El DNI no es válido.");
         return;
       }
     }
+
     if (currentStep === 3) {
       if (!formData.password || !formData.confirmPassword) {
         setError("Por favor, completa todos los campos de esta sección.");
         return;
       }
-
-      if (formData.password !== formData.confirmPassword) {
+      if (
+        !validarConfirmacionPassword(
+          formData.password,
+          formData.confirmPassword
+        )
+      ) {
         setError("Las contraseñas no coinciden.");
         return;
       }
     }
-    if (currentStep === 4) {
-      if (!formData.grado) {
-        setError("Por favor, selecciona un grado.");
-        return;
-      }
+
+    if (currentStep === 4 && !validarGrado(formData.grado)) {
+      setError("Por favor, selecciona un grado válido.");
+      return;
     }
 
-    // Si pasa la validación, avanzar al siguiente paso
+    // Avanzar al siguiente paso si no hay errores
     if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
       setError("");
@@ -175,6 +185,48 @@ export default function Register() {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
+  };
+
+  const handleCodeChange = (index, value) => {
+    if (!/^\d?$/.test(value)) return; // Solo permitir números
+
+    const updatedCode = formData.codigoVerificacion.split("");
+    updatedCode[index] = value;
+    setFormData({ ...formData, codigoVerificacion: updatedCode.join("") });
+
+    // Mover el foco al siguiente input automáticamente si el usuario ingresa un número
+    if (value && index < 5) {
+      document.getElementById(`code-${index + 1}`).focus();
+    }
+  };
+
+  const handleKeyDown = (index, e) => {
+    if (e.key === "Backspace") {
+      const updatedCode = formData.codigoVerificacion.split("");
+
+      if (!updatedCode[index] && index > 0) {
+        // Si la casilla está vacía y se presiona "Backspace", eliminar el anterior y mover foco atrás
+        updatedCode[index - 1] = "";
+        setFormData({ ...formData, codigoVerificacion: updatedCode.join("") });
+        document.getElementById(`code-${index - 1}`).focus();
+      } else {
+        // Si hay un número en la casilla actual, simplemente vaciarlo
+        updatedCode[index] = "";
+        setFormData({ ...formData, codigoVerificacion: updatedCode.join("") });
+      }
+    }
+  };
+
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData("text").trim();
+    if (!/^\d{6}$/.test(pastedData)) return; // Solo permitir un código numérico de 6 dígitos
+
+    const updatedCode = pastedData.split("");
+    setFormData({ ...formData, codigoVerificacion: updatedCode.join("") });
+
+    // Enfocar el último input automáticamente
+    document.getElementById(`code-${Math.min(updatedCode.length, 5)}`).focus();
   };
 
   // Progreso de la barra (porcentaje)
@@ -325,41 +377,40 @@ export default function Register() {
           {/* Paso 5: Verificación de código */}
           {currentStep === 5 && (
             <>
-              <p>
+              <p className="mb-4 text-gray-700">
                 Te hemos enviado un código de verificación a {formData.correo}.
-                Tienes 10 minutos y 3 intentos.
+                Introduce el código para continuar.
               </p>
-
-              {/* Contenedor en fila */}
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  name="codigoVerificacion"
-                  value={formData.codigoVerificacion}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      codigoVerificacion: e.target.value,
-                    })
-                  }
-                  className="flex-1 px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent placeholder-gray-500"
-                  placeholder="Código de Verificación"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={handleVerifyCode}
-                  className="bg-accent text-white px-6 py-3 rounded-lg font-semibold hover:bg-accent/85"
-                >
-                  Verificar
-                </button>
+              <div className="flex justify-center gap-3 mb-4">
+                {[...Array(6)].map((_, index) => (
+                  <input
+                    key={index}
+                    id={`code-${index}`}
+                    type="text"
+                    maxLength="1"
+                    className="w-12 h-14 text-center text-2xl font-semibold border border-gray-300 
+                 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-500 
+                 transition-all duration-200 shadow-md bg-gray-100"
+                    value={formData.codigoVerificacion[index] || ""}
+                    onChange={(e) => handleCodeChange(index, e.target.value)}
+                    onKeyDown={(e) => handleKeyDown(index, e)}
+                    onPaste={handlePaste}
+                  />
+                ))}
               </div>
+              <button
+                type="button"
+                onClick={handleVerifyCode}
+                className="w-full bg-accent text-white py-3 rounded-lg font-semibold hover:bg-accent/85 relative top-3"
+              >
+                Verificar Código
+              </button>
             </>
           )}
 
           {/* Botones de navegación */}
-          <div className="flex flex-col justify-between mt-6 gap-4">
-            {currentStep > 1 && (
+          <div className="flex justify-between mt-6 gap-4">
+            {currentStep > 1 && currentStep < 5 && (
               <button
                 type="button"
                 onClick={prevStep}
@@ -387,6 +438,21 @@ export default function Register() {
                 className="w-full bg-gray-800 text-white py-3 rounded-lg font-semibold hover:bg-gray-700"
               >
                 Registrarse
+              </button>
+            )}
+            {/* Mostrar "Reenviar código" solo en el paso 5 */}
+            {currentStep === 5 && (
+              <button
+                type="button"
+                onClick={handleResendCode}
+                disabled={cooldown > 0} // Bloquear mientras el cooldown esté activo
+                className={`w-full py-3 rounded-lg font-semibold text-white ${
+                  cooldown > 0
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-secundary hover:bg-secundary/85"
+                }`}
+              >
+                {cooldown > 0 ? `Reenviar en ${cooldown}s` : "Reenviar código"}
               </button>
             )}
           </div>
