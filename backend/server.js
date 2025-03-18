@@ -7,47 +7,47 @@ import cookieParser from "cookie-parser";
 import cron from "node-cron";
 import { deleteExpiredUsers } from "./utils/deleteExpiredUsers.js";
 
-// RUTAS
-import userRouter from "./routes/userRoutes.js";
-import projectRouter from "./routes/projectRoutes.js";
-import storageRouter from "./routes/storage.js";
-import ideaRoutes from "./routes/ideaRoutes.js"; //Importamos las rutas de ideas
+// Importamos las rutas centralizadas
+import routes from "./routes/index.js";
 
 dotenv.config();
 connectDB();
 
 const app = express();
+
+// Middleware para procesar JSON
 app.use(express.json());
+
+// Configuración de CORS para permitir envío de cookies desde frontend
 app.use(
   cors({
-    credentials: true, // Permite enviar cookies desde el frontend
+    origin: process.env.FRONTEND_URL || "*", // Configura el origen permitido
+    credentials: true,
   })
 );
 
-// SWAGGER
-setupSwagger(app);
-
-// ✅ Registrar rutas
-app.use("/api/users", userRouter);
-app.use("/api/projects", projectRouter);
-app.use("/api/storage", storageRouter);
-app.use("/api/ideas", ideaRoutes); //Añadimos la nueva ruta para ideas
-
-// Middleware para cookies
+// Middleware para manejar cookies
 app.use(cookieParser());
 
+// 🔹 Configuración de Swagger (Documentación API)
+setupSwagger(app);
 
+// ✅ Usamos las rutas centralizadas
+app.use("/api", routes);
+
+// Ruta de prueba para verificar si el servidor está funcionando
 app.get("/", (req, res) => {
-  res.send("API funcionando correctamente");
+  res.send("🚀 API funcionando correctamente");
 });
 
+// Configuración del puerto
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.clear();
   console.log(`🚀 Servidor corriendo en el puerto ${PORT}`);
 });
 
-// Ejecutar cada 5 minutos en segundo plano
+// 🔄 CRON JOB: Eliminar usuarios no verificados cada 5 minutos
 cron.schedule("*/5 * * * *", async () => {
   console.log("🔄 Verificando usuarios no verificados...");
   await deleteExpiredUsers();
