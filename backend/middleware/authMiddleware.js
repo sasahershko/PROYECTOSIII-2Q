@@ -51,13 +51,13 @@ export const authMiddlewareOptional = async (req, res, next) => {
     req.usuario = await User.findById(decoded.id).select("-password");
 
     if (!req.usuario) {
-      req.usuario = null; // Si el usuario no se encuentra, tratarlo como anónimo
+      req.usuario = null; //si el usuario no se encuentra, tratarlo como anónimo
     }
 
     next();
   } catch (error) {
     console.error("⚠ Error en autenticación opcional:", error);
-    req.usuario = null; // Anónimo
+    req.usuario = null; //anónimo
     next();
   }
 };
