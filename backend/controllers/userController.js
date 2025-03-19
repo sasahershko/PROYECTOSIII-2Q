@@ -9,15 +9,6 @@ import { sendVerificationEmail } from "../utils/emailService.js";
 
 dotenv.config();
 
-//Configuración de nodemailer para enviar correos
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
-
 //(estos son solo informativos, no salen en Swagger)
 /**
  * @desc Registrar un nuevo usuario
@@ -360,6 +351,124 @@ export const getUserProfileById = async (req, res) => {
 };
 
 /**
+ * @desc Obtener todos los usuarios (requiere autenticación)
+ * @route GET /api/users
+ * @access Private (requiere token)
+ */
+export const getAllUsers = async (req, res) => {
+  try {
+    // Buscar todos los usuarios excepto las contraseñas
+    const usuarios = await User.find().select("-password");
+
+    res.status(200).json(usuarios);
+  } catch (error) {
+    console.error("❌ Error en el servidor:", error);
+    res.status(500).json({ mensaje: "Error en el servidor" });
+  }
+};
+
+/**
+ * @desc Cambiar rol de un usuario (requiere ser admin y tener token)
+ * @route PUT /api/users/update-role/:id
+ * @access Private (requiere ser admin y tener token)
+ */
+export const updateUser = async (req, res) => {
+  try {
+    console.log("🔹 Iniciando actualización de usuario...");
+
+    const { id } = req.params;
+    const usuarioAutenticado = req.usuario;
+    console.log(
+      "👤 Usuario autenticado:",
+      usuarioAutenticado.id,
+      "| Rol:",
+      usuarioAutenticado.rol
+    );
+
+    const isAdmin = usuarioAutenticado.rol === "admin";
+    const isSameUser = usuarioAutenticado.id === id;
+
+    // Verificar permisos
+    if (!isSameUser && !isAdmin) {
+      console.log("❌ Permiso denegado: No puedes editar este usuario.");
+      return res
+        .status(403)
+        .json({ message: "No tienes permiso para editar este usuario." });
+    }
+
+    // No permitir modificar email ni contraseña
+    if (req.body.email || req.body.password) {
+      console.log("⚠️ Intento de modificar email o contraseña bloqueado.");
+      return res
+        .status(400)
+        .json({ message: "No puedes modificar el correo ni la contraseña." });
+    }
+
+    // Extraer los campos editables
+    const { name, surname, rol, grade, profileImage } = req.body;
+
+    const updatedData = {};
+    if (name && typeof name === "string") updatedData.name = name;
+    if (surname && typeof surname === "string") updatedData.surname = surname;
+    if (profileImage && typeof profileImage === "string")
+      updatedData.profileImage = profileImage;
+
+    // 🚨 Validar `grade`
+    const gradosPermitidos = ["INSO", "MAIS", "FIIS", "DIPI", "ANIV"];
+    if (grade) {
+      if (!gradosPermitidos.includes(grade)) {
+        console.log("❌ Grado no válido.");
+        return res
+          .status(400)
+          .json({ message: "El grado proporcionado no es válido." });
+      }
+      updatedData.grade = grade;
+    }
+
+    // 🚨 Validar `rol`
+    const rolesPermitidos = ["admin", "moderator", "user"];
+    if (rol) {
+      if (!isAdmin) {
+        console.log("⚠️ Usuario no admin intentó cambiar el rol.");
+        return res
+          .status(403)
+          .json({
+            message: "No tienes permiso para cambiar el rol de un usuario.",
+          });
+      }
+      if (!rolesPermitidos.includes(rol)) {
+        console.log("❌ Rol no válido.");
+        return res
+          .status(400)
+          .json({ message: "El rol proporcionado no es válido." });
+      }
+      updatedData.rol = rol;
+    }
+
+    console.log("📤 Datos a actualizar:", updatedData);
+
+    // Intentar actualizar el usuario
+    const updatedUser = await User.findByIdAndUpdate(id, updatedData, {
+      new: true,
+    });
+
+    if (!updatedUser) {
+      console.log("❌ Usuario no encontrado.");
+      return res.status(404).json({ message: "Usuario no encontrado." });
+    }
+
+    console.log("✅ Usuario actualizado correctamente:", updatedUser);
+    res.status(200).json({
+      message: "Usuario actualizado correctamente.",
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("🚨 Error en updateUser:", error);
+    res.status(500).json({ message: "Error al actualizar el usuario.", error });
+  }
+};
+
+/**
  * @desc Eliminar usuario (propio o admin) y limpiar referencias en proyectos
  * @route DELETE /api/users/:id
  * @access Private (usuario autenticado o admin)
@@ -415,54 +524,10 @@ export const deleteUser = async (req, res) => {
     // Finalmente, eliminar el usuario
     await usuarioAEliminar.deleteOne();
 
-    res
-      .status(200)
-      .json({
-        mensaje:
-          "Usuario eliminado correctamente y referencias limpiadas (si existían).",
-      });
-  } catch (error) {
-    console.error("❌ Error en el servidor:", error);
-    res.status(500).json({ mensaje: "Error en el servidor." });
-  }
-};
-
-/**
- * @desc Obtener todos los usuarios (requiere autenticación)
- * @route GET /api/users
- * @access Private (requiere token)
- */
-export const getAllUsers = async (req, res) => {
-  try {
-    // Buscar todos los usuarios excepto las contraseñas
-    const usuarios = await User.find().select("-password");
-
-    res.status(200).json(usuarios);
-  } catch (error) {
-    console.error("❌ Error en el servidor:", error);
-    res.status(500).json({ mensaje: "Error en el servidor" });
-  }
-};
-
-/**
- * @desc Cambiar rol de un usuario (requiere ser admin y tener token)
- * @route PUT /api/users/update-role/:id
- * @access Private (requiere ser admin y tener token)
- */
-export const updateUserRole = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { rol } = req.body;
-
-    const usuario = await User.findById(id);
-    if (!usuario) {
-      return res.status(404).json({ mensaje: "Usuario no encontrado." });
-    }
-
-    usuario.rol = rol;
-    await usuario.save();
-
-    res.status(200).json({ mensaje: `Rol actualizado a ${rol}.` });
+    res.status(200).json({
+      mensaje:
+        "Usuario eliminado correctamente y referencias limpiadas (si existían).",
+    });
   } catch (error) {
     console.error("❌ Error en el servidor:", error);
     res.status(500).json({ mensaje: "Error en el servidor." });

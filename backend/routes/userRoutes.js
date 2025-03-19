@@ -8,13 +8,9 @@ import {
   getUserProfileById,
   getAllUsers,
   deleteUser,
-  updateUserRole,
+  updateUser,
 } from "../controllers/userController.js";
-import {
-  authMiddleware,
-  adminMiddleware,
-  moderatorMiddleware,
-} from "../middleware/authMiddleware.js";
+import { authMiddleware } from "../middleware/authMiddleware.js";
 
 const userRouter = express.Router();
 
@@ -22,7 +18,7 @@ const userRouter = express.Router();
  * @swagger
  * tags:
  *   name: Usuarios
- *   description: Endpoints para gestionar usuarios
+ *   description: Endpoints para la gestión de usuarios
  */
 
 /**
@@ -31,6 +27,7 @@ const userRouter = express.Router();
  *   post:
  *     summary: Registrar un nuevo usuario
  *     tags: [Usuarios]
+ *     description: Permite registrar un usuario con validaciones de email y DNI.
  *     requestBody:
  *       required: true
  *       content:
@@ -69,9 +66,9 @@ userRouter.post("/register", registerUser);
  * @swagger
  * /api/users/verify-code:
  *   post:
- *     summary: Verificar el código de autenticación
+ *     summary: Verificar código de autenticación
  *     tags: [Usuarios]
- *     description: Permite a un usuario verificar su cuenta con un código de 6 dígitos enviado a su correo.
+ *     description: Verifica un código de autenticación enviado al correo del usuario.
  *     requestBody:
  *       required: true
  *       content:
@@ -93,8 +90,6 @@ userRouter.post("/register", registerUser);
  *         description: Código incorrecto o intentos agotados.
  *       404:
  *         description: Usuario no encontrado.
- *       500:
- *         description: Error en el servidor.
  */
 userRouter.post("/verify-code", verifyCode);
 
@@ -134,6 +129,7 @@ userRouter.post("/resend-verification", resendVerificationCode);
  *   post:
  *     summary: Iniciar sesión
  *     tags: [Usuarios]
+ *     description: Autentica a un usuario y devuelve un token JWT.
  *     requestBody:
  *       required: true
  *       content:
@@ -150,11 +146,11 @@ userRouter.post("/resend-verification", resendVerificationCode);
  *                 example: "SecureP@ss123"
  *     responses:
  *       200:
- *         description: Login exitoso, devuelve el usuario y el token.
+ *         description: Login exitoso.
  *       400:
- *         description: Campos faltantes.
+ *         description: Datos incorrectos.
  *       401:
- *         description: Credenciales incorrectas.
+ *         description: Credenciales inválidas.
  */
 userRouter.post("/login", loginUser);
 
@@ -168,39 +164,9 @@ userRouter.post("/login", loginUser);
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Lista de todos los usuarios.
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: string
- *                     example: "65a3f2e4b1c3e5a7d2a4c9b2"
- *                   name:
- *                     type: string
- *                     example: "Juan"
- *                   surname:
- *                     type: string
- *                     example: "Pérez"
- *                   email:
- *                     type: string
- *                     example: "juan@u-tad.com"
- *                   dni:
- *                     type: string
- *                     example: "12345678A"
- *                   grade:
- *                     type: string
- *                     example: "INSO"
- *                   rol:
- *                     type: string
- *                     example: "user"
+ *         description: Lista de usuarios.
  *       401:
- *         description: No autorizado, falta el token.
- *       500:
- *         description: Error en el servidor.
+ *         description: No autorizado.
  */
 userRouter.get("/", authMiddleware, getAllUsers);
 
@@ -292,8 +258,8 @@ userRouter.get("/profile/:id", getUserProfileById);
 /**
  * @swagger
  * /api/users/{id}:
- *   delete:
- *     summary: Eliminar usuario (propio o admin) y limpiar referencias en proyectos
+ *   patch:
+ *     summary: Actualizar datos de un usuario
  *     tags: [Usuarios]
  *     security:
  *       - bearerAuth: []
@@ -301,34 +267,7 @@ userRouter.get("/profile/:id", getUserProfileById);
  *       - in: path
  *         name: id
  *         required: true
- *         description: ID del usuario a eliminar (puede ser el propio usuario o un admin eliminando cualquier cuenta)
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Usuario eliminado correctamente.
- *       403:
- *         description: No tienes permisos para eliminar este usuario.
- *       404:
- *         description: Usuario no encontrado.
- *       500:
- *         description: Error en el servidor.
- */
-userRouter.delete("/:id", authMiddleware, deleteUser);
-
-/**
- * @swagger
- * /api/users/update-role/{id}:
- *   put:
- *     summary: Actualizar el rol de un usuario (requiere ser admin)
- *     tags: [Usuarios]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: ID del usuario cuyo rol se actualizará
+ *         description: ID del usuario a actualizar.
  *         schema:
  *           type: string
  *     requestBody:
@@ -337,29 +276,54 @@ userRouter.delete("/:id", authMiddleware, deleteUser);
  *         application/json:
  *           schema:
  *             type: object
- *             required: [rol]
  *             properties:
- *               rol:
+ *               name:
  *                 type: string
- *                 enum: [admin, moderator, user]
- *                 example: "moderator"
+ *                 example: "Nuevo Nombre"
+ *               surname:
+ *                 type: string
+ *                 example: "Nuevo Apellido"
+ *               grade:
+ *                 type: string
+ *                 example: "INSO"
+ *               profileImage:
+ *                 type: string
+ *                 example: "https://example.com/nueva-imagen.jpg"
  *     responses:
  *       200:
- *         description: Rol actualizado correctamente.
+ *         description: Usuario actualizado.
  *       400:
- *         description: Rol no válido.
+ *         description: Intento de modificar email o contraseña bloqueado.
  *       403:
- *         description: No tienes permisos para actualizar el rol.
+ *         description: No autorizado.
  *       404:
  *         description: Usuario no encontrado.
- *       500:
- *         description: Error en el servidor.
  */
-userRouter.put(
-  "/update-role/:id",
-  authMiddleware,
-  adminMiddleware,
-  updateUserRole
-);
+userRouter.patch("/:id", authMiddleware, updateUser);
+
+/**
+ * @swagger
+ * /api/users/{id}:
+ *   delete:
+ *     summary: Eliminar usuario
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID del usuario a eliminar.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Usuario eliminado correctamente.
+ *       403:
+ *         description: No tienes permisos.
+ *       404:
+ *         description: Usuario no encontrado.
+ */
+userRouter.delete("/:id", authMiddleware, deleteUser);
 
 export default userRouter;
