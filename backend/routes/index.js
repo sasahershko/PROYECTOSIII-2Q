@@ -10,6 +10,6 @@ const routes = express.Router();
 routes.use("/users", userRouter);
 routes.use("/projects", projectRouter);
 routes.use("/storage", storageRouter);
-router.use("/ideas", ideaRoutes);
+routes.use("/ideas", ideaRoutes);
 
 export default routes;
