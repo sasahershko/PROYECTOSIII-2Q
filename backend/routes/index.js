@@ -2,6 +2,7 @@ import express from "express";
 import userRouter from "./userRoutes.js";
 import projectRouter from "./projectRoutes.js";
 import storageRouter from "./storage.js";
+import ideaRoutes from "./ideaRoutes.js";
 
 const routes = express.Router();
 
@@ -9,5 +10,6 @@ const routes = express.Router();
 routes.use("/users", userRouter);
 routes.use("/projects", projectRouter);
 routes.use("/storage", storageRouter);
+routes.use("/ideas", ideaRoutes);
 
 export default routes;

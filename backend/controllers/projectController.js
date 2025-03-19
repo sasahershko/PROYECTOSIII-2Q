@@ -127,3 +127,43 @@ export const getProjectById = async (req, res) => {
         res.status(500).json({ mensaje: "Error al obtener el proyecto", error: error.message });
     }
 }
+
+/**
+ * @desc Eliminar un proyecto y limpiar referencias en usuarios
+ * @route DELETE /api/projects/:id
+ * @access Private (solo admin o responsables del proyecto)
+ */
+export const deleteProject = async (req, res) => {
+    try {
+      const usuarioAutenticado = req.usuario; // Usuario autenticado
+      const { id } = req.params; // ID del proyecto a eliminar
+  
+      const proyectoAEliminar = await Project.findById(id);
+      if (!proyectoAEliminar) {
+        return res.status(404).json({ mensaje: "Proyecto no encontrado." });
+      }
+  
+      // Verificar permisos: solo admin o responsables del proyecto pueden eliminarlo
+      if (
+        usuarioAutenticado.rol !== "admin" &&
+        !proyectoAEliminar.responsibles.includes(usuarioAutenticado._id)
+      ) {
+        return res.status(403).json({ mensaje: "No tienes permisos para eliminar este proyecto." });
+      }
+  
+      // Eliminar el ID del proyecto en la lista de proyectos de los usuarios asociados
+      await User.updateMany(
+        { projects: id },
+        { $pull: { projects: id } }
+      );
+  
+      // Finalmente, eliminar el proyecto
+      await proyectoAEliminar.deleteOne();
+  
+      res.status(200).json({ mensaje: "Proyecto eliminado correctamente y referencias en usuarios limpiadas." });
+  
+    } catch (error) {
+      console.error("❌ Error en el servidor:", error);
+      res.status(500).json({ mensaje: "Error en el servidor." });
+    }
+  };
