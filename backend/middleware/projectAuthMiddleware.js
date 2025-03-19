@@ -1,90 +1,32 @@
-import jwt from "jsonwebtoken";
-import User from "../models/User.js";
-import dotenv from "dotenv";
-
-dotenv.config();
+import Project from "../models/Project.js";
 
 /**
- * Middleware para verificar si el usuario está autenticado
+ * @desc Middleware para verificar si el usuario es admin o responsable del proyecto
  */
-export const authMiddleware = async (req, res, next) => {
+export const verificarPermisoProyecto = async (req, res, next) => {
   try {
-    const token =
-      req.cookies?.token || req.headers.authorization?.split(" ")[1];
+    const usuarioAutenticado = req.usuario; // Usuario que hace la petición
+    const { id } = req.params; // ID del proyecto a verificar
 
-    if (!token) {
-      return res
-        .status(401)
-        .json({ mensaje: "No autorizado. Token no proporcionado." });
+    const proyecto = await Project.findById(id);
+    if (!proyecto) {
+      return res.status(404).json({ mensaje: "Proyecto no encontrado." });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.usuario = await User.findById(decoded.id).select("-password"); // Excluye la contraseña
-
-    if (!req.usuario) {
+    // Verificar si es admin o responsable del proyecto
+    if (
+      usuarioAutenticado.rol !== "admin" &&
+      !proyecto.responsibles.includes(usuarioAutenticado._id)
+    ) {
       return res
-        .status(401)
-        .json({ mensaje: "Token inválido o usuario no encontrado." });
+        .status(403)
+        .json({ mensaje: "No tienes permisos para modificar este proyecto." });
     }
 
+    // Si tiene permisos, continuar con la siguiente función
     next();
   } catch (error) {
-    console.error("❌ Error en autenticación:", error);
-    res.status(401).json({ mensaje: "Token inválido o expirado." });
+    console.error("❌ Error en permisos de proyecto:", error);
+    res.status(500).json({ mensaje: "Error en el servidor." });
   }
-};
-
-/**
- * Middleware para verificar si el usuario está autenticado (opcional), para tratarlo como un usuario anónimo
- */
-export const authMiddlewareOptional = async (req, res, next) => {
-  try {
-    const token =
-      req.cookies?.token || req.headers.authorization?.split(" ")[1];
-
-    if (!token) {
-      req.usuario = null;
-      return next();
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.usuario = await User.findById(decoded.id).select("-password");
-
-    if (!req.usuario) {
-      req.usuario = null; // Si el usuario no se encuentra, tratarlo como anónimo
-    }
-
-    next();
-  } catch (error) {
-    console.error("⚠ Error en autenticación opcional:", error);
-    req.usuario = null; // Anónimo
-    next();
-  }
-};
-
-/**
- * Middleware para verificar si el usuario es administrador
- */
-export const adminMiddleware = (req, res, next) => {
-  if (!req.usuario || req.usuario.rol !== "admin") {
-    return res.status(403).json({
-      mensaje: "Acceso denegado. Se requieren permisos de administrador.",
-    });
-  }
-  next();
-};
-
-/**
- * Middleware para verificar si el usuario es moderador o superior (admin)
- */
-export const moderatorMiddleware = (req, res, next) => {
-  if (
-    !req.usuario ||
-    (req.usuario.rol !== "admin" && req.usuario.rol !== "moderator")
-  ) {
-    return res.status(403).json({
-      mensaje: "Acceso denegado. Se requieren permisos de moderador o admin.",
-    });
-  }
-  next();
 };
