@@ -1,5 +1,3 @@
-import React from "react";
-
 const InfoLanding = () => {
   return (
     <div className="w-full max-w-8xl mx-auto p-4">
