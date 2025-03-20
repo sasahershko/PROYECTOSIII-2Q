@@ -30,7 +30,7 @@ import { cn } from "@/lib/utils"
 import { getUserData } from "@/lib/authClient";
 import { formatDate, getProjectDates } from "@/utils/projectUtils";
 
-// Function to get status color
+//STATUS COLOR
 const getStatusColor = (status) => {
   const statusMap = {
     Completado: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
@@ -43,7 +43,7 @@ const getStatusColor = (status) => {
   return statusMap[status] || "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
 }
 
-// Function to calculate project timeline
+// CALCULAR EL TIMELINE
 const calculateTimeline = (startDate, endDate) => {
   const start = new Date(startDate)
   const end = new Date(endDate)

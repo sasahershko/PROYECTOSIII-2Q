@@ -27,7 +27,7 @@ export async function middleware(req) {
 
     // const userRole = payload.rol;
 
-    // //si ya estás autenticado y en la página de login o register, redirigir según el rol
+    //si ya estás autenticado y en la página de login o register, redirigir según el rol
     // if (
     //   req.nextUrl.pathname.startsWith("/login") ||
     //   req.nextUrl.pathname.startsWith("/register")
@@ -73,5 +73,5 @@ export async function middleware(req) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/user/:path*", "/login", "/register"], //middleware solo en rutas protegidas
+  matcher: ["/admin/:path*", "/user/:path*", "/login", "/register", "/projects"], //middleware solo en rutas protegidas
 };
