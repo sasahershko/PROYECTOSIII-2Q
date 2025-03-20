@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getProjects } from "@/lib/projects";
+import areaImages from "@/lib/areaImages";
 import Link from "next/link";
 
 export default function CarruselProyectos() {
@@ -46,16 +47,16 @@ export default function CarruselProyectos() {
   }
 
   return (
-    <div className="w-full max-w-6xl px-10">
+    <div id="proyectos" className="w-full max-w-7xl px-10 mb-12"> {/* Se añadió mb-28 para margen inferior */}
       <h2 className="text-2xl font-bold mb-6 bg-card p-2 px-4 inline-block">
         PROYECTOS EN DESARROLLO
       </h2>
 
-      {/* Contenedor de Imagen + Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-4">
+      {/* Contenedor de Imagen + Grid con más ancho para la imagen */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-4"> {/* Aumentamos el ancho de la imagen */}
 
         {/* Imagen del Proyecto Seleccionado con Animación */}
-        <div className="bg-gray-100 rounded-lg flex items-center justify-center w-full h-[340px] overflow-hidden relative">
+        <div className="bg-gray-100 rounded-lg flex items-center justify-center w-full h-[400px] overflow-hidden relative">
           <AnimatePresence mode="wait">
             <motion.div
               key={proyectoSeleccionado?._id}
@@ -65,7 +66,11 @@ export default function CarruselProyectos() {
               transition={{ duration: 0.5 }}
               className="absolute w-full h-full flex items-center justify-center"
             >
-              <span className="text-gray-500 text-xl font-semibold">Imagen</span>
+              <img
+                src={areaImages[proyectoSeleccionado?.area] || areaImages["Otros"]}
+                alt={proyectoSeleccionado?.name}
+                className="w-full h-full object-cover rounded-lg"
+              />
             </motion.div>
           </AnimatePresence>
         </div>
@@ -78,14 +83,13 @@ export default function CarruselProyectos() {
               onClick={() => setProyectoSeleccionado(proyecto)}
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.98 }}
-              animate={proyectoSeleccionado?._id === proyecto._id ? { scale: 1.03 } : { scale: 1 }}
-              className={`relative group border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all bg-white w-full h-[105px] p-0
+              className={`relative group border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all bg-white w-full h-[120px] p-0
                 ${proyectoSeleccionado?._id === proyecto._id ? 'shadow-lg shadow-gray-400/50' : ''}
               `}
             >
-              {/* Imagen */}
-              <div className="w-full h-[75%] bg-gray-200 flex items-center justify-center text-gray-500 overflow-hidden">
-                <span className="object-cover">Imagen</span>
+              {/* Imagen según el área */}
+              <div className="w-full h-[75%] bg-gray-200 flex items-center justify-center overflow-hidden">
+                <img src={areaImages[proyecto.area] || areaImages["Otros"]} alt={proyecto.name} className="w-full h-full object-cover" />
               </div>
             
               {/* Área del grado */}
@@ -96,11 +100,6 @@ export default function CarruselProyectos() {
               >
                 {proyecto.area}
               </div>
-            
-              {/* Sombreado en el borde SOLO para el seleccionado */}
-              {proyectoSeleccionado?._id === proyecto._id && (
-                <div className="absolute inset-0 rounded-lg border border-gray-300 shadow-md shadow-gray-400/50"></div>
-              )}
             </motion.button> 
           ))}
 
@@ -151,5 +150,6 @@ export default function CarruselProyectos() {
         </AnimatePresence>
       </div>
     </div>
-  );
+);
+
 }

@@ -1,8 +1,8 @@
-import React from "react";
 import Carrusel from "@/components/landing/Carrusel";
-import ProjectCenterLanding from "@/components/landing/ProjectCenterLanding"; // Nombre actualizado
-import ContactoLanding from "@/components/landing/ContactoLanding"; // Nombre actualizado
-import CarruselProyectos from "@/components/landing/CarruselProyectos"; // Se mantiene
+import ContactoLanding from "@/components/landing/ContactoLanding";
+import CarruselProyectos from "@/components/landing/CarruselProyectos";
+import PorqueElegir from "@/components/landing/PorqueElegir";
+import MapaContacto from "@/components/landing/MapaContacto";
 
 export default function Home() {
   return (
@@ -32,18 +32,25 @@ export default function Home() {
         </a>
       </div>
 
-      {/* Contenido principal con ancho unificado */}
-      <div className="w-full max-w-5xl px-4 flex flex-col gap-6"> 
-        {/* PROJECT CENTER */}
-        <ProjectCenterLanding />
-
-        {/* PROYECTOS EN DESARROLLO */}
-        <CarruselProyectos />
+      {/* Contenido principal centrado */}
+      <div className="w-full max-w-[90%] xl:max-w-[1400px] px-8 flex flex-col gap-16 mx-auto items-center"> 
 
         {/* CONTACTO */}
-        <div className="w-full max-w-6xl mb-12">
-          <ContactoLanding />
+        <div className="w-full flex justify-center">
+            <ContactoLanding />
         </div>
+
+        {/* PROYECTOS EN DESARROLLO */}
+        <div className="w-full flex justify-center">
+            <CarruselProyectos />
+        </div>
+
+        {/* Sección de ¿Por qué elegir el Project Center? */}
+        <PorqueElegir />
+
+        {/* Sección Mapa y Contacto */}
+        <MapaContacto />
+
       </div>
     </div>
   );
