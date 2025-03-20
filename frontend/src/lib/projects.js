@@ -4,7 +4,8 @@ import { cookies } from "next/headers";
 
 export async function getProjects() {
   try {
-    const token = cookies().get("token")?.value;
+    const cookieStore = await cookies(); 
+    const token = cookieStore.get("token")?.value;
 
     // hacer petición con el token si existe
     const response = await fetch(`${process.env.BACK_URL}/api/projects`, {

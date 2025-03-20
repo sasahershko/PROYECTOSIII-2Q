@@ -6,6 +6,7 @@ const config = {
   content: [
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+      "./components/ui/**/*.{js,ts,jsx,tsx}" //PARA SHADCN/UI
   ],
   theme: {
     extend: {

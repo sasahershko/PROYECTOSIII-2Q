@@ -1,5 +1,5 @@
 'use client';
-import AddProjectForm from '@components/projects/AddProjectForm'
+import AddProjectForm from '@/components/projects/AddProjectForm'
 
 export default function NewProject() {
     return (

@@ -1,3 +1,5 @@
+import React from "react";
+import Link from 'next/link';
 import Carrusel from "@/components/landing/Carrusel";
 import ContactoLanding from "@/components/landing/ContactoLanding";
 import CarruselProyectos from "@/components/landing/CarruselProyectos";
@@ -17,7 +19,7 @@ export default function Home() {
         className="h-20 min-w-full content-center flex justify-center items-center"
         id="info"
       >
-        <a href="#info">
+        <Link href="#info">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -29,7 +31,7 @@ export default function Home() {
               fill=""
             ></path>
           </svg>
-        </a>
+        </Link>
       </div>
 
       {/* Contenido principal centrado */}
