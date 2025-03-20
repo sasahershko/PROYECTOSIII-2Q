@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import SpinLoader from "@/components/SpinLoader";
 
 // Funcion para obtener el token desde las cookies
 const getTokenFromCookies = () => {
@@ -45,7 +46,14 @@ const ParticipantsList = () => {
     fetchParticipants();
   }, [projectId]);
 
-  if (loading) return <p className="text-center">Cargando...</p>;
+
+  if (loading) {
+    return (
+      <div className="pt-44 flex items-center justify-center">
+        <SpinLoader size="49px" />
+      </div>
+    );
+  }
   if (error) return <p className="text-center text-red-500">{error}</p>;
 
   return (

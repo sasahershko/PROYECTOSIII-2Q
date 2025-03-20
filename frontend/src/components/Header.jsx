@@ -34,7 +34,7 @@ export default function Header() {
         {(userRole === "admin" || userRole === "user") ? (
           <>
             <Link
-              href={userRole === "admin" ? "/admin/projects" : "/user/projects"}
+              href={"/projects"}
               className="transition duration-300 hover:text-gray-500"
             >
               Proyectos

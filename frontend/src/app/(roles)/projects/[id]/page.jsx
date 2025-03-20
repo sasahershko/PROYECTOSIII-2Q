@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from "react";
-import ProjectsNavBar from "@components/projects/ProjectsNavBar";
-import ProjectDescription from "@components/projects/ProjectDescription";
+import ProjectsNavBar from "@/components/projects/ProjectsNavBar";
+import ProjectDescription from "@/components/projects/ProjectDescription";
 import SpinLoader from "@components/SpinLoader";
 import { getProjectById } from '@lib/projects';
 import {useParams} from 'next/navigation';

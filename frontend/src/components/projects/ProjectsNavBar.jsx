@@ -8,24 +8,24 @@ export default function ProjectsNavBar({ role }) {
     const pathname = usePathname();
 
     const links = [
-        { name: "Proyectos", href: `/admin/projects/${projectId}`, match: `/admin/projects/${projectId}` },
-        { name: "Participantes", href: `/admin/projects/${projectId}/participants`, match: `/admin/projects/${projectId}/participants` },
-        { name: "Presupuesto", href: "/admin/projects/areas", match: "/admin/projects/areas" },
-        { name: "Convocatorias", href: "/admin/projects/calendar", match: "/admin/projects/calendar" },
-        { name: "Cronograma", href: "/admin/projects/calendar", match: "/admin/projects/calendar" }
+        { name: "Vista general", href: `/projects/${projectId}`, match: `/projects/${projectId}` },
+        { name: "Participantes", href: `/projects/${projectId}/participants`, match: `/projects/${projectId}/participants` },
+        { name: "Presupuesto", href: "/projects/areas", match: "/projects/areas" },
+        { name: "Convocatorias", href: "/projects/calendar", match: "/projects/calendar" },
+        { name: "Cronograma", href: "/projects/cronograma", match: "/projects/calendar" }
     ];
 
     return (
-        <div className="border-b px-6 py-4 bg-primary text-white flex items-center justify-between">
+        <div className="border-b px-6 py-4 bg-background text-foreground dark:bg-primary dark:text-primary-foreground flex items-center justify-between">
             <div className="flex space-x-6">
                 {links.map((link) => {
-                    const isActive = pathname === link.match;
+                    const isActive = pathname.startsWith(link.match);
                     return (
                         <Link
                             key={link.href}
                             href={link.href}
-                            className={`text-primary-text transition-all duration-300 hover:text-gray-500 ${
-                                isActive ? "font-bold text-lg scale-105" : "text-black"
+                            className={`transition-all duration-300 hover:text-gray-500 dark:hover:text-gray-300 ${
+                                isActive ? "font-bold text-foreground dark:text-primary-foreground border-b-2 border-foreground dark:border-primary-foreground" : "text-foreground dark:text-primary-foreground"
                             }`}
                         >
                             {link.name}

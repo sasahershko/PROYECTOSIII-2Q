@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import useProjects from "@/hooks/useProjects";
 import ProjectsNavBar from "@/components/projects/ProjectsNavBar";
+import SpinLoader from "@/components/SpinLoader";
 
 const ParticipantsPage = () => {
   // Obtiene el id del proyecto desde la url
@@ -48,7 +49,14 @@ const ParticipantsPage = () => {
     fetchParticipants();
   }, [projectId, projects, projectsLoading]);
 
-  if (loading) return <p className="text-center">Cargando...</p>;
+  
+    if (loading) {
+      return (
+        <div className="pt-44 flex items-center justify-center">
+          <SpinLoader size="49px" />
+        </div>
+      );
+    }
   if (error) return <p className="text-center text-red-500">{error}</p>;
 
   return (

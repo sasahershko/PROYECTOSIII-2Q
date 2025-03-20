@@ -1,4 +1,5 @@
 import React from "react";
+import Link from 'next/link';
 import Carrusel from "@/components/landing/Carrusel";
 import ProjectCenterLanding from "@/components/landing/ProjectCenterLanding"; // Nombre actualizado
 import ContactoLanding from "@/components/landing/ContactoLanding"; // Nombre actualizado

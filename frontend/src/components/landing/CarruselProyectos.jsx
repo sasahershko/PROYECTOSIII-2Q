@@ -106,7 +106,7 @@ export default function CarruselProyectos() {
 
           {/* Ver más proyectos */}
           <Link
-            href="/admin/projects"
+            href="/projects"
             className="border-2 border-dashed rounded-lg flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-all text-center h-[105px]"
           >
             + Ver más
