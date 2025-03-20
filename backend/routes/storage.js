@@ -7,7 +7,62 @@ import { createItem, updateImage, uploadAndUpdateUserImage } from "../controller
 
 const storageRouter = express.Router();
 
+
+/**
+ * @swagger
+ * tags:
+ *   name: Storage
+ *   description: Endpoints para la gestión de almacenamiento de imágenes
+ */
+
+/**
+ * @swagger
+ * /api/storage/local:
+ *   post:
+ *     summary: Subir imagen de manera local
+ *     tags: [Storage]
+ *     description: Permite subir una imagen al almacenamiento local del servidor.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Imagen subida correctamente.
+ *       400:
+ *         description: Error en la subida de la imagen.
+ */
 storageRouter.post("/local", uploadMiddleware.single("image"), createItem);
+
+/**
+ * @swagger
+ * /api/storage:
+ *   post:
+ *     summary: Subir imagen a memoria
+ *     tags: [Storage]
+ *     description: Permite subir una imagen a la memoria del servidor.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Imagen subida correctamente.
+ *       413:
+ *         description: Error, archivo demasiado grande.
+ */
 storageRouter.post(
     "/",
     uploadMiddlewareMemory.single("image"),
@@ -18,56 +73,38 @@ storageRouter.post(
     updateImage
 );
 
-/*
-storageRouter.post(
-    "/:userId",
-    uploadMiddlewareMemory.single("image"),
-    async (req, res, next) => {
-        try {
-            if (!req.file) {
-                return res.status(400).json({ error: "Debe subir una imagen" });
-            }
-
-            //EXTRAER PARAMETROS
-            const { userId } = req.params;
-            const fileBuffer = req.file.buffer;
-            const fileName = req.file.originalname;
-            
-            
-
-            //BUSCAR USUARIO ID
-            const user = await User.findById(userId);
-            if (!user) {
-                return res.status(404).json({ error: "Usuario no encontrado" });
-            }
-
-            //SUBIR FOTO
-            //const imageUrl = `/${req.file.filename}`;
-            //const imageUrl = `http://localhost:${process.env.PORT}/storage/${req.file.filename}`;
-            
-            
-            //const imageUrl = await updateImage(fileBuffer, fileName);
-            const imgRes = await updateImage(req, res);
-            const imageUrl = imgRes.ipfs;
-
-
-            //UPDATE
-            user.profileImage = imageUrl;
-            await user.save();
-
-
-            //RES SEND
-            return res.status(200).json({
-                message: "Imagen de perfil actualizada correctamente",
-                profileImage: imageUrl,
-            });
-        } catch (error) {
-            console.error(error);
-            next(error);
-        }
-    }
-);
-*/
+/**
+ * @swagger
+ * /api/storage/{userId}:
+ *   post:
+ *     summary: Subir y actualizar imagen de perfil de usuario
+ *     tags: [Storage]
+ *     description: Permite subir y actualizar la imagen de perfil de un usuario.
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         description: ID del usuario al que se le actualizará la imagen de perfil.
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Imagen de perfil actualizada correctamente.
+ *       400:
+ *         description: No se subió ninguna imagen.
+ *       404:
+ *         description: Usuario no encontrado.
+ */
 storageRouter.post("/:userId", uploadMiddlewareMemory.single("image"), uploadAndUpdateUserImage);
 
 
