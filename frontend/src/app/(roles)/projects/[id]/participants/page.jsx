@@ -6,7 +6,7 @@ import ProjectsNavBar from "@/components/projects/ProjectsNavBar";
 import ParticipantsList from "@/components/projects/ParticipantsList"; // Importamos el componente
 
 const ParticipantsPage = () => {
-  const { id: projectId } = useParams(); // Obtiene el ID del proyecto desde la URL
+  const { id: projectId } = useParams(); 
 
 
   return (

@@ -12,7 +12,7 @@ export default function ProjectsNavBar({ role }) {
         { name: "Participantes", href: `/projects/${projectId}/participants`, match: `/projects/${projectId}/participants` },
         { name: "Presupuesto", href: "/projects/areas", match: "/projects/areas" },
         { name: "Convocatorias", href: "/projects/calendar", match: "/projects/calendar" },
-        { name: "Cronograma", href: "/projects/cronograma", match: "/projects/calendar" }
+        { name: "Calendario", href: `/projects/${projectId}/calendar`, match: `/projects/${projectId}/calendar` }
     ];
 
     return (

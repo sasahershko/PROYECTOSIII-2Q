@@ -127,7 +127,7 @@ export default function ProjectDescription({ project }) {
             </div>
 
             {/* Project Image */}
-            <div className="relative w-full h-[350px] rounded-lg overflow-hidden bg-gradient-to-br from-gray-50 to-gray-200 dark:from-gray-800 dark:to-gray-900 shadow-inner mt-6 mb-6">
+            <div className="relative w-full h-[350px] rounded-lg overflow-hidden bg-white dark:bg-gray-900 shadow-inner mt-6 mb-6">
               {project.image ? (
                 <Image
                   src={project.image || "/placeholder.svg?height=350&width=700"}
@@ -329,7 +329,7 @@ export default function ProjectDescription({ project }) {
                         <User className="w-4 h-4" />
                         Cliente Externo
                       </h3>
-                      <div className="flex items-center gap-3 p-2 rounded-md bg-gray-50 dark:bg-gray-800">
+                      <div className="flex items-center gap-3 p-2 rounded-md bg-white dark:bg-gray-800">
                         <Avatar>
                           <AvatarImage src="/default-avatar.png" alt={project.contactPerson} />
                           <AvatarFallback>
