@@ -1,5 +1,3 @@
-import React from "react";
-
 const ProjectCenterLanding = () => {
   return (
     <div className="w-full max-w-8xl mx-auto p-4">
