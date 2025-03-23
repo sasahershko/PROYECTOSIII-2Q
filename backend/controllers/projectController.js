@@ -167,3 +167,68 @@ export const deleteProject = async (req, res) => {
       res.status(500).json({ mensaje: "Error en el servidor." });
     }
   };
+
+  export const updateProject = async (req, res) => {
+    try {
+        const { id } = req.params; // ID del proyecto a actualizar
+        const { usuario } = req; // Usuario autenticado
+
+        // Buscar el proyecto a actualizar
+        const existingProject = await Project.findById(id);
+        if (!existingProject) {
+            return res.status(404).json({ mensaje: "Proyecto no encontrado." });
+        }
+
+        // Verificar permisos: solo admin o responsables pueden actualizar
+        if (
+            usuario.rol !== "admin" &&
+            !existingProject.responsibles.includes(usuario._id)
+        ) {
+            return res.status(403).json({ mensaje: "No tienes permisos para actualizar este proyecto." });
+        }
+
+        // Validar que las fechas sean correctas si están presentes en la petición
+        if (req.body.startDate && req.body.endDate && new Date(req.body.startDate) > new Date(req.body.endDate)) {
+            return res.status(400).json({ mensaje: "La fecha de inicio no puede ser mayor que la de finalización." });
+        }
+
+        // Validar si los responsables existen si se proporcionan
+        if (req.body.responsibles) {
+            const validResponsibles = await User.find({ _id: { $in: req.body.responsibles } });
+            if (validResponsibles.length !== req.body.responsibles.length) {
+                return res.status(400).json({ mensaje: "Alguno de los responsables no existen." });
+            }
+        }
+
+        // Validar si los usuarios existen si se proporcionan
+        if (req.body.users) {
+            const validUsers = await User.find({ _id: { $in: req.body.users } });
+            if (validUsers.length !== req.body.users.length) {
+                return res.status(400).json({ mensaje: "Alguno de los usuarios no existen." });
+            }
+        }
+
+        // Unificar usuarios y responsables sin duplicados si se proporcionan
+        if (req.body.responsibles || req.body.users) {
+            const uniqueUsers = [...new Set([...(req.body.responsibles || existingProject.responsibles), ...(req.body.users || existingProject.users)])];
+            req.body.users = uniqueUsers;
+        }
+
+        // Actualizar el proyecto con los campos proporcionados
+        const updatedProject = await Project.findByIdAndUpdate(
+            id,
+            { $set: req.body },
+            { new: true } // Para devolver el proyecto actualizado
+        );
+
+        // Actualizar los usuarios asociados al proyecto si se modificaron
+        if (req.body.users) {
+            await User.updateMany({ projects: id }, { $pull: { projects: id } });
+            await User.updateMany({ _id: { $in: req.body.users } }, { $addToSet: { projects: id } });
+        }
+
+        return res.status(200).json({ mensaje: "Proyecto actualizado con éxito.", project: updatedProject });
+    } catch (error) {
+        return res.status(500).json({ mensaje: "Error al actualizar el proyecto.", error: error.message });
+    }
+};
