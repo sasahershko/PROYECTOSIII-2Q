@@ -4,6 +4,7 @@ import {
   getProjectById,
   getAllProjects,
   deleteProject,
+  updateProject,
 } from "../controllers/projectController.js";
 import { authMiddleware, authMiddlewareOptional } from "../middleware/authMiddleware.js";
 import { verificarPermisoProyecto } from "../middleware/projectAuthMiddleware.js";
@@ -237,5 +238,93 @@ projectRouter.get("/:id", getProjectById);
  *         description: Error en el servidor.
  */
 projectRouter.delete("/:id", verificarPermisoProyecto, deleteProject);
+
+
+/**
+ * @swagger
+ * /api/projects/{id}:
+ *   put:
+ *     summary: Actualizar un proyecto existente
+ *     tags: [Proyectos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del proyecto a actualizar.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: "Proyecto actualizado"
+ *               contactPerson:
+ *                 type: string
+ *                 example: "Juan Pérez"
+ *               company:
+ *                 type: string
+ *                 enum: ["U-TAD", "ILION", "OTROS"]
+ *                 example: "ILION"
+ *               area:
+ *                 type: string
+ *                 example: "Inteligencia Artificial"
+ *               responsibles:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 example: ["67b62dd740c49029ad73d9eb"]
+ *               users:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 example: ["67b6730a953a36e3b39ab73c"]
+ *               benefit:
+ *                 type: string
+ *                 example: "Automatización de procesos"
+ *               projectFolder:
+ *                 type: string
+ *                 example: "/projects/proyecto_actualizado"
+ *               description:
+ *                 type: string
+ *                 example: "Actualización de características del proyecto."
+ *               practicesAgreement:
+ *                 type: boolean
+ *                 example: true
+ *               practicesStudents:
+ *                 type: integer
+ *                 example: 5
+ *               sdpStudents:
+ *                 type: integer
+ *                 example: 4
+ *               startDate:
+ *                 type: string
+ *                 format: date
+ *                 example: "2024-03-01"
+ *               endDate:
+ *                 type: string
+ *                 format: date
+ *                 example: "2024-12-15"
+ *     responses:
+ *       200:
+ *         description: Proyecto actualizado con éxito.
+ *       400:
+ *         description: Datos inválidos o campos requeridos faltantes.
+ *       401:
+ *         description: No autorizado (falta token de autenticación).
+ *       403:
+ *         description: No tienes permisos para actualizar este proyecto.
+ *       404:
+ *         description: Proyecto no encontrado.
+ *       500:
+ *         description: Error interno del servidor.
+ */
+projectRouter.put("/:id", authMiddleware, updateProject);
 
 export default projectRouter;
