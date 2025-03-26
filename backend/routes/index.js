@@ -1,7 +1,7 @@
 import express from "express";
 import userRouter from "./userRoutes.js";
 import projectRouter from "./projectRoutes.js";
-import storageRouter from "./storage.js";
+import storageRouter from "./storageRoutes.js";
 import ideaRoutes from "./ideaRoutes.js";
 
 const routes = express.Router();

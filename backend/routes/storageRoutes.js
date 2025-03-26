@@ -3,6 +3,7 @@ import {
     uploadMiddleware,
     uploadMiddlewareMemory,
 } from "../utils/handle_storage.js";
+import { authMiddleware } from "../middleware/authMiddleware.js";
 import { createItem, updateImage, uploadAndUpdateUserImage } from "../controllers/storage.js";
 
 const storageRouter = express.Router();
@@ -37,8 +38,10 @@ const storageRouter = express.Router();
  *         description: Imagen subida correctamente.
  *       400:
  *         description: Error en la subida de la imagen.
+ *       401:
+ *         description: No autorizado (falta token de autenticación).
  */
-storageRouter.post("/local", uploadMiddleware.single("image"), createItem);
+storageRouter.post("/local", authMiddleware ,uploadMiddleware.single("image"), createItem);
 
 /**
  * @swagger
@@ -60,11 +63,15 @@ storageRouter.post("/local", uploadMiddleware.single("image"), createItem);
  *     responses:
  *       200:
  *         description: Imagen subida correctamente.
+ *       400:
+ *         description: Error en la subida de la imagen.
+ *       401:
+ *         description: No autorizado (falta token de autenticación).
  *       413:
  *         description: Error, archivo demasiado grande.
  */
 storageRouter.post(
-    "/",
+    "/", authMiddleware, 
     uploadMiddlewareMemory.single("image"),
     (err, req, res, next) => {
         console.log("ERROR:::::", err.code);
@@ -101,11 +108,13 @@ storageRouter.post(
  *       200:
  *         description: Imagen de perfil actualizada correctamente.
  *       400:
- *         description: No se subió ninguna imagen.
+ *         description: Error en la subida de la imagen.
+ *       401:
+ *         description: No autorizado (falta token de autenticación).
  *       404:
  *         description: Usuario no encontrado.
  */
-storageRouter.post("/:userId", uploadMiddlewareMemory.single("image"), uploadAndUpdateUserImage);
+storageRouter.post("/:userId", authMiddleware, uploadMiddlewareMemory.single("image"), uploadAndUpdateUserImage);
 
 
 export default storageRouter;
