@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 
 export async function getProjects() {
   try {
-    const cookieStore = await cookies(); 
+    const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value;
 
     // hacer petición con el token si existe
@@ -57,12 +57,15 @@ export async function createProject(formData) {
 
 export async function getProjectById(projectId) {
   try {
-    const res = await fetch(`${process.env.BACK_URL}/api/projects/${projectId}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    const res = await fetch(
+      `${process.env.BACK_URL}/api/projects/${projectId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     if (!res.ok) {
       throw new Error(`Error al obtener el proyecto: ${res.statusText}`);
