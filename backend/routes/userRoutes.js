@@ -9,6 +9,8 @@ import {
   getAllUsers,
   deleteUser,
   updateUser,
+  getDeletedUsers,
+  restoreUser,
 } from "../controllers/userController.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 import { validateRegisterData } from "../middlewares/validateRegisterData.js";
@@ -168,6 +170,52 @@ userRouter.post("/login", loginUser);
  *         description: No autorizado.
  */
 userRouter.get("/", authMiddleware, getAllUsers);
+
+/**
+ * @swagger
+ * tags:
+ *   name: Usuarios
+ *   description: Endpoints para la gestión de usuarios
+ */
+
+/**
+ * @swagger
+ * /api/users/deleted:
+ *   get:
+ *     summary: Obtener usuarios eliminados (solo admin)
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de usuarios eliminados.
+ *       403:
+ *         description: No autorizado.
+ */
+userRouter.get("/deleted", authMiddleware, getDeletedUsers);
+
+/**
+ * @swagger
+ * /api/users/{id}/restore:
+ *   put:
+ *     summary: Restaurar un usuario eliminado
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del usuario a restaurar
+ *     responses:
+ *       200:
+ *         description: Usuario restaurado correctamente.
+ *       403:
+ *         description: No autorizado.
+ */
+userRouter.put("/:id/restore", authMiddleware, restoreUser);
 
 /**
  * @swagger

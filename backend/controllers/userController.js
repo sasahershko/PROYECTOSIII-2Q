@@ -61,7 +61,7 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({ mensaje: "El correo ya está en uso." });
     }
 
-    const dniExistente = await User.findOne({ dni });
+    const dniExistente = await User.findOneWithDeleted({ dni });
     if (dniExistente) {
       return res.status(400).json({ mensaje: "El DNI ya está registrado." });
     }
@@ -229,7 +229,7 @@ export const loginUser = async (req, res) => {
     }
 
     const usuario = await User.findOne({ email });
-    if (!usuario || usuario.isDeleted) {
+    if (!usuario) {
       return res
         .status(401)
         .json({ mensaje: "Correo o contraseña incorrectos" });
@@ -289,7 +289,6 @@ export const loginUser = async (req, res) => {
  */
 export const getUserProfile = async (req, res) => {
   try {
-    // Obtener el token desde las cookies o el header Authorization
     const token =
       req.cookies?.token || req.headers.authorization?.split(" ")[1];
 
@@ -297,17 +296,15 @@ export const getUserProfile = async (req, res) => {
       return res.status(401).json({ mensaje: "No autorizado" });
     }
 
-    // Verificar el token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Buscar usuario en la base de datos
-    const usuario = await User.findById(decoded.id).select("name email role");
+    const usuario = await User.findOne({
+      _id: decoded.id,
+    }).select("name email role");
 
     if (!usuario) {
       return res.status(404).json({ mensaje: "Usuario no encontrado." });
     }
 
-    // Devolver solo la información necesaria
     res.status(200).json({
       id: usuario._id,
       name: usuario.name,
@@ -327,15 +324,15 @@ export const getUserProfile = async (req, res) => {
  */
 export const getUserProfileById = async (req, res) => {
   try {
-    // Buscar el usuario por ID excluyendo la contraseña y el email
-    const user = await User.findById(req.params.id).select("-password -email");
+    const user = await User.findOne({
+      _id: req.params.id,
+      deleted: false,
+    }).select("-password -email");
 
-    // Si el usuario no existe, devolver un error 404
     if (!user) {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
-    // Responder con la información del usuario
     res.status(200).json(user);
   } catch (error) {
     console.error("❌ Error en el servidor:", error);
@@ -350,7 +347,7 @@ export const getUserProfileById = async (req, res) => {
  */
 export const getAllUsers = async (req, res) => {
   try {
-    const usuarios = await User.find({ isDeleted: false }).select("-password");
+    const usuarios = await User.find().select("-password");
     res.status(200).json(usuarios);
   } catch (error) {
     console.error("❌ Error en getAllUsers:", error);
@@ -464,50 +461,56 @@ export const updateUser = async (req, res) => {
  */
 export const deleteUser = async (req, res) => {
   try {
-    const usuarioAutenticado = req.usuario;
     const { id } = req.params;
+    const user = await User.findById(id);
 
-    const usuarioAEliminar = await User.findById(id);
-    if (!usuarioAEliminar || usuarioAEliminar.isDeleted) {
-      return res.status(404).json({ mensaje: "Usuario no encontrado." });
+    if (!user) {
+      return res.status(404).json({ mensaje: "Usuario no encontrado" });
     }
 
-    if (
-      usuarioAutenticado.rol !== "admin" &&
-      usuarioAutenticado._id.toString() !== id
-    ) {
-      return res
-        .status(403)
-        .json({ mensaje: "No tienes permisos para eliminar este usuario." });
-    }
-
-    usuarioAEliminar.isDeleted = true;
-    await usuarioAEliminar.save();
-
-    // 🔁 Eliminar referencias del usuario en proyectos
-    await Project.updateMany(
-      {
-        $or: [
-          { users: usuarioAEliminar._id },
-          { responsibles: usuarioAEliminar._id },
-        ],
-      },
-      {
-        $pull: {
-          users: usuarioAEliminar._id,
-          responsibles: usuarioAEliminar._id,
-        },
-      }
-    );
-
-    res
-      .status(200)
-      .json({
-        mensaje:
-          "Usuario marcado como eliminado (soft delete) y desvinculado de proyectos.",
-      });
+    await user.delete();
+    res.status(200).json({ mensaje: "Usuario eliminado (soft delete)" });
   } catch (error) {
-    console.error("❌ Error en deleteUser:", error);
-    res.status(500).json({ mensaje: "Error en el servidor." });
+    res
+      .status(500)
+      .json({ mensaje: "Error al eliminar usuario", error: error.message });
+  }
+};
+
+export const getDeletedUsers = async (req, res) => {
+  try {
+    if (req.usuario.rol !== "admin") {
+      return res.status(403).json({
+        mensaje: "Solo los administradores pueden ver usuarios eliminados.",
+      });
+    }
+
+    const deletedUsers = await User.findDeleted().select(
+      "name surname email rol grade deletedAt"
+    );
+    res.status(200).json(deletedUsers);
+  } catch (error) {
+    res.status(500).json({
+      mensaje: "Error al obtener usuarios eliminados",
+      error: error.message,
+    });
+  }
+};
+
+export const restoreUser = async (req, res) => {
+  try {
+    if (req.usuario.rol !== "admin") {
+      return res.status(403).json({
+        mensaje: "Solo los administradores pueden restaurar usuarios.",
+      });
+    }
+
+    const { id } = req.params;
+    await User.restore({ _id: id });
+    res.status(200).json({ mensaje: "Usuario restaurado correctamente." });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ mensaje: "Error al restaurar usuario", error: error.message });
   }
 };

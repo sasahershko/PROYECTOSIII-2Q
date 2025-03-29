@@ -9,7 +9,6 @@ const deleteExpiredUnverifiedUsers = async () => {
     const now = new Date();
     const result = await User.deleteMany({
       isVerified: false,
-      isDeleted: false,
       verificationCodeExpires: { $lt: now },
     });
 
