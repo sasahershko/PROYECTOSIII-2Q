@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import mongooseDelete from "mongoose-delete";
 import { validarEmail } from "../utils/validators/emailValidator.js";
 import { validarDNI } from "../utils/validators/dniValidator.js";
 // import { validarPassword } from "../utils/validators/passwordValidator.js"; // 👉 Descomentar para activar validación fuerte
@@ -52,10 +53,12 @@ const userSchema = new mongoose.Schema(
     verificationAttempts: { type: Number, default: 3 },
     verificationCodeExpires: { type: Date },
     profileImage: { type: String, default: null },
-    isDeleted: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
+
+// 🔄 Activar soft delete con mongoose-delete
+userSchema.plugin(mongooseDelete, { deletedAt: true, overrideMethods: true });
 
 const User = mongoose.model("User", userSchema);
 export default User;

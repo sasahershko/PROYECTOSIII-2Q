@@ -5,6 +5,8 @@ import {
   getAllProjects,
   deleteProject,
   updateProject,
+  getDeletedProjects,
+  restoreProject,
 } from "../controllers/projectController.js";
 import {
   authMiddleware,
@@ -84,17 +86,28 @@ projectRouter.post("/create", authMiddleware, createProject);
 
 /**
  * @swagger
- * /api/projects:
+ * tags:
+ *   name: Proyectos
+ *   description: Endpoints para gestionar proyectos (solo proyectos no eliminados)
+ */
+
+projectRouter.get("/", authMiddlewareOptional, getAllProjects);
+
+/**
+ * @swagger
+ * /api/projects/deleted:
  *   get:
- *     summary: Obtener todos los proyectos (no eliminados)
+ *     summary: Obtener proyectos eliminados (solo admin)
  *     tags: [Proyectos]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Lista de proyectos obtenida con éxito.
- *       500:
- *         description: Error interno del servidor.
+ *         description: Lista de proyectos eliminados obtenida con éxito.
+ *       403:
+ *         description: No autorizado.
  */
-projectRouter.get("/", authMiddlewareOptional, getAllProjects);
+projectRouter.get("/deleted", authMiddleware, getDeletedProjects);
 
 /**
  * @swagger
@@ -184,5 +197,29 @@ projectRouter.delete(
   verificarPermisoProyecto,
   deleteProject
 );
+
+/**
+ * @swagger
+ * /api/projects/{id}/restore:
+ *   put:
+ *     summary: Restaurar un proyecto eliminado
+ *     tags: [Proyectos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Proyecto restaurado con éxito.
+ *       403:
+ *         description: No autorizado.
+ *       500:
+ *         description: Error interno del servidor.
+ */
+projectRouter.put("/:id/restore", authMiddleware, restoreProject);
 
 export default projectRouter;

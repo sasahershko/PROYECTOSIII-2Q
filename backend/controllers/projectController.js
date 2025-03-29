@@ -3,7 +3,7 @@ import User from "../models/User.js";
 
 // 🔁 Validar IDs de usuarios y devolver lista filtrada (sin duplicados ni inexistentes)
 const filtrarUsuariosExistentes = async (ids = []) => {
-  const usuarios = await User.find({ _id: { $in: ids }, isDeleted: false });
+  const usuarios = await User.find({ _id: { $in: ids } });
   return usuarios.map((u) => u._id.toString());
 };
 
@@ -82,8 +82,9 @@ export const createProject = async (req, res) => {
       .status(201)
       .json({ mensaje: "Proyecto creado con éxito.", project: nuevoProyecto });
   } catch (error) {
-    console.error("❌ Error al crear proyecto:", error);
-    res.status(500).json({ mensaje: "Error al crear proyecto" });
+    res
+      .status(500)
+      .json({ mensaje: "Error al crear proyecto", error: error.message });
   }
 };
 
@@ -91,24 +92,23 @@ export const createProject = async (req, res) => {
 export const getAllProjects = async (req, res) => {
   try {
     let projects;
-
     if (!req.usuario) {
-      projects = await Project.find({ isDeleted: false }).select(
-        "area name description"
-      );
+      projects = await Project.find().select("area name description");
     } else if (req.usuario.rol === "admin") {
-      projects = await Project.find({ isDeleted: false });
+      projects = await Project.find();
     } else {
       projects = await Project.find({
-        isDeleted: false,
         $or: [{ responsibles: req.usuario._id }, { users: req.usuario._id }],
       });
     }
-
     res.status(200).json(projects);
   } catch (error) {
-    console.error("❌ Error al obtener proyectos:", error);
-    res.status(500).json({ mensaje: "Error al obtener proyectos" });
+    res
+      .status(500)
+      .json({
+        mensaje: "Error al obtener los proyectos",
+        error: error.message,
+      });
   }
 };
 
@@ -116,17 +116,14 @@ export const getAllProjects = async (req, res) => {
 export const getProjectById = async (req, res) => {
   try {
     const { id } = req.params;
-
     const project = await Project.findById(id)
-      .populate("responsibles", "name surname")
-      .populate("users", "name surname")
-      .populate("pendingNotes.userWhoWrites", "name surname")
-      .populate("pendingNotes.userWhoReceives", "name surname");
+      .populate("responsibles", "name")
+      .populate("users", "name")
+      .populate("pendingNotes.userWhoWrites", "name")
+      .populate("pendingNotes.userWhoReceives", "name");
 
-    if (!project || project.isDeleted) {
+    if (!project)
       return res.status(404).json({ mensaje: "Proyecto no encontrado" });
-    }
-
     res.json(project);
   } catch (error) {
     res
@@ -142,7 +139,7 @@ export const updateProject = async (req, res) => {
     const { usuario } = req;
 
     const existingProject = await Project.findById(id);
-    if (!existingProject || existingProject.isDeleted) {
+    if (!existingProject) {
       return res.status(404).json({ mensaje: "Proyecto no encontrado." });
     }
 
@@ -230,16 +227,16 @@ export const updateProject = async (req, res) => {
 export const deleteProject = async (req, res) => {
   try {
     const { id } = req.params;
-    const usuarioAutenticado = req.usuario;
+    const usuario = req.usuario;
 
     const proyecto = await Project.findById(id);
-    if (!proyecto || proyecto.isDeleted) {
+    if (!proyecto) {
       return res.status(404).json({ mensaje: "Proyecto no encontrado" });
     }
 
     if (
-      usuarioAutenticado.rol !== "admin" &&
-      !proyecto.responsibles.includes(usuarioAutenticado._id)
+      usuario.rol !== "admin" &&
+      !proyecto.responsibles.includes(usuario._id)
     ) {
       return res
         .status(403)
@@ -247,15 +244,54 @@ export const deleteProject = async (req, res) => {
     }
 
     await User.updateMany({ projects: id }, { $pull: { projects: id } });
-
-    proyecto.isDeleted = true;
-    await proyecto.save();
+    await proyecto.delete();
 
     res
       .status(200)
       .json({ mensaje: "Proyecto eliminado correctamente (soft delete)" });
   } catch (error) {
-    console.error("❌ Error al eliminar proyecto:", error);
-    res.status(500).json({ mensaje: "Error al eliminar proyecto" });
+    res
+      .status(500)
+      .json({ mensaje: "Error al eliminar proyecto", error: error.message });
+  }
+};
+
+export const getDeletedProjects = async (req, res) => {
+  try {
+    if (req.usuario.rol !== "admin") {
+      return res.status(403).json({
+        mensaje: "Solo los administradores pueden ver proyectos eliminados.",
+      });
+    }
+
+    const deleted = await Project.findDeleted()
+      .populate("responsibles", "name")
+      .populate("users", "name");
+    res.status(200).json(deleted);
+  } catch (error) {
+    res.status(500).json({
+      mensaje: "Error al obtener proyectos eliminados",
+      error: error.message,
+    });
+  }
+};
+
+export const restoreProject = async (req, res) => {
+  try {
+    if (req.usuario.rol !== "admin") {
+      return res.status(403).json({
+        mensaje: "Solo los administradores pueden restaurar proyectos.",
+      });
+    }
+
+    const { id } = req.params;
+    const restored = await Project.restore({ _id: id });
+    res
+      .status(200)
+      .json({ mensaje: "Proyecto restaurado correctamente.", restored });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ mensaje: "Error al restaurar proyecto", error: error.message });
   }
 };

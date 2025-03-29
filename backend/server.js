@@ -1,7 +1,6 @@
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
-dotenv.config();
+import "./config/env.js";
 import connectDB from "./config/db.js";
 import setupSwagger from "./config/swagger.js";
 import cookieParser from "cookie-parser";

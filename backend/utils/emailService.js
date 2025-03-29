@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import "./../config/env.js";
 
 // Configuración del servicio de correo
 const transporter = nodemailer.createTransport({
