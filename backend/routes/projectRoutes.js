@@ -6,8 +6,8 @@ import {
   deleteProject,
   updateProject,
 } from "../controllers/projectController.js";
-import { authMiddleware, authMiddlewareOptional } from "../middleware/authMiddleware.js";
-import { verificarPermisoProyecto } from "../middleware/projectAuthMiddleware.js";
+import { authMiddleware, authMiddlewareOptional } from "../middlewares/authMiddleware.js";
+import { verificarPermisoProyecto } from "../middlewares/projectAuthMiddleware.js";
 
 const projectRouter = express.Router();
 

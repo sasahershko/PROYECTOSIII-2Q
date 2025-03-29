@@ -1,13 +1,9 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
 import nodemailer from "nodemailer";
 import User from "../models/User.js";
-import Project from "../models/Project.js";
 import { generateVerificationCode } from "../utils/verification.js";
 import { sendVerificationEmail } from "../utils/emailService.js";
-
-dotenv.config();
 
 //(estos son solo informativos, no salen en Swagger)
 /**
@@ -233,13 +229,12 @@ export const loginUser = async (req, res) => {
     }
 
     const usuario = await User.findOne({ email });
-    if (!usuario) {
+    if (!usuario || usuario.isDeleted) {
       return res
         .status(401)
         .json({ mensaje: "Correo o contraseña incorrectos" });
     }
 
-    // **Bloqueo de login si el usuario no está verificado**
     if (!usuario.isVerified) {
       return res.status(403).json({
         mensaje: "Debes verificar tu cuenta antes de iniciar sesión.",
@@ -253,7 +248,6 @@ export const loginUser = async (req, res) => {
         .json({ mensaje: "Correo o contraseña incorrectos" });
     }
 
-    // Generar token JWT
     const token = jwt.sign(
       {
         id: usuario._id,
@@ -265,7 +259,6 @@ export const loginUser = async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    // 🔥 Configurar cookie en la respuesta HTTP
     res.setHeader(
       "Set-Cookie",
       `token=${token}; Path=/; HttpOnly; SameSite=Lax`
@@ -284,7 +277,7 @@ export const loginUser = async (req, res) => {
       token,
     });
   } catch (error) {
-    console.error("❌ Error en el servidor:", error);
+    console.error("❌ Error en loginUser:", error);
     res.status(500).json({ mensaje: "Error en el servidor." });
   }
 };
@@ -357,13 +350,11 @@ export const getUserProfileById = async (req, res) => {
  */
 export const getAllUsers = async (req, res) => {
   try {
-    // Buscar todos los usuarios excepto las contraseñas
-    const usuarios = await User.find().select("-password");
-
+    const usuarios = await User.find({ isDeleted: false }).select("-password");
     res.status(200).json(usuarios);
   } catch (error) {
-    console.error("❌ Error en el servidor:", error);
-    res.status(500).json({ mensaje: "Error en el servidor" });
+    console.error("❌ Error en getAllUsers:", error);
+    res.status(500).json({ mensaje: "Error en el servidor." });
   }
 };
 
@@ -430,11 +421,9 @@ export const updateUser = async (req, res) => {
     if (rol) {
       if (!isAdmin) {
         console.log("⚠️ Usuario no admin intentó cambiar el rol.");
-        return res
-          .status(403)
-          .json({
-            message: "No tienes permiso para cambiar el rol de un usuario.",
-          });
+        return res.status(403).json({
+          message: "No tienes permiso para cambiar el rol de un usuario.",
+        });
       }
       if (!rolesPermitidos.includes(rol)) {
         console.log("❌ Rol no válido.");
@@ -475,15 +464,14 @@ export const updateUser = async (req, res) => {
  */
 export const deleteUser = async (req, res) => {
   try {
-    const usuarioAutenticado = req.usuario; // Usuario autenticado (quien hace la petición)
-    const { id } = req.params; // ID del usuario que se quiere eliminar
+    const usuarioAutenticado = req.usuario;
+    const { id } = req.params;
 
     const usuarioAEliminar = await User.findById(id);
-    if (!usuarioAEliminar) {
+    if (!usuarioAEliminar || usuarioAEliminar.isDeleted) {
       return res.status(404).json({ mensaje: "Usuario no encontrado." });
     }
 
-    // Verificar permisos
     if (
       usuarioAutenticado.rol !== "admin" &&
       usuarioAutenticado._id.toString() !== id
@@ -493,43 +481,14 @@ export const deleteUser = async (req, res) => {
         .json({ mensaje: "No tienes permisos para eliminar este usuario." });
     }
 
-    // Comprobar si hay proyectos con el usuario antes de hacer updateMany
-    const proyectosConUsuario = await Project.findOne({
-      $or: [
-        { users: id },
-        { responsibles: id },
-        { "pendingNotes.userWhoWrites": id },
-      ],
-    });
+    usuarioAEliminar.isDeleted = true;
+    await usuarioAEliminar.save();
 
-    if (proyectosConUsuario) {
-      await Project.updateMany(
-        {
-          $or: [
-            { users: id },
-            { responsibles: id },
-            { "pendingNotes.userWhoWrites": id },
-          ],
-        },
-        {
-          $pull: {
-            users: id,
-            responsibles: id,
-            "pendingNotes.$[].userWhoWrites": id,
-          },
-        }
-      );
-    }
-
-    // Finalmente, eliminar el usuario
-    await usuarioAEliminar.deleteOne();
-
-    res.status(200).json({
-      mensaje:
-        "Usuario eliminado correctamente y referencias limpiadas (si existían).",
-    });
+    res
+      .status(200)
+      .json({ mensaje: "Usuario marcado como eliminado (soft delete)." });
   } catch (error) {
-    console.error("❌ Error en el servidor:", error);
+    console.error("❌ Error en deleteUser:", error);
     res.status(500).json({ mensaje: "Error en el servidor." });
   }
 };

@@ -10,7 +10,9 @@ import {
   deleteUser,
   updateUser,
 } from "../controllers/userController.js";
-import { authMiddleware } from "../middleware/authMiddleware.js";
+import { authMiddleware } from "../middlewares/authMiddleware.js";
+import { validateRegisterData } from "../middlewares/validateRegisterData.js";
+import { adminOrSelfMiddleware } from "../middlewares/adminOrSelfMiddleware.js";
 
 const userRouter = express.Router();
 
@@ -60,7 +62,7 @@ const userRouter = express.Router();
  *       400:
  *         description: Algún campo es inválido o el correo ya está en uso.
  */
-userRouter.post("/register", registerUser);
+userRouter.post("/register", validateRegisterData, registerUser);
 
 /**
  * @swagger
@@ -299,7 +301,7 @@ userRouter.get("/profile/:id", getUserProfileById);
  *       404:
  *         description: Usuario no encontrado.
  */
-userRouter.patch("/:id", authMiddleware, updateUser);
+userRouter.patch("/:id", authMiddleware, adminOrSelfMiddleware, updateUser);
 
 /**
  * @swagger
@@ -324,6 +326,6 @@ userRouter.patch("/:id", authMiddleware, updateUser);
  *       404:
  *         description: Usuario no encontrado.
  */
-userRouter.delete("/:id", authMiddleware, deleteUser);
+userRouter.delete("/:id", authMiddleware, adminOrSelfMiddleware, deleteUser);
 
 export default userRouter;

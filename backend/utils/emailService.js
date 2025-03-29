@@ -1,7 +1,4 @@
 import nodemailer from "nodemailer";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 // Configuración del servicio de correo
 const transporter = nodemailer.createTransport({

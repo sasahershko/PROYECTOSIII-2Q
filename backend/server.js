@@ -1,16 +1,16 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+dotenv.config();
 import connectDB from "./config/db.js";
 import setupSwagger from "./config/swagger.js";
 import cookieParser from "cookie-parser";
 import cron from "node-cron";
-import { deleteExpiredUsers } from "./utils/deleteExpiredUsers.js";
+import deleteExpiredUnverifiedUsers from "./utils/deleteExpiredUnverifiedUsers.js";
 
 // Importamos las rutas centralizadas
 import routes from "./routes/index.js";
 
-dotenv.config();
 connectDB();
 
 const app = express();
@@ -50,5 +50,5 @@ app.listen(PORT, () => {
 // 🔄 CRON JOB: Eliminar usuarios no verificados cada 5 minutos
 cron.schedule("*/5 * * * *", async () => {
   console.log("🔄 Verificando usuarios no verificados...");
-  await deleteExpiredUsers();
+  await deleteExpiredUnverifiedUsers();
 });

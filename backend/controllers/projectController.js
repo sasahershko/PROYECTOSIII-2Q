@@ -1,8 +1,5 @@
-import dotenv from 'dotenv';
 import Project from '../models/Project.js';
 import User from '../models/User.js';
-
-dotenv.config();
 
 export const createProject = async (req, res) => {
 

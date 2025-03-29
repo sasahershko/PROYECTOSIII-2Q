@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
-import { validarEmail, validarDNI } from "../utils/validators.js"; // Importamos validaciones externas
+import { validarEmail } from "../utils/validators/emailValidator.js";
+import { validarDNI } from "../utils/validators/dniValidator.js";
+// import { validarPassword } from "../utils/validators/passwordValidator.js"; // 👉 Descomentar para activar validación fuerte
 
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -13,7 +15,15 @@ const userSchema = new mongoose.Schema({
       message: "Solo se permiten correos de U-TAD.",
     },
   },
-  password: { type: String, required: true },
+  password: {
+    type: String,
+    required: true,
+    // validate: {
+    //   validator: validarPassword,
+    //   message:
+    //     "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número.",
+    // },
+  },
   dni: {
     type: String,
     required: true,
@@ -32,23 +42,19 @@ const userSchema = new mongoose.Schema({
   grade: {
     type: String,
     required: true,
-    enum: ["INSO", "MAIS", "FIIS", "DIPI", "ANIV"], // Solo permite estos valores
+    enum: ["INSO", "MAIS", "FIIS", "DIPI", "ANIV"],
   },
-  projects: [{ type: mongoose.Schema.Types.ObjectId, ref: "Project" }], //relacion inversa
-
-  // Campos para la verificación del código de 6 dígitos
-  isVerified: { type: Boolean, default: false }, // Indica si el usuario ya verificó su cuenta
-  verificationCode: { type: String, default: null }, // Código de verificación temporal
-  verificationAttempts: { type: Number, default: 3 }, // Número de intentos
-  verificationCodeExpires: { type: Date }, // Expiración del código
-  createdAt: { type: Date, default: Date.now }, // Fecha de creación
-
-
-
-  //CAMPO PARA LA URL DE LA IAMGEN
+  projects: [{ type: mongoose.Schema.Types.ObjectId, ref: "Project" }],
+  isVerified: { type: Boolean, default: false },
+  verificationCode: { type: String, default: null },
+  verificationAttempts: { type: Number, default: 3 },
+  verificationCodeExpires: { type: Date },
+  createdAt: { type: Date, default: Date.now },
   profileImage: { type: String, default: null },
+
+  // Soft delete
+  isDeleted: { type: Boolean, default: false },
 });
 
 const User = mongoose.model("User", userSchema);
-
 export default User;
