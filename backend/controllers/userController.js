@@ -484,9 +484,28 @@ export const deleteUser = async (req, res) => {
     usuarioAEliminar.isDeleted = true;
     await usuarioAEliminar.save();
 
+    // 🔁 Eliminar referencias del usuario en proyectos
+    await Project.updateMany(
+      {
+        $or: [
+          { users: usuarioAEliminar._id },
+          { responsibles: usuarioAEliminar._id },
+        ],
+      },
+      {
+        $pull: {
+          users: usuarioAEliminar._id,
+          responsibles: usuarioAEliminar._id,
+        },
+      }
+    );
+
     res
       .status(200)
-      .json({ mensaje: "Usuario marcado como eliminado (soft delete)." });
+      .json({
+        mensaje:
+          "Usuario marcado como eliminado (soft delete) y desvinculado de proyectos.",
+      });
   } catch (error) {
     console.error("❌ Error en deleteUser:", error);
     res.status(500).json({ mensaje: "Error en el servidor." });

@@ -6,7 +6,10 @@ import {
   deleteProject,
   updateProject,
 } from "../controllers/projectController.js";
-import { authMiddleware, authMiddlewareOptional } from "../middlewares/authMiddleware.js";
+import {
+  authMiddleware,
+  authMiddlewareOptional,
+} from "../middlewares/authMiddleware.js";
 import { verificarPermisoProyecto } from "../middlewares/projectAuthMiddleware.js";
 
 const projectRouter = express.Router();
@@ -15,62 +18,8 @@ const projectRouter = express.Router();
  * @swagger
  * tags:
  *   name: Proyectos
- *   description: Endpoints para gestionar proyectos
+ *   description: Endpoints para gestionar proyectos (solo proyectos no eliminados)
  */
-
-/**
- * @swagger
- * /api/projects:
- *   get:
- *     summary: Obtener todos los proyectos
- *     tags: [Proyectos]
- *     responses:
- *       200:
- *         description: Lista de proyectos obtenida con éxito.
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   _id:
- *                     type: string
- *                     example: "67bc57737e86e4b15d13830b"
- *                   name:
- *                     type: string
- *                     example: "Proyecto de prueba"
- *                   contactPerson:
- *                     type: string
- *                     example: "Ejemplo contacto"
- *                   company:
- *                     type: string
- *                     example: "U-TAD"
- *                   area:
- *                     type: string
- *                     example: "Ingeniería del SW"
- *                   responsibles:
- *                     type: array
- *                     items:
- *                       type: string
- *                     example: ["67b62dd740c49029ad73d9eb"]
- *                   users:
- *                     type: array
- *                     items:
- *                       type: string
- *                     example: ["67b6730a953a36e3b39ab73c"]
- *                   startDate:
- *                     type: string
- *                     format: date
- *                     example: "2024-02-24"
- *                   endDate:
- *                     type: string
- *                     format: date
- *                     example: "2024-06-30"
- *       500:
- *         description: Error interno del servidor.
- */
-projectRouter.get("/", authMiddlewareOptional, getAllProjects);
 
 /**
  * @swagger
@@ -90,64 +39,62 @@ projectRouter.get("/", authMiddlewareOptional, getAllProjects);
  *             properties:
  *               name:
  *                 type: string
- *                 example: "Nuevo Proyecto"
  *               contactPerson:
  *                 type: string
- *                 example: "María López"
  *               company:
  *                 type: string
  *                 enum: ["U-TAD", "ILION", "OTROS"]
- *                 example: "U-TAD"
  *               area:
  *                 type: string
- *                 example: "Desarrollo Web"
  *               responsibles:
  *                 type: array
  *                 items:
  *                   type: string
- *                 example: ["67b62dd740c49029ad73d9eb"]
  *               users:
  *                 type: array
  *                 items:
  *                   type: string
- *                 example: ["67b6730a953a36e3b39ab73c"]
  *               benefit:
  *                 type: string
- *                 example: "Incremento de productividad"
- *               projectFolder:
+ *               folder:
  *                 type: string
- *                 example: "/projects/proyecto1"
  *               description:
  *                 type: string
- *                 example: "Este es un proyecto de desarrollo web."
  *               practicesAgreement:
  *                 type: boolean
- *                 example: false
  *               practicesStudents:
  *                 type: integer
- *                 example: 2
  *               sdpStudents:
  *                 type: integer
- *                 example: 3
  *               startDate:
  *                 type: string
- *                 format: date
- *                 example: "2024-02-24"
  *               endDate:
  *                 type: string
- *                 format: date
- *                 example: "2024-06-30"
  *     responses:
  *       201:
  *         description: Proyecto creado con éxito.
  *       400:
- *         description: Datos inválidos o campos requeridos faltantes.
+ *         description: Datos inválidos.
  *       401:
- *         description: No autorizado (falta token de autenticación).
+ *         description: No autorizado.
+ *       500:
+ *         description: Error del servidor.
+ */
+projectRouter.post("/create", authMiddleware, createProject);
+
+/**
+ * @swagger
+ * /api/projects:
+ *   get:
+ *     summary: Obtener todos los proyectos (no eliminados)
+ *     tags: [Proyectos]
+ *     responses:
+ *       200:
+ *         description: Lista de proyectos obtenida con éxito.
  *       500:
  *         description: Error interno del servidor.
  */
-projectRouter.post("/create", authMiddleware, createProject);
+projectRouter.get("/", authMiddlewareOptional, getAllProjects);
 
 /**
  * @swagger
@@ -159,92 +106,23 @@ projectRouter.post("/create", authMiddleware, createProject);
  *       - in: path
  *         name: id
  *         required: true
- *         description: ID del proyecto a obtener.
  *         schema:
  *           type: string
  *     responses:
  *       200:
  *         description: Proyecto encontrado con éxito.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 _id:
- *                   type: string
- *                   example: "67bc57737e86e4b15d13830b"
- *                 name:
- *                   type: string
- *                   example: "Proyecto de prueba"
- *                 contactPerson:
- *                   type: string
- *                   example: "Ejemplo contacto"
- *                 company:
- *                   type: string
- *                   example: "U-TAD"
- *                 area:
- *                   type: string
- *                   example: "Ingeniería del SW"
- *                 responsibles:
- *                   type: array
- *                   items:
- *                     type: string
- *                   example: ["67b62dd740c49029ad73d9eb"]
- *                 users:
- *                   type: array
- *                   items:
- *                     type: string
- *                   example: ["67b6730a953a36e3b39ab73c"]
- *                 startDate:
- *                   type: string
- *                   format: date
- *                   example: "2024-02-24"
- *                 endDate:
- *                   type: string
- *                   format: date
- *                   example: "2024-06-30"
  *       404:
- *         description: Proyecto no encontrado.
+ *         description: Proyecto no encontrado o eliminado.
  *       500:
  *         description: Error interno del servidor.
  */
-projectRouter.get("/:id", getProjectById);
-
-/**
- * @swagger
- * /api/projects/{id}:
- *   delete:
- *     summary: Eliminar un proyecto
- *     description: Permite a un administrador o a un responsable del proyecto eliminarlo. También se eliminan las referencias del proyecto en los usuarios asociados.
- *     tags:
- *       - Proyectos
- *     security:
- *       - BearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: ID del proyecto a eliminar
- *     responses:
- *       200:
- *         description: Proyecto eliminado correctamente y referencias en usuarios limpiadas.
- *       403:
- *         description: No tienes permisos para eliminar este proyecto.
- *       404:
- *         description: Proyecto no encontrado.
- *       500:
- *         description: Error en el servidor.
- */
-projectRouter.delete("/:id", verificarPermisoProyecto, deleteProject);
-
+projectRouter.get("/:id", authMiddlewareOptional, getProjectById);
 
 /**
  * @swagger
  * /api/projects/{id}:
  *   put:
- *     summary: Actualizar un proyecto existente
+ *     summary: Actualizar un proyecto
  *     tags: [Proyectos]
  *     security:
  *       - bearerAuth: []
@@ -254,77 +132,57 @@ projectRouter.delete("/:id", verificarPermisoProyecto, deleteProject);
  *         required: true
  *         schema:
  *           type: string
- *         description: ID del proyecto a actualizar.
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             properties:
- *               name:
- *                 type: string
- *                 example: "Proyecto actualizado"
- *               contactPerson:
- *                 type: string
- *                 example: "Juan Pérez"
- *               company:
- *                 type: string
- *                 enum: ["U-TAD", "ILION", "OTROS"]
- *                 example: "ILION"
- *               area:
- *                 type: string
- *                 example: "Inteligencia Artificial"
- *               responsibles:
- *                 type: array
- *                 items:
- *                   type: string
- *                 example: ["67b62dd740c49029ad73d9eb"]
- *               users:
- *                 type: array
- *                 items:
- *                   type: string
- *                 example: ["67b6730a953a36e3b39ab73c"]
- *               benefit:
- *                 type: string
- *                 example: "Automatización de procesos"
- *               projectFolder:
- *                 type: string
- *                 example: "/projects/proyecto_actualizado"
- *               description:
- *                 type: string
- *                 example: "Actualización de características del proyecto."
- *               practicesAgreement:
- *                 type: boolean
- *                 example: true
- *               practicesStudents:
- *                 type: integer
- *                 example: 5
- *               sdpStudents:
- *                 type: integer
- *                 example: 4
- *               startDate:
- *                 type: string
- *                 format: date
- *                 example: "2024-03-01"
- *               endDate:
- *                 type: string
- *                 format: date
- *                 example: "2024-12-15"
  *     responses:
  *       200:
  *         description: Proyecto actualizado con éxito.
  *       400:
- *         description: Datos inválidos o campos requeridos faltantes.
+ *         description: Datos inválidos.
  *       401:
- *         description: No autorizado (falta token de autenticación).
+ *         description: No autorizado.
  *       403:
- *         description: No tienes permisos para actualizar este proyecto.
+ *         description: No tienes permisos.
  *       404:
  *         description: Proyecto no encontrado.
  *       500:
  *         description: Error interno del servidor.
  */
 projectRouter.put("/:id", authMiddleware, updateProject);
+
+/**
+ * @swagger
+ * /api/projects/{id}:
+ *   delete:
+ *     summary: Eliminar un proyecto (soft delete)
+ *     tags: [Proyectos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Proyecto marcado como eliminado.
+ *       403:
+ *         description: No autorizado.
+ *       404:
+ *         description: Proyecto no encontrado.
+ *       500:
+ *         description: Error interno del servidor.
+ */
+projectRouter.delete(
+  "/:id",
+  authMiddleware,
+  verificarPermisoProyecto,
+  deleteProject
+);
 
 export default projectRouter;
