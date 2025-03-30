@@ -1,234 +1,297 @@
-import dotenv from 'dotenv';
-import Project from '../models/Project.js';
-import User from '../models/User.js';
+import Project from "../models/Project.js";
+import User from "../models/User.js";
 
-dotenv.config();
+// 🔁 Validar IDs de usuarios y devolver lista filtrada (sin duplicados ni inexistentes)
+const filtrarUsuariosExistentes = async (ids = []) => {
+  const usuarios = await User.find({ _id: { $in: ids } });
+  return usuarios.map((u) => u._id.toString());
+};
 
 export const createProject = async (req, res) => {
+  try {
+    const {
+      name,
+      contactPerson,
+      company,
+      area,
+      responsibles = [],
+      users = [],
+      benefit,
+      folder,
+      pStatus = [],
+      pendingNotes = [],
+      description,
+      practicesAgreement = false,
+      practicesStudents = 0,
+      sdpStudents = 0,
+      startDate,
+      reviewDates = [],
+      endDate,
+    } = req.body;
 
-    try {
-
-        const { userId } = req; //usuario autenticado que está creando el proyecto
-
-        const {
-            name,
-            contactPerson,
-            company,
-            area,
-            responsibles = [], // IDs de responsables
-            users = [], // IDs de usuarios
-            benefit = "",
-            folder = "",
-            pStatus = [],
-            pendingNotes = [],
-            description,
-            practicesAgreement = false,
-            practicesStudents = 0,
-            sdpStudents = 0,
-            startDate,
-            reviewDates = [],
-            endDate
-        } = req.body;
-
-        if (!name || !contactPerson || !company || !area || !description || !startDate || !endDate) {
-            return res.status(400).json({ mensaje: "Todos los campos obligatorios" });
-        }
-
-        if (new Date(startDate) > new Date(endDate)) {
-            return res.status(400).json({ mensaje: "La fecha de inicio no puede ser mayor que la de finalización" });
-        }
-
-        //validar si los responsables existen
-        const validResponsibles = await User.find({ _id: { $in: responsibles } }); //busca en mongo todos los usuarios cuyo sid están en el array de responsibles
-
-        if (validResponsibles.length !== responsibles.length) {
-            return res.status(400).json({ mensaje: "Alguno de los responsables no existen" });
-        }
-
-        const validUsers = await User.find({ _id: { $in: users } });
-
-        if (validUsers.length !== users.length) {
-            return res.status(400).json({ mensaje: "Alguno de los usuarios no existen" });
-        }
-
-        const uniqueUsers = [...new Set([...responsibles, ...users])];  //elimina duplicados (esto es porque al poner a un usuario tanto en responsable como en usuario, se duplica)
-
-        const newProject = new Project({
-            name,
-            contactPerson,
-            company,
-            area,
-            responsibles,
-            users: uniqueUsers, //!esto es para que no se dupliquen los usuarios
-            benefit,
-            folder,
-            pStatus,
-            pendingNotes,
-            description,
-            practicesAgreement,
-            practicesStudents,
-            sdpStudents,
-            startDate,
-            reviewDates,
-            endDate
-        });
-
-
-        const savedProject = await newProject.save();
-
-        //para que no se dupliquen
-        await User.updateMany({_id: {$in: uniqueUsers}}, {$addToSet: {projects: savedProject._id}});
-
-        return res.status(201).json({ mensaje: "Proyecto creado con éxito.", project: savedProject });
-    } catch (error) {
-        return res.status(500).json({ mensaje: "Error al crear el proyecto.", error: error.message });
+    if (
+      !name ||
+      !contactPerson ||
+      !company ||
+      !area ||
+      !description ||
+      !startDate ||
+      !endDate
+    ) {
+      return res.status(400).json({ mensaje: "Todos los campos obligatorios" });
     }
-}
 
-export const getAllProjects = async (req, res) =>{
-    try {
-        let projects;
-
-        if(!req.usuario){
-            //intentamos obtener el tken desde la scookies o el header authorization
-            projects = await Project.find().select('area name description');
-        }else if (req.usuario.rol === 'admin'){
-            projects = await Project.find();
-        }else{
-            //!mirar -> si es moderador/usuario, puede ver los proyectos que es responsable, y en los que participa
-            projects = await Project.find({ 
-                $or: [
-                    {responsibles: req.usuario._id},
-                    {users: req.usuario._id}
-                ]
-            });
-        }
-
-        res.json(projects);
-    } catch (error) {
-        res.status(500).json({ mensaje: "Error al obtener los proyectos", error: error.message});
+    if (new Date(startDate) > new Date(endDate)) {
+      return res.status(400).json({
+        mensaje: "La fecha de inicio no puede ser mayor que la de finalización",
+      });
     }
-}
 
+    const responsablesValidos = await filtrarUsuariosExistentes(responsibles);
+    const usuariosValidos = await filtrarUsuariosExistentes(users);
+    const todosUsuarios = [
+      ...new Set([...responsablesValidos, ...usuariosValidos]),
+    ];
+
+    const nuevoProyecto = await Project.create({
+      name,
+      contactPerson,
+      company,
+      area,
+      responsibles: responsablesValidos,
+      users: todosUsuarios,
+      benefit,
+      folder,
+      pStatus,
+      pendingNotes,
+      description,
+      practicesAgreement,
+      practicesStudents,
+      sdpStudents,
+      startDate,
+      reviewDates,
+      endDate,
+    });
+
+    await User.updateMany(
+      { _id: { $in: todosUsuarios } },
+      { $addToSet: { projects: nuevoProyecto._id } }
+    );
+
+    res
+      .status(201)
+      .json({ mensaje: "Proyecto creado con éxito.", project: nuevoProyecto });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ mensaje: "Error al crear proyecto", error: error.message });
+  }
+};
+
+// Obtener todos los proyectos (no eliminados)
+export const getAllProjects = async (req, res) => {
+  try {
+    let projects;
+    if (!req.usuario) {
+      projects = await Project.find().select("area name description");
+    } else if (req.usuario.rol === "admin") {
+      projects = await Project.find();
+    } else {
+      projects = await Project.find({
+        $or: [{ responsibles: req.usuario._id }, { users: req.usuario._id }],
+      });
+    }
+    res.status(200).json(projects);
+  } catch (error) {
+    res
+      .status(500)
+      .json({
+        mensaje: "Error al obtener los proyectos",
+        error: error.message,
+      });
+  }
+};
+
+// Obtener proyecto por ID
 export const getProjectById = async (req, res) => {
-    try {
-        const {id} = req.params;
+  try {
+    const { id } = req.params;
+    const project = await Project.findById(id)
+      .populate("responsibles", "name")
+      .populate("users", "name")
+      .populate("pendingNotes.userWhoWrites", "name")
+      .populate("pendingNotes.userWhoReceives", "name");
 
-        const project = await Project.findById(id)
-            .populate("responsibles", "name")
-            .populate("users", "name");
+    if (!project)
+      return res.status(404).json({ mensaje: "Proyecto no encontrado" });
+    res.json(project);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ mensaje: "Error al obtener el proyecto", error: error.message });
+  }
+};
 
-            if (!project) {
-                return res.status(404).json({ mensaje: "Proyecto no encontrado" });
-            }
+// Actualizar proyecto
+export const updateProject = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { usuario } = req;
 
-            res.json(project);
-    } catch (error) {
-        res.status(500).json({ mensaje: "Error al obtener el proyecto", error: error.message });
+    const existingProject = await Project.findById(id);
+    if (!existingProject) {
+      return res.status(404).json({ mensaje: "Proyecto no encontrado." });
     }
-}
+
+    if (
+      usuario.rol !== "admin" &&
+      !existingProject.responsibles.includes(usuario._id)
+    ) {
+      return res
+        .status(403)
+        .json({ mensaje: "No tienes permisos para actualizar este proyecto." });
+    }
+
+    if (
+      req.body.startDate &&
+      req.body.endDate &&
+      new Date(req.body.startDate) > new Date(req.body.endDate)
+    ) {
+      return res.status(400).json({
+        mensaje:
+          "La fecha de inicio no puede ser mayor que la de finalización.",
+      });
+    }
+
+    if (req.body.responsibles) {
+      const validResponsibles = await User.find({
+        _id: { $in: req.body.responsibles },
+      });
+      if (validResponsibles.length !== req.body.responsibles.length) {
+        return res
+          .status(400)
+          .json({ mensaje: "Alguno de los responsables no existen." });
+      }
+    }
+
+    if (req.body.users) {
+      const validUsers = await User.find({ _id: { $in: req.body.users } });
+      if (validUsers.length !== req.body.users.length) {
+        return res
+          .status(400)
+          .json({ mensaje: "Alguno de los usuarios no existen." });
+      }
+    }
+
+    if (req.body.responsibles || req.body.users) {
+      const uniqueUsers = [
+        ...new Set([
+          ...(req.body.responsibles || existingProject.responsibles),
+          ...(req.body.users || existingProject.users),
+        ]),
+      ];
+      req.body.users = uniqueUsers;
+    }
+
+    const updatedProject = await Project.findByIdAndUpdate(
+      id,
+      { $set: req.body },
+      { new: true }
+    );
+
+    if (req.body.users) {
+      await User.updateMany({ projects: id }, { $pull: { projects: id } });
+      await User.updateMany(
+        { _id: { $in: req.body.users } },
+        { $addToSet: { projects: id } }
+      );
+    }
+
+    return res.status(200).json({
+      mensaje: "Proyecto actualizado con éxito.",
+      project: updatedProject,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      mensaje: "Error al actualizar el proyecto.",
+      error: error.message,
+    });
+  }
+};
 
 /**
- * @desc Eliminar un proyecto y limpiar referencias en usuarios
+ * @desc Eliminar un proyecto y limpiar referencias en usuarios (soft delete)
  * @route DELETE /api/projects/:id
  * @access Private (solo admin o responsables del proyecto)
  */
 export const deleteProject = async (req, res) => {
-    try {
-      const usuarioAutenticado = req.usuario; // Usuario autenticado
-      const { id } = req.params; // ID del proyecto a eliminar
-  
-      const proyectoAEliminar = await Project.findById(id);
-      if (!proyectoAEliminar) {
-        return res.status(404).json({ mensaje: "Proyecto no encontrado." });
-      }
-  
-      // Verificar permisos: solo admin o responsables del proyecto pueden eliminarlo
-      if (
-        usuarioAutenticado.rol !== "admin" &&
-        !proyectoAEliminar.responsibles.includes(usuarioAutenticado._id)
-      ) {
-        return res.status(403).json({ mensaje: "No tienes permisos para eliminar este proyecto." });
-      }
-  
-      // Eliminar el ID del proyecto en la lista de proyectos de los usuarios asociados
-      await User.updateMany(
-        { projects: id },
-        { $pull: { projects: id } }
-      );
-  
-      // Finalmente, eliminar el proyecto
-      await proyectoAEliminar.deleteOne();
-  
-      res.status(200).json({ mensaje: "Proyecto eliminado correctamente y referencias en usuarios limpiadas." });
-  
-    } catch (error) {
-      console.error("❌ Error en el servidor:", error);
-      res.status(500).json({ mensaje: "Error en el servidor." });
+  try {
+    const { id } = req.params;
+    const usuario = req.usuario;
+
+    const proyecto = await Project.findById(id);
+    if (!proyecto) {
+      return res.status(404).json({ mensaje: "Proyecto no encontrado" });
     }
-  };
 
-  export const updateProject = async (req, res) => {
-    try {
-        const { id } = req.params; // ID del proyecto a actualizar
-        const { usuario } = req; // Usuario autenticado
-
-        // Buscar el proyecto a actualizar
-        const existingProject = await Project.findById(id);
-        if (!existingProject) {
-            return res.status(404).json({ mensaje: "Proyecto no encontrado." });
-        }
-
-        // Verificar permisos: solo admin o responsables pueden actualizar
-        if (
-            usuario.rol !== "admin" &&
-            !existingProject.responsibles.includes(usuario._id)
-        ) {
-            return res.status(403).json({ mensaje: "No tienes permisos para actualizar este proyecto." });
-        }
-
-        // Validar que las fechas sean correctas si están presentes en la petición
-        if (req.body.startDate && req.body.endDate && new Date(req.body.startDate) > new Date(req.body.endDate)) {
-            return res.status(400).json({ mensaje: "La fecha de inicio no puede ser mayor que la de finalización." });
-        }
-
-        // Validar si los responsables existen si se proporcionan
-        if (req.body.responsibles) {
-            const validResponsibles = await User.find({ _id: { $in: req.body.responsibles } });
-            if (validResponsibles.length !== req.body.responsibles.length) {
-                return res.status(400).json({ mensaje: "Alguno de los responsables no existen." });
-            }
-        }
-
-        // Validar si los usuarios existen si se proporcionan
-        if (req.body.users) {
-            const validUsers = await User.find({ _id: { $in: req.body.users } });
-            if (validUsers.length !== req.body.users.length) {
-                return res.status(400).json({ mensaje: "Alguno de los usuarios no existen." });
-            }
-        }
-
-        // Unificar usuarios y responsables sin duplicados si se proporcionan
-        if (req.body.responsibles || req.body.users) {
-            const uniqueUsers = [...new Set([...(req.body.responsibles || existingProject.responsibles), ...(req.body.users || existingProject.users)])];
-            req.body.users = uniqueUsers;
-        }
-
-        // Actualizar el proyecto con los campos proporcionados
-        const updatedProject = await Project.findByIdAndUpdate(
-            id,
-            { $set: req.body },
-            { new: true } // Para devolver el proyecto actualizado
-        );
-
-        // Actualizar los usuarios asociados al proyecto si se modificaron
-        if (req.body.users) {
-            await User.updateMany({ projects: id }, { $pull: { projects: id } });
-            await User.updateMany({ _id: { $in: req.body.users } }, { $addToSet: { projects: id } });
-        }
-
-        return res.status(200).json({ mensaje: "Proyecto actualizado con éxito.", project: updatedProject });
-    } catch (error) {
-        return res.status(500).json({ mensaje: "Error al actualizar el proyecto.", error: error.message });
+    if (
+      usuario.rol !== "admin" &&
+      !proyecto.responsibles.includes(usuario._id)
+    ) {
+      return res
+        .status(403)
+        .json({ mensaje: "No tienes permisos para eliminar este proyecto." });
     }
+
+    await User.updateMany({ projects: id }, { $pull: { projects: id } });
+    await proyecto.delete();
+
+    res
+      .status(200)
+      .json({ mensaje: "Proyecto eliminado correctamente (soft delete)" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ mensaje: "Error al eliminar proyecto", error: error.message });
+  }
+};
+
+export const getDeletedProjects = async (req, res) => {
+  try {
+    if (req.usuario.rol !== "admin") {
+      return res.status(403).json({
+        mensaje: "Solo los administradores pueden ver proyectos eliminados.",
+      });
+    }
+
+    const deleted = await Project.findDeleted()
+      .populate("responsibles", "name")
+      .populate("users", "name");
+    res.status(200).json(deleted);
+  } catch (error) {
+    res.status(500).json({
+      mensaje: "Error al obtener proyectos eliminados",
+      error: error.message,
+    });
+  }
+};
+
+export const restoreProject = async (req, res) => {
+  try {
+    if (req.usuario.rol !== "admin") {
+      return res.status(403).json({
+        mensaje: "Solo los administradores pueden restaurar proyectos.",
+      });
+    }
+
+    const { id } = req.params;
+    const restored = await Project.restore({ _id: id });
+    res
+      .status(200)
+      .json({ mensaje: "Proyecto restaurado correctamente.", restored });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ mensaje: "Error al restaurar proyecto", error: error.message });
+  }
 };

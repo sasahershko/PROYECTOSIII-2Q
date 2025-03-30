@@ -3,7 +3,7 @@ import {
     uploadMiddleware,
     uploadMiddlewareMemory,
 } from "../utils/handle_storage.js";
-import { authMiddleware } from "../middleware/authMiddleware.js";
+import { authMiddleware } from "../middlewares/authMiddleware.js";
 import { createItem, updateImage, uploadAndUpdateUserImage } from "../controllers/storage.js";
 
 const storageRouter = express.Router();

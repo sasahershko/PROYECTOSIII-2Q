@@ -1,13 +1,9 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
 import nodemailer from "nodemailer";
 import User from "../models/User.js";
-import Project from "../models/Project.js";
 import { generateVerificationCode } from "../utils/verification.js";
 import { sendVerificationEmail } from "../utils/emailService.js";
-
-dotenv.config();
 
 //(estos son solo informativos, no salen en Swagger)
 /**
@@ -65,7 +61,7 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({ mensaje: "El correo ya está en uso." });
     }
 
-    const dniExistente = await User.findOne({ dni });
+    const dniExistente = await User.findOneWithDeleted({ dni });
     if (dniExistente) {
       return res.status(400).json({ mensaje: "El DNI ya está registrado." });
     }
@@ -239,7 +235,6 @@ export const loginUser = async (req, res) => {
         .json({ mensaje: "Correo o contraseña incorrectos" });
     }
 
-    // **Bloqueo de login si el usuario no está verificado**
     if (!usuario.isVerified) {
       return res.status(403).json({
         mensaje: "Debes verificar tu cuenta antes de iniciar sesión.",
@@ -253,7 +248,6 @@ export const loginUser = async (req, res) => {
         .json({ mensaje: "Correo o contraseña incorrectos" });
     }
 
-    // Generar token JWT
     const token = jwt.sign(
       {
         id: usuario._id,
@@ -265,7 +259,6 @@ export const loginUser = async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    // 🔥 Configurar cookie en la respuesta HTTP
     res.setHeader(
       "Set-Cookie",
       `token=${token}; Path=/; HttpOnly; SameSite=Lax`
@@ -284,7 +277,7 @@ export const loginUser = async (req, res) => {
       token,
     });
   } catch (error) {
-    console.error("❌ Error en el servidor:", error);
+    console.error("❌ Error en loginUser:", error);
     res.status(500).json({ mensaje: "Error en el servidor." });
   }
 };
@@ -296,7 +289,6 @@ export const loginUser = async (req, res) => {
  */
 export const getUserProfile = async (req, res) => {
   try {
-    // Obtener el token desde las cookies o el header Authorization
     const token =
       req.cookies?.token || req.headers.authorization?.split(" ")[1];
 
@@ -304,17 +296,15 @@ export const getUserProfile = async (req, res) => {
       return res.status(401).json({ mensaje: "No autorizado" });
     }
 
-    // Verificar el token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Buscar usuario en la base de datos
-    const usuario = await User.findById(decoded.id).select("name email role");
+    const usuario = await User.findOne({
+      _id: decoded.id,
+    }).select("name email role");
 
     if (!usuario) {
       return res.status(404).json({ mensaje: "Usuario no encontrado." });
     }
 
-    // Devolver solo la información necesaria
     res.status(200).json({
       id: usuario._id,
       name: usuario.name,
@@ -334,15 +324,15 @@ export const getUserProfile = async (req, res) => {
  */
 export const getUserProfileById = async (req, res) => {
   try {
-    // Buscar el usuario por ID excluyendo la contraseña y el email
-    const user = await User.findById(req.params.id).select("-password -email");
+    const user = await User.findOne({
+      _id: req.params.id,
+      deleted: false,
+    }).select("-password -email");
 
-    // Si el usuario no existe, devolver un error 404
     if (!user) {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
-    // Responder con la información del usuario
     res.status(200).json(user);
   } catch (error) {
     console.error("❌ Error en el servidor:", error);
@@ -357,13 +347,11 @@ export const getUserProfileById = async (req, res) => {
  */
 export const getAllUsers = async (req, res) => {
   try {
-    // Buscar todos los usuarios excepto las contraseñas
     const usuarios = await User.find().select("-password");
-
     res.status(200).json(usuarios);
   } catch (error) {
-    console.error("❌ Error en el servidor:", error);
-    res.status(500).json({ mensaje: "Error en el servidor" });
+    console.error("❌ Error en getAllUsers:", error);
+    res.status(500).json({ mensaje: "Error en el servidor." });
   }
 };
 
@@ -430,11 +418,9 @@ export const updateUser = async (req, res) => {
     if (rol) {
       if (!isAdmin) {
         console.log("⚠️ Usuario no admin intentó cambiar el rol.");
-        return res
-          .status(403)
-          .json({
-            message: "No tienes permiso para cambiar el rol de un usuario.",
-          });
+        return res.status(403).json({
+          message: "No tienes permiso para cambiar el rol de un usuario.",
+        });
       }
       if (!rolesPermitidos.includes(rol)) {
         console.log("❌ Rol no válido.");
@@ -475,61 +461,56 @@ export const updateUser = async (req, res) => {
  */
 export const deleteUser = async (req, res) => {
   try {
-    const usuarioAutenticado = req.usuario; // Usuario autenticado (quien hace la petición)
-    const { id } = req.params; // ID del usuario que se quiere eliminar
+    const { id } = req.params;
+    const user = await User.findById(id);
 
-    const usuarioAEliminar = await User.findById(id);
-    if (!usuarioAEliminar) {
-      return res.status(404).json({ mensaje: "Usuario no encontrado." });
+    if (!user) {
+      return res.status(404).json({ mensaje: "Usuario no encontrado" });
     }
 
-    // Verificar permisos
-    if (
-      usuarioAutenticado.rol !== "admin" &&
-      usuarioAutenticado._id.toString() !== id
-    ) {
-      return res
-        .status(403)
-        .json({ mensaje: "No tienes permisos para eliminar este usuario." });
-    }
-
-    // Comprobar si hay proyectos con el usuario antes de hacer updateMany
-    const proyectosConUsuario = await Project.findOne({
-      $or: [
-        { users: id },
-        { responsibles: id },
-        { "pendingNotes.userWhoWrites": id },
-      ],
-    });
-
-    if (proyectosConUsuario) {
-      await Project.updateMany(
-        {
-          $or: [
-            { users: id },
-            { responsibles: id },
-            { "pendingNotes.userWhoWrites": id },
-          ],
-        },
-        {
-          $pull: {
-            users: id,
-            responsibles: id,
-            "pendingNotes.$[].userWhoWrites": id,
-          },
-        }
-      );
-    }
-
-    // Finalmente, eliminar el usuario
-    await usuarioAEliminar.deleteOne();
-
-    res.status(200).json({
-      mensaje:
-        "Usuario eliminado correctamente y referencias limpiadas (si existían).",
-    });
+    await user.delete();
+    res.status(200).json({ mensaje: "Usuario eliminado (soft delete)" });
   } catch (error) {
-    console.error("❌ Error en el servidor:", error);
-    res.status(500).json({ mensaje: "Error en el servidor." });
+    res
+      .status(500)
+      .json({ mensaje: "Error al eliminar usuario", error: error.message });
+  }
+};
+
+export const getDeletedUsers = async (req, res) => {
+  try {
+    if (req.usuario.rol !== "admin") {
+      return res.status(403).json({
+        mensaje: "Solo los administradores pueden ver usuarios eliminados.",
+      });
+    }
+
+    const deletedUsers = await User.findDeleted().select(
+      "name surname email rol grade deletedAt"
+    );
+    res.status(200).json(deletedUsers);
+  } catch (error) {
+    res.status(500).json({
+      mensaje: "Error al obtener usuarios eliminados",
+      error: error.message,
+    });
+  }
+};
+
+export const restoreUser = async (req, res) => {
+  try {
+    if (req.usuario.rol !== "admin") {
+      return res.status(403).json({
+        mensaje: "Solo los administradores pueden restaurar usuarios.",
+      });
+    }
+
+    const { id } = req.params;
+    await User.restore({ _id: id });
+    res.status(200).json({ mensaje: "Usuario restaurado correctamente." });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ mensaje: "Error al restaurar usuario", error: error.message });
   }
 };
