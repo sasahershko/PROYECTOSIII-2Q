@@ -1,9 +1,11 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import nodemailer from "nodemailer";
 import User from "../models/User.js";
 import { generateVerificationCode } from "../utils/verification.js";
 import { sendVerificationEmail } from "../utils/emailService.js";
+import { validarEmail } from "../utils/validators/emailValidator.js";
+import { validarDNI } from "../utils/validators/dniValidator.js";
+import { validarPassword } from "../utils/validators/passwordValidator.js";
 
 //(estos son solo informativos, no salen en Swagger)
 /**
@@ -22,25 +24,19 @@ export const registerUser = async (req, res) => {
     }
 
     // Validación de email (debe ser de U-TAD)
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@(?:live\.u-tad\.com|u-tad\.com)$/;
-    if (!emailRegex.test(email)) {
+    if (!validarEmail(email)) {
       return res
         .status(400)
         .json({ mensaje: "El correo debe ser de la Universidad." });
     }
 
     // Validación de formato de DNI (8 números + 1 letra correcta)
-    const dniRegex = /^[0-9]{8}[A-Za-z]$/;
-    const letrasDNI = "TRWAGMYFPDXBNJZSQVHLCKE";
-    const numeroDNI = parseInt(dni.slice(0, -1), 10);
-    const letraDNI = dni.slice(-1).toUpperCase();
-    if (!dniRegex.test(dni) || letrasDNI[numeroDNI % 23] !== letraDNI) {
+    if (!validarDNI(dni)) {
       return res.status(400).json({ mensaje: "El DNI no es válido." });
     }
 
     // Validación de la contraseña (mínimo 8 caracteres, una mayúscula, una minúscula y un número)
-    // const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
-    // if (!passwordRegex.test(password)) {
+    // if (!validarPassword(password)) {
     //   return res.status(400).json({
     //     mensaje:
     //       "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número.",
