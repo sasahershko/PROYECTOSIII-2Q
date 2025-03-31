@@ -29,24 +29,6 @@ export const createProject = async (req, res) => {
       endDate,
     } = req.body;
 
-    if (
-      !name ||
-      !contactPerson ||
-      !company ||
-      !area ||
-      !description ||
-      !startDate ||
-      !endDate
-    ) {
-      return res.status(400).json({ mensaje: "Todos los campos obligatorios" });
-    }
-
-    if (new Date(startDate) > new Date(endDate)) {
-      return res.status(400).json({
-        mensaje: "La fecha de inicio no puede ser mayor que la de finalización",
-      });
-    }
-
     const responsablesValidos = await filtrarUsuariosExistentes(responsibles);
     const usuariosValidos = await filtrarUsuariosExistentes(users);
     const todosUsuarios = [
@@ -78,13 +60,15 @@ export const createProject = async (req, res) => {
       { $addToSet: { projects: nuevoProyecto._id } }
     );
 
-    res
-      .status(201)
-      .json({ mensaje: "Proyecto creado con éxito.", project: nuevoProyecto });
+    res.status(201).json({
+      mensaje: "Proyecto creado con éxito.",
+      project: nuevoProyecto,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({ mensaje: "Error al crear proyecto", error: error.message });
+    res.status(500).json({
+      mensaje: "Error al crear proyecto",
+      error: error.message,
+    });
   }
 };
 
@@ -103,12 +87,10 @@ export const getAllProjects = async (req, res) => {
     }
     res.status(200).json(projects);
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        mensaje: "Error al obtener los proyectos",
-        error: error.message,
-      });
+    res.status(500).json({
+      mensaje: "Error al obtener los proyectos",
+      error: error.message,
+    });
   }
 };
 
