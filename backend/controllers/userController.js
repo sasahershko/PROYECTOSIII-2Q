@@ -4,9 +4,6 @@ import User from "../models/User.js";
 import Project from "../models/Project.js";
 import { generateVerificationCode } from "../utils/verification.js";
 import { sendVerificationEmail } from "../utils/emailService.js";
-import { validarEmail } from "../utils/validators/emailValidator.js";
-import { validarDNI } from "../utils/validators/dniValidator.js";
-import { validarPassword } from "../utils/validators/passwordValidator.js";
 
 //(estos son solo informativos, no salen en Swagger)
 /**
@@ -15,42 +12,7 @@ import { validarPassword } from "../utils/validators/passwordValidator.js";
  */
 export const registerUser = async (req, res) => {
   try {
-    const { name, surname, email, password, dni, grade } = req.body;
-
-    // Validación de campos obligatorios
-    if (!name || !surname || !email || !password || !dni || !grade) {
-      return res
-        .status(400)
-        .json({ mensaje: "Todos los campos son obligatorios" });
-    }
-
-    // Validación de email (debe ser de U-TAD)
-    if (!validarEmail(email)) {
-      return res
-        .status(400)
-        .json({ mensaje: "El correo debe ser de la Universidad." });
-    }
-
-    // Validación de formato de DNI (8 números + 1 letra correcta)
-    if (!validarDNI(dni)) {
-      return res.status(400).json({ mensaje: "El DNI no es válido." });
-    }
-
-    // Validación de la contraseña (mínimo 8 caracteres, una mayúscula, una minúscula y un número)
-    // if (!validarPassword(password)) {
-    //   return res.status(400).json({
-    //     mensaje:
-    //       "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número.",
-    //   });
-    // }
-
-    // Validación de grado permitido
-    const gradosPermitidos = ["INSO", "MAIS", "FIIS", "DIPI", "ANIV"];
-    if (!gradosPermitidos.includes(grade)) {
-      return res
-        .status(400)
-        .json({ mensaje: "El grado seleccionado no es válido." });
-    }
+    const { name, surname, email, password, dni, grade } = req.filteredData;
 
     // Comprobar si el usuario ya existe por email o DNI
     const usuarioExistente = await User.findOne({ email });
@@ -63,7 +25,7 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({ mensaje: "El DNI ya está registrado." });
     }
 
-    // Si pasa todas las validaciones, continuar con el registro provisional
+    // Hashear contraseña y generar código
     const verificationCode = generateVerificationCode();
     const salt = await bcrypt.genSalt(10);
     const passwordHasheada = await bcrypt.hash(password, salt);
@@ -71,7 +33,7 @@ export const registerUser = async (req, res) => {
     const verificationCodeExpires = new Date();
     verificationCodeExpires.setMinutes(
       verificationCodeExpires.getMinutes() + 10
-    ); // Expira en 10 minutos
+    );
 
     const nuevoUsuario = new User({
       name,
@@ -81,7 +43,7 @@ export const registerUser = async (req, res) => {
       dni,
       grade,
       rol: "user",
-      isVerified: false, // Usuario provisional hasta que verifique
+      isVerified: false,
       verificationCode,
       verificationAttempts: 3,
       verificationCodeExpires,
@@ -106,7 +68,8 @@ export const registerUser = async (req, res) => {
  */
 export const verifyCode = async (req, res) => {
   try {
-    const { email, code } = req.body;
+    const { email, code } = req.filteredData;
+
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -119,10 +82,9 @@ export const verifyCode = async (req, res) => {
         .json({ mensaje: "Este usuario ya está verificado." });
     }
 
-    // Si el código ha expirado, eliminar el usuario
     const now = new Date();
     if (now > new Date(user.verificationCodeExpires)) {
-      await User.deleteOne({ email }); // Elimina el usuario de la BD
+      await User.deleteOne({ email });
       return res
         .status(400)
         .json({ mensaje: "Código expirado. Regístrate de nuevo." });
@@ -138,7 +100,7 @@ export const verifyCode = async (req, res) => {
       user.verificationAttempts -= 1;
 
       if (user.verificationAttempts <= 0) {
-        await User.deleteOne({ email }); // Elimina el usuario si agotó intentos
+        await User.deleteOne({ email });
         return res.status(400).json({
           mensaje: "Demasiados intentos fallidos. Regístrate de nuevo.",
         });
@@ -162,9 +124,8 @@ export const verifyCode = async (req, res) => {
  */
 export const resendVerificationCode = async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email } = req.filteredData;
 
-    // Buscar usuario por email
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -178,8 +139,6 @@ export const resendVerificationCode = async (req, res) => {
     }
 
     const now = new Date();
-
-    // Verificar si el usuario ya ha solicitado un reenvío recientemente (cooldown de 50s)
     if (
       user.lastResendRequest &&
       now - new Date(user.lastResendRequest) < 50000
@@ -189,17 +148,15 @@ export const resendVerificationCode = async (req, res) => {
         .json({ mensaje: "Espera antes de solicitar un nuevo código." });
     }
 
-    // Generar un nuevo código de verificación
     const newVerificationCode = generateVerificationCode();
     const verificationCodeExpires = new Date();
     verificationCodeExpires.setMinutes(
       verificationCodeExpires.getMinutes() + 10
     );
 
-    // Actualizar usuario con el nuevo código y timestamp de reenvío
     user.verificationCode = newVerificationCode;
     user.verificationCodeExpires = verificationCodeExpires;
-    user.lastResendRequest = now; // Guardamos la última solicitud de reenvío
+    user.lastResendRequest = now;
 
     await user.save();
     await sendVerificationEmail(email, newVerificationCode);
@@ -217,13 +174,7 @@ export const resendVerificationCode = async (req, res) => {
  */
 export const loginUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res
-        .status(400)
-        .json({ mensaje: "Correo y contraseña son obligatorios" });
-    }
+    const { email, password } = req.filteredData;
 
     const usuario = await User.findOne({ email });
     if (!usuario) {
@@ -359,88 +310,40 @@ export const getAllUsers = async (req, res) => {
  */
 export const updateUser = async (req, res) => {
   try {
-    console.log("🔹 Iniciando actualización de usuario...");
+    const { id } = req.filteredData;
+    const { name, surname, rol, grade, profileImage } = req.filteredData;
 
-    const { id } = req.params;
     const usuarioAutenticado = req.usuario;
-    console.log(
-      "👤 Usuario autenticado:",
-      usuarioAutenticado.id,
-      "| Rol:",
-      usuarioAutenticado.rol
-    );
-
     const isAdmin = usuarioAutenticado.rol === "admin";
     const isSameUser = usuarioAutenticado.id === id;
 
-    // Verificar permisos
     if (!isSameUser && !isAdmin) {
-      console.log("❌ Permiso denegado: No puedes editar este usuario.");
       return res
         .status(403)
         .json({ message: "No tienes permiso para editar este usuario." });
     }
 
-    // No permitir modificar email ni contraseña
     if (req.body.email || req.body.password) {
-      console.log("⚠️ Intento de modificar email o contraseña bloqueado.");
       return res
         .status(400)
         .json({ message: "No puedes modificar el correo ni la contraseña." });
     }
 
-    // Extraer los campos editables
-    const { name, surname, rol, grade, profileImage } = req.body;
-
     const updatedData = {};
-    if (name && typeof name === "string") updatedData.name = name;
-    if (surname && typeof surname === "string") updatedData.surname = surname;
-    if (profileImage && typeof profileImage === "string")
-      updatedData.profileImage = profileImage;
+    if (name) updatedData.name = name;
+    if (surname) updatedData.surname = surname;
+    if (profileImage) updatedData.profileImage = profileImage;
+    if (grade) updatedData.grade = grade;
+    if (rol && isAdmin) updatedData.rol = rol;
 
-    // 🚨 Validar `grade`
-    const gradosPermitidos = ["INSO", "MAIS", "FIIS", "DIPI", "ANIV"];
-    if (grade) {
-      if (!gradosPermitidos.includes(grade)) {
-        console.log("❌ Grado no válido.");
-        return res
-          .status(400)
-          .json({ message: "El grado proporcionado no es válido." });
-      }
-      updatedData.grade = grade;
-    }
-
-    // 🚨 Validar `rol`
-    const rolesPermitidos = ["admin", "moderator", "user"];
-    if (rol) {
-      if (!isAdmin) {
-        console.log("⚠️ Usuario no admin intentó cambiar el rol.");
-        return res.status(403).json({
-          message: "No tienes permiso para cambiar el rol de un usuario.",
-        });
-      }
-      if (!rolesPermitidos.includes(rol)) {
-        console.log("❌ Rol no válido.");
-        return res
-          .status(400)
-          .json({ message: "El rol proporcionado no es válido." });
-      }
-      updatedData.rol = rol;
-    }
-
-    console.log("📤 Datos a actualizar:", updatedData);
-
-    // Intentar actualizar el usuario
     const updatedUser = await User.findByIdAndUpdate(id, updatedData, {
       new: true,
     });
 
     if (!updatedUser) {
-      console.log("❌ Usuario no encontrado.");
       return res.status(404).json({ message: "Usuario no encontrado." });
     }
 
-    console.log("✅ Usuario actualizado correctamente:", updatedUser);
     res.status(200).json({
       message: "Usuario actualizado correctamente.",
       user: updatedUser,
@@ -458,7 +361,7 @@ export const updateUser = async (req, res) => {
  */
 export const deleteUser = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.filteredData;
 
     const user = await User.findById(id);
     if (!user) {
@@ -515,7 +418,7 @@ export const restoreUser = async (req, res) => {
       });
     }
 
-    const { id } = req.params;
+    const { id } = req.filteredData;
 
     // 1. Restaurar usuario
     await User.restore({ _id: id });

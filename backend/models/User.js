@@ -1,8 +1,5 @@
 import mongoose from "mongoose";
 import mongooseDelete from "mongoose-delete";
-import { validarEmail } from "../utils/validators/emailValidator.js";
-import { validarDNI } from "../utils/validators/dniValidator.js";
-// import { validarPassword } from "../utils/validators/passwordValidator.js"; // 👉 Descomentar para activar validación fuerte
 
 const userSchema = new mongoose.Schema(
   {
@@ -12,27 +9,18 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
-      validate: {
-        validator: validarEmail,
-        message: "Solo se permiten correos de U-TAD.",
-      },
+      // La validación se hace con express-validator
     },
     password: {
       type: String,
       required: true,
-      // validate: {
-      //   validator: validarPassword,
-      //   message: "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número.",
-      // },
+      // Validación por express-validator
     },
     dni: {
       type: String,
       required: true,
       unique: true,
-      validate: {
-        validator: validarDNI,
-        message: "DNI inválido. Debe seguir el formato correcto.",
-      },
+      // Validación por express-validator
     },
     rol: {
       type: String,

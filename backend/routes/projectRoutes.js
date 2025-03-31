@@ -13,8 +13,12 @@ import {
   authMiddlewareOptional,
 } from "../middlewares/authMiddleware.js";
 import { verificarPermisoProyecto } from "../middlewares/projectAuthMiddleware.js";
-import validateProjectData from "../middlewares/validateProjectData.js";
-import validateProjectUpdate from "../middlewares/validateProjectUpdate.js";
+import {
+  createProjectValidator,
+  updateProjectValidator,
+  projectIdValidator,
+} from "../validators/projectValidator.js";
+import { validateRequest } from "../middlewares/validateRequest.js";
 
 const projectRouter = express.Router();
 
@@ -114,11 +118,11 @@ const projectRouter = express.Router();
  *       500:
  *         description: Error interno del servidor.
  */
-
 projectRouter.post(
   "/create",
   authMiddleware,
-  validateProjectData,
+  createProjectValidator,
+  validateRequest,
   createProject
 );
 
@@ -175,7 +179,13 @@ projectRouter.get("/deleted", authMiddleware, getDeletedProjects);
  *       500:
  *         description: Error interno del servidor.
  */
-projectRouter.get("/:id", authMiddlewareOptional, getProjectById);
+projectRouter.get(
+  "/:id",
+  projectIdValidator,
+  validateRequest,
+  authMiddlewareOptional,
+  getProjectById
+);
 
 /**
  * @swagger
@@ -251,8 +261,14 @@ projectRouter.get("/:id", authMiddlewareOptional, getProjectById);
  *       500:
  *         description: Error interno del servidor.
  */
-
-projectRouter.put("/:id", authMiddleware, validateProjectUpdate, updateProject);
+projectRouter.put(
+  "/:id",
+  authMiddleware,
+  projectIdValidator,
+  updateProjectValidator,
+  validateRequest,
+  updateProject
+);
 
 /**
  * @swagger
@@ -281,6 +297,8 @@ projectRouter.put("/:id", authMiddleware, validateProjectUpdate, updateProject);
 projectRouter.delete(
   "/:id",
   authMiddleware,
+  projectIdValidator,
+  validateRequest,
   verificarPermisoProyecto,
   deleteProject
 );
@@ -310,6 +328,12 @@ projectRouter.delete(
  *       500:
  *         description: Error al restaurar el proyecto.
  */
-projectRouter.put("/:id/restore", authMiddleware, restoreProject);
+projectRouter.put(
+  "/:id/restore",
+  authMiddleware,
+  projectIdValidator,
+  validateRequest,
+  restoreProject
+);
 
 export default projectRouter;

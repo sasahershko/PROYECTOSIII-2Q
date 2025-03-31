@@ -27,7 +27,7 @@ export const createProject = async (req, res) => {
       startDate,
       reviewDates = [],
       endDate,
-    } = req.body;
+    } = req.filteredData;
 
     const responsablesValidos = await filtrarUsuariosExistentes(responsibles);
     const usuariosValidos = await filtrarUsuariosExistentes(users);
@@ -97,7 +97,7 @@ export const getAllProjects = async (req, res) => {
 // Obtener proyecto por ID
 export const getProjectById = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.filteredData;
     const project = await Project.findById(id)
       .populate("responsibles", "name")
       .populate("users", "name")
@@ -117,8 +117,9 @@ export const getProjectById = async (req, res) => {
 // Actualizar proyecto
 export const updateProject = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.filteredData;
     const { usuario } = req;
+    const data = req.filteredData;
 
     const existingProject = await Project.findById(id);
     if (!existingProject) {
@@ -134,10 +135,11 @@ export const updateProject = async (req, res) => {
         .json({ mensaje: "No tienes permisos para actualizar este proyecto." });
     }
 
+    // Validación: fechas coherentes
     if (
-      req.body.startDate &&
-      req.body.endDate &&
-      new Date(req.body.startDate) > new Date(req.body.endDate)
+      data.startDate &&
+      data.endDate &&
+      new Date(data.startDate) > new Date(data.endDate)
     ) {
       return res.status(400).json({
         mensaje:
@@ -145,46 +147,48 @@ export const updateProject = async (req, res) => {
       });
     }
 
-    if (req.body.responsibles) {
+    // Validación de usuarios y responsables
+    if (data.responsibles) {
       const validResponsibles = await User.find({
-        _id: { $in: req.body.responsibles },
+        _id: { $in: data.responsibles },
       });
-      if (validResponsibles.length !== req.body.responsibles.length) {
+      if (validResponsibles.length !== data.responsibles.length) {
         return res
           .status(400)
           .json({ mensaje: "Alguno de los responsables no existen." });
       }
     }
 
-    if (req.body.users) {
-      const validUsers = await User.find({ _id: { $in: req.body.users } });
-      if (validUsers.length !== req.body.users.length) {
+    if (data.users) {
+      const validUsers = await User.find({ _id: { $in: data.users } });
+      if (validUsers.length !== data.users.length) {
         return res
           .status(400)
           .json({ mensaje: "Alguno de los usuarios no existen." });
       }
     }
 
-    if (req.body.responsibles || req.body.users) {
+    // Fusionar usuarios y responsables si están presentes
+    if (data.responsibles || data.users) {
       const uniqueUsers = [
         ...new Set([
-          ...(req.body.responsibles || existingProject.responsibles),
-          ...(req.body.users || existingProject.users),
+          ...(data.responsibles || existingProject.responsibles),
+          ...(data.users || existingProject.users),
         ]),
       ];
-      req.body.users = uniqueUsers;
+      data.users = uniqueUsers;
     }
 
     const updatedProject = await Project.findByIdAndUpdate(
       id,
-      { $set: req.body },
+      { $set: data },
       { new: true }
     );
 
-    if (req.body.users) {
+    if (data.users) {
       await User.updateMany({ projects: id }, { $pull: { projects: id } });
       await User.updateMany(
-        { _id: { $in: req.body.users } },
+        { _id: { $in: data.users } },
         { $addToSet: { projects: id } }
       );
     }
@@ -208,7 +212,7 @@ export const updateProject = async (req, res) => {
  */
 export const deleteProject = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.filteredData;
     const usuario = req.usuario;
 
     const proyecto = await Project.findById(id);
@@ -266,7 +270,7 @@ export const restoreProject = async (req, res) => {
       });
     }
 
-    const { id } = req.params;
+    const { id } = req.filteredData;
     await Project.restore({ _id: id });
 
     const restoredProject = await Project.findById(id);
