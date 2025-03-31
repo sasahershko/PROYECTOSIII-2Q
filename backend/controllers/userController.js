@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import Project from "../models/Project.js";
 import { generateVerificationCode } from "../utils/verification.js";
 import { sendVerificationEmail } from "../utils/emailService.js";
 import { validarEmail } from "../utils/validators/emailValidator.js";
@@ -458,13 +459,26 @@ export const updateUser = async (req, res) => {
 export const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const user = await User.findById(id);
 
+    const user = await User.findById(id);
     if (!user) {
       return res.status(404).json({ mensaje: "Usuario no encontrado" });
     }
 
-    await user.delete();
+    // 🔄 Eliminar referencias de este usuario en proyectos
+    await Project.updateMany(
+      {
+        $or: [{ responsibles: id }, { users: id }],
+      },
+      {
+        $pull: {
+          responsibles: id,
+          users: id,
+        },
+      }
+    );
+
+    await user.delete(); // Soft delete
     res.status(200).json({ mensaje: "Usuario eliminado (soft delete)" });
   } catch (error) {
     res
@@ -502,11 +516,28 @@ export const restoreUser = async (req, res) => {
     }
 
     const { id } = req.params;
+
+    // 1. Restaurar usuario
     await User.restore({ _id: id });
-    res.status(200).json({ mensaje: "Usuario restaurado correctamente." });
+
+    // 2. Buscar proyectos (activos o eliminados) donde el usuario participaba antes
+    const proyectos = await Project.findWithDeleted({
+      $or: [{ responsibles: id }, { users: id }],
+    });
+
+    // 3. Volver a añadir la referencia del proyecto en el usuario restaurado
+    await User.updateOne(
+      { _id: id },
+      { $addToSet: { projects: { $each: proyectos.map((p) => p._id) } } }
+    );
+
+    res.status(200).json({
+      mensaje: "Usuario restaurado correctamente y proyectos actualizados.",
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({ mensaje: "Error al restaurar usuario", error: error.message });
+    res.status(500).json({
+      mensaje: "Error al restaurar usuario",
+      error: error.message,
+    });
   }
 };

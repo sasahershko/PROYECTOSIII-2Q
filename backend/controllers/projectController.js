@@ -267,13 +267,22 @@ export const restoreProject = async (req, res) => {
     }
 
     const { id } = req.params;
-    const restored = await Project.restore({ _id: id });
-    res
-      .status(200)
-      .json({ mensaje: "Proyecto restaurado correctamente.", restored });
+    await Project.restore({ _id: id });
+
+    const restoredProject = await Project.findById(id);
+    await User.updateMany(
+      { _id: { $in: restoredProject.users } },
+      { $addToSet: { projects: restoredProject._id } }
+    );
+
+    res.status(200).json({
+      mensaje: "Proyecto restaurado correctamente.",
+      restored: restoredProject,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({ mensaje: "Error al restaurar proyecto", error: error.message });
+    res.status(500).json({
+      mensaje: "Error al restaurar proyecto",
+      error: error.message,
+    });
   }
 };

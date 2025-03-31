@@ -135,15 +135,23 @@ projectRouter.get("/", authMiddlewareOptional, getAllProjects);
  * @swagger
  * /api/projects/deleted:
  *   get:
- *     summary: Obtener proyectos eliminados (solo admin)
+ *     summary: Obtener todos los proyectos eliminados (soft delete)
  *     tags: [Proyectos]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Lista de proyectos eliminados obtenida con éxito.
+ *         description: Lista de proyectos eliminados.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Project'
  *       403:
- *         description: No autorizado.
+ *         description: Solo los administradores pueden ver proyectos eliminados.
+ *       500:
+ *         description: Error al obtener los proyectos eliminados.
  */
 projectRouter.get("/deleted", authMiddleware, getDeletedProjects);
 
@@ -281,7 +289,7 @@ projectRouter.delete(
  * @swagger
  * /api/projects/{id}/restore:
  *   put:
- *     summary: Restaurar un proyecto eliminado
+ *     summary: Restaurar un proyecto eliminado (soft delete)
  *     tags: [Proyectos]
  *     security:
  *       - bearerAuth: []
@@ -289,15 +297,18 @@ projectRouter.delete(
  *       - in: path
  *         name: id
  *         required: true
+ *         description: ID del proyecto a restaurar.
  *         schema:
  *           type: string
  *     responses:
  *       200:
- *         description: Proyecto restaurado con éxito.
+ *         description: Proyecto restaurado correctamente.
  *       403:
- *         description: No autorizado.
+ *         description: Solo administradores pueden restaurar proyectos.
+ *       404:
+ *         description: Proyecto no encontrado.
  *       500:
- *         description: Error interno del servidor.
+ *         description: Error al restaurar el proyecto.
  */
 projectRouter.put("/:id/restore", authMiddleware, restoreProject);
 

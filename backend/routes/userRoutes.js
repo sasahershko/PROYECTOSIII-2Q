@@ -206,14 +206,16 @@ userRouter.get("/deleted", authMiddleware, getDeletedUsers);
  *       - in: path
  *         name: id
  *         required: true
+ *         description: ID del usuario a restaurar
  *         schema:
  *           type: string
- *         description: ID del usuario a restaurar
  *     responses:
  *       200:
  *         description: Usuario restaurado correctamente.
  *       403:
- *         description: No autorizado.
+ *         description: Solo los administradores pueden restaurar usuarios.
+ *       500:
+ *         description: Error al restaurar el usuario.
  */
 userRouter.put("/:id/restore", authMiddleware, restoreUser);
 
@@ -300,9 +302,9 @@ userRouter.patch("/:id", authMiddleware, adminOrSelfMiddleware, updateUser);
 
 /**
  * @swagger
- * /api/users/{id}:
- *   delete:
- *     summary: Eliminar usuario (soft delete)
+ * /api/users/{id}/restore:
+ *   put:
+ *     summary: Restaurar un usuario eliminado (soft delete)
  *     tags: [Usuarios]
  *     security:
  *       - bearerAuth: []
@@ -312,14 +314,18 @@ userRouter.patch("/:id", authMiddleware, adminOrSelfMiddleware, updateUser);
  *         required: true
  *         schema:
  *           type: string
+ *         description: ID del usuario a restaurar.
  *     responses:
  *       200:
- *         description: Usuario marcado como eliminado.
+ *         description: Usuario restaurado correctamente y referencias de proyectos actualizadas.
  *       403:
- *         description: No autorizado.
+ *         description: Solo los administradores pueden realizar esta acción.
  *       404:
  *         description: Usuario no encontrado.
+ *       500:
+ *         description: Error al restaurar el usuario.
  */
+
 userRouter.delete("/:id", authMiddleware, adminOrSelfMiddleware, deleteUser);
 
 export default userRouter;
