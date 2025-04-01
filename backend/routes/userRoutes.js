@@ -13,8 +13,16 @@ import {
   restoreUser,
 } from "../controllers/userController.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
-import { validateRegisterData } from "../middlewares/validateRegisterData.js";
 import { adminOrSelfMiddleware } from "../middlewares/adminOrSelfMiddleware.js";
+import {
+  registerUserValidator,
+  loginUserValidator,
+  verifyCodeValidator,
+  resendVerificationValidator,
+  updateUserValidator,
+  userIdValidator,
+} from "../validators/userValidator.js";
+import { validateRequest } from "../middlewares/validateRequest.js";
 
 const userRouter = express.Router();
 
@@ -64,7 +72,12 @@ const userRouter = express.Router();
  *       400:
  *         description: Algún campo es inválido o el correo ya está en uso.
  */
-userRouter.post("/register", validateRegisterData, registerUser);
+userRouter.post(
+  "/register",
+  registerUserValidator,
+  validateRequest,
+  registerUser
+);
 
 /**
  * @swagger
@@ -94,7 +107,12 @@ userRouter.post("/register", validateRegisterData, registerUser);
  *       404:
  *         description: Usuario no encontrado.
  */
-userRouter.post("/verify-code", verifyCode);
+userRouter.post(
+  "/verify-code",
+  verifyCodeValidator,
+  validateRequest,
+  verifyCode
+);
 
 /**
  * @swagger
@@ -121,7 +139,12 @@ userRouter.post("/verify-code", verifyCode);
  *       404:
  *         description: Usuario no encontrado.
  */
-userRouter.post("/resend-verification", resendVerificationCode);
+userRouter.post(
+  "/resend-verification",
+  resendVerificationValidator,
+  validateRequest,
+  resendVerificationCode
+);
 
 /**
  * @swagger
@@ -153,7 +176,7 @@ userRouter.post("/resend-verification", resendVerificationCode);
  *       403:
  *         description: Usuario no verificado.
  */
-userRouter.post("/login", loginUser);
+userRouter.post("/login", loginUserValidator, validateRequest, loginUser);
 
 /**
  * @swagger
@@ -206,16 +229,24 @@ userRouter.get("/deleted", authMiddleware, getDeletedUsers);
  *       - in: path
  *         name: id
  *         required: true
+ *         description: ID del usuario a restaurar
  *         schema:
  *           type: string
- *         description: ID del usuario a restaurar
  *     responses:
  *       200:
  *         description: Usuario restaurado correctamente.
  *       403:
- *         description: No autorizado.
+ *         description: Solo los administradores pueden restaurar usuarios.
+ *       500:
+ *         description: Error al restaurar el usuario.
  */
-userRouter.put("/:id/restore", authMiddleware, restoreUser);
+userRouter.put(
+  "/:id/restore",
+  userIdValidator,
+  validateRequest,
+  authMiddleware,
+  restoreUser
+);
 
 /**
  * @swagger
@@ -296,13 +327,21 @@ userRouter.get("/profile/:id", getUserProfileById);
  *       404:
  *         description: Usuario no encontrado.
  */
-userRouter.patch("/:id", authMiddleware, adminOrSelfMiddleware, updateUser);
+userRouter.patch(
+  "/:id",
+  userIdValidator,
+  updateUserValidator,
+  validateRequest,
+  authMiddleware,
+  adminOrSelfMiddleware,
+  updateUser
+);
 
 /**
  * @swagger
- * /api/users/{id}:
- *   delete:
- *     summary: Eliminar usuario (soft delete)
+ * /api/users/{id}/restore:
+ *   put:
+ *     summary: Restaurar un usuario eliminado (soft delete)
  *     tags: [Usuarios]
  *     security:
  *       - bearerAuth: []
@@ -312,14 +351,24 @@ userRouter.patch("/:id", authMiddleware, adminOrSelfMiddleware, updateUser);
  *         required: true
  *         schema:
  *           type: string
+ *         description: ID del usuario a restaurar.
  *     responses:
  *       200:
- *         description: Usuario marcado como eliminado.
+ *         description: Usuario restaurado correctamente y referencias de proyectos actualizadas.
  *       403:
- *         description: No autorizado.
+ *         description: Solo los administradores pueden realizar esta acción.
  *       404:
  *         description: Usuario no encontrado.
+ *       500:
+ *         description: Error al restaurar el usuario.
  */
-userRouter.delete("/:id", authMiddleware, adminOrSelfMiddleware, deleteUser);
+userRouter.delete(
+  "/:id",
+  userIdValidator,
+  validateRequest,
+  authMiddleware,
+  adminOrSelfMiddleware,
+  deleteUser
+);
 
 export default userRouter;
