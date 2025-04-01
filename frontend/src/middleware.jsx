@@ -36,7 +36,7 @@ export async function middleware(req) {
         return NextResponse.redirect(new URL("/admin", req.url));
       }
       if (userRole === "user") {
-        return NextResponse.redirect(new URL("/user", req.url));
+        return NextResponse.redirect(new URL("/", req.url));
       }
       return NextResponse.next();
     }
@@ -46,21 +46,8 @@ export async function middleware(req) {
       return NextResponse.next();
     }
 
-    //si ya estás en la página /user y eres user, no hacer nada
-    if (
-      req.nextUrl.pathname.startsWith("/user") &&
-      (userRole === "user" || userRole === "admin")
-    ) {
-      return NextResponse.next();
-    }
-
     //si estás en la página admin pero no eres admin, redirigir al inicio
     if (req.nextUrl.pathname.startsWith("/admin") && userRole !== "admin") {
-      return NextResponse.redirect(new URL("/", req.url));
-    }
-
-    //si estás en la página user pero no eres estudiante, redirigir al inicio
-    if (req.nextUrl.pathname.startsWith("/user") && userRole !== "user") {
       return NextResponse.redirect(new URL("/", req.url));
     }
 
