@@ -1,43 +1,43 @@
-import { body, param } from "express-validator";
+import { check, param } from "express-validator";
 
 export const createProjectValidator = [
-  body("name").notEmpty().withMessage("El nombre es obligatorio"),
-  body("contactPerson")
+  check("name").notEmpty().withMessage("El nombre es obligatorio"),
+  check("contactPerson")
     .notEmpty()
     .withMessage("Persona de contacto obligatoria"),
-  body("company").isIn(["U-TAD", "ILION", "OTROS"]),
-  body("area").isIn(["INSO", "MAIS", "FIIS", "DIPI", "ANIV", "DIDI"]),
-  body("description").notEmpty(),
-  body("startDate").isISO8601(),
-  body("endDate").isISO8601(),
-  body("reviewDates").optional().isArray(),
-  body("responsibles").optional().isArray(),
-  body("users").optional().isArray(),
-  body("benefit").optional().isString(),
-  body("folder").optional().isString(),
-  body("practicesAgreement").optional().isBoolean(),
-  body("practicesStudents").optional().isInt({ min: 0 }),
-  body("sdpStudents").optional().isInt({ min: 0 }),
+  check("company").isIn(["U-TAD", "ILION", "OTROS"]),
+  check("area").isIn(["INSO", "MAIS", "FIIS", "DIPI", "ANIV", "DIDI"]),
+  check("description").notEmpty(),
+  check("startDate").isISO8601(),
+  check("endDate").isISO8601(),
+  check("reviewDates").optional().isArray(),
+  check("responsibles").optional().isArray(),
+  check("users").optional().isArray(),
+  check("benefit").optional().isString(),
+  check("folder").optional().isString(),
+  check("practicesAgreement").optional().isBoolean(),
+  check("practicesStudents").optional().isInt({ min: 0 }),
+  check("sdpStudents").optional().isInt({ min: 0 }),
 ];
 
 export const updateProjectValidator = [
-  body("name").optional().notEmpty(),
-  body("contactPerson").optional().notEmpty(),
-  body("company").optional().isIn(["U-TAD", "ILION", "OTROS"]),
-  body("area")
+  check("name").optional().notEmpty(),
+  check("contactPerson").optional().notEmpty(),
+  check("company").optional().isIn(["U-TAD", "ILION", "OTROS"]),
+  check("area")
     .optional()
     .isIn(["INSO", "MAIS", "FIIS", "DIPI", "ANIV", "DIDI"]),
-  body("description").optional().notEmpty(),
-  body("startDate").optional().isISO8601(),
-  body("endDate").optional().isISO8601(),
-  body("reviewDates").optional().isArray(),
-  body("responsibles").optional().isArray(),
-  body("users").optional().isArray(),
-  body("benefit").optional().isString(),
-  body("folder").optional().isString(),
-  body("practicesAgreement").optional().isBoolean(),
-  body("practicesStudents").optional().isInt({ min: 0 }),
-  body("sdpStudents").optional().isInt({ min: 0 }),
+  check("description").optional().notEmpty(),
+  check("startDate").optional().isISO8601(),
+  check("endDate").optional().isISO8601(),
+  check("reviewDates").optional().isArray(),
+  check("responsibles").optional().isArray(),
+  check("users").optional().isArray(),
+  check("benefit").optional().isString(),
+  check("folder").optional().isString(),
+  check("practicesAgreement").optional().isBoolean(),
+  check("practicesStudents").optional().isInt({ min: 0 }),
+  check("sdpStudents").optional().isInt({ min: 0 }),
 ];
 
 export const projectIdValidator = [
