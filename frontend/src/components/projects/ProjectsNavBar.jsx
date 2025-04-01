@@ -35,10 +35,10 @@ export default function ProjectsNavBar({ role }) {
                     );
                 })}
             </div>
-            <div className="flex gap-2 bg-secundary py-2 px-4 rounded-lg text-white">
-                <Image src={'/svg/settings-svgrepo-com.svg'} width={20} height={20} className="invert"></Image>
-                <button>Gestionar Proyecto</button>
-            </div>
+            <Link href='/' className="flex gap-2 bg-secundary py-2 px-4 rounded-lg text-white">
+                <Image src={'/svg/settings-svgrepo-com.svg'} alt='settings' width={20} height={20} className="invert"></Image>
+                <p>Gestionar Proyecto</p>
+            </Link>
         </div>
     );
 }

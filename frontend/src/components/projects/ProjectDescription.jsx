@@ -29,6 +29,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { getUserData } from "@/lib/authClient";
 import { formatDate, getProjectDates } from "@/utils/projectUtils";
+import AddUserModal from "@/components/projects/AddUserModal";
 
 //STATUS COLOR
 const getStatusColor = (status) => {
@@ -102,7 +103,7 @@ export default function ProjectDescription({ project }) {
       {/* Main content - Left side */}
       <div className="lg:col-span-2 space-y-6">
         <Card className="border-0 shadow-sm">
-          <CardContent className="p-6">
+          <CardContent className="p-6 bg-primary-bg">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
               <div>
                 <h1 className="text-3xl font-bold">{project.name}</h1>
@@ -127,7 +128,7 @@ export default function ProjectDescription({ project }) {
             </div>
 
             {/* Project Image */}
-            <div className="relative w-full h-[350px] rounded-lg overflow-hidden bg-white dark:bg-gray-900 shadow-inner mt-6 mb-6">
+            <div className="relative w-full h-[350px] rounded-lg overflow-hidden bg-primary-bg shadow-inner mt-6 mb-6">
               {project.image ? (
                 <Image
                   src={project.image || "/placeholder.svg?height=350&width=700"}
@@ -149,7 +150,8 @@ export default function ProjectDescription({ project }) {
                 <span className="text-sm font-medium">Progreso del proyecto</span>
                 <span className="text-sm font-medium">{project.progress}%</span>
               </div>
-              <Progress value={project.progress} className="h-2" />
+              {/* <Progress value={project.progress} className="h-2" /> */}
+              <Progress value={80} className="h-2" />
               <div className="flex justify-between mt-2">
                 <span className="text-xs text-gray-500">Inicio: {formatDate(project.startDate)}</span>
                 <span className="text-xs text-gray-500">
@@ -172,14 +174,14 @@ export default function ProjectDescription({ project }) {
       {(userRole === "admin" || (userRole === "user" && (isParticipant || isResponsible))) && (
         <div className="space-y-6">
           {/* Key Dates Card */}
-          <Card className="shadow-sm">
+          <Card className="shadow-sm bg-primary-bg">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
                 <CalendarIcon className="w-4 h-4" />
                 Fechas Clave
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className='bg-primary-bg'>
               <div className="flex flex-col space-y-3">
                 {dates.map((date, i) => {
                   if (!date) return null; // Evita renderizar si `date` es undefined/null
@@ -187,11 +189,11 @@ export default function ProjectDescription({ project }) {
                   const label = i === 0 ? "Inicio" : i === 1 ? "Fin" : "Próxima revisión";
 
                   return (
-                    <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 dark:bg-gray-800">
-                      <div className="bg-primary/10 rounded-full p-2">
-                        {date.icon === "calendar" && <Calendar className="w-4 h-4 text-primary" />}
+                    <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-primary-bg shadow-sm ">
+                      <div className="bg-primary-bg/10 rounded-full p-2">
+                        {date.icon === "calendar" && <Calendar className="w-4 h-4 text-primary-text" />}
                         {date.icon === "clock" && <Clock className="w-4 h-4 text-primary" />}
-                        {date.icon === "hourglass" && <Hourglass className="w-4 h-4 text-primary" />}
+                        {date.icon === "hourglass" && <Hourglass className="w-4 h-4 text-primary-text" />}
                       </div>
                       <div>
                         <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
@@ -207,7 +209,7 @@ export default function ProjectDescription({ project }) {
 
           {/* Project Details Tabs */}
           <Card className="shadow-sm">
-            <CardContent className="p-0">
+            <CardContent className="p-0 bg-primary-bg">
               <Tabs defaultValue="team" className="w-full">
                 <TabsList className="grid grid-cols-2 w-full rounded-t-lg rounded-b-none">
                   <TabsTrigger value="team" className="flex items-center gap-1">
@@ -230,10 +232,15 @@ export default function ProjectDescription({ project }) {
                           <Users className="w-4 h-4" />
                           Participantes
                         </h3>
-                        <Button variant="outline" size="sm" className="h-8">
-                          <UserPlus className="w-3.5 h-3.5 mr-1" />
-                          Añadir
-                        </Button>
+                        <AddUserModal
+                          availableUsers={[
+                            { _id: "1", name: "Lucía", surname: "Gómez", email: "lucia@example.com", role: "DevOps" },
+                            { _id: "2", name: "Carlos", surname: "Pérez", email: "carlos@example.com", role: "Backend" },
+                          ]}
+                          onAddUser={(user) => {
+                            console.log("Usuario añadido (prueba):", user)
+                          }}
+                        />
                       </div>
                       <ScrollArea className="h-48 pr-4">
                         <div className="space-y-3">
@@ -241,7 +248,7 @@ export default function ProjectDescription({ project }) {
                             <TooltipProvider key={index}>
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <div className="flex items-center gap-3 p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                  <div className="flex items-center gap-3 p-2 rounded-md hover:bg-primary-bg dark:hover:bg-gray-800 transition-colors">
                                     <Avatar>
                                       <AvatarImage src="/tempPhotos/default-avatar.jpg" alt={user.name} />
                                       <AvatarFallback>
@@ -253,7 +260,7 @@ export default function ProjectDescription({ project }) {
                                       <p className="font-medium">
                                         {user.name} {user.surname}
                                       </p>
-                                      {user.role && <p className="text-xs text-gray-500">{user.role}</p>}
+                                      {user.role && <p className="text-xs text-primary-bg">{user.role}</p>}
                                     </div>
                                   </div>
                                 </TooltipTrigger>
@@ -301,7 +308,7 @@ export default function ProjectDescription({ project }) {
                           <TooltipProvider key={index}>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <div className="flex items-center gap-3 p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                <div className="flex items-center gap-3 p-2 rounded-md hover:bg-gray-50 transition-colors">
                                   <Avatar>
                                     <AvatarImage src="/default-avatar.png" alt={person.name} />
                                     <AvatarFallback>{person.name.charAt(0)}</AvatarFallback>
@@ -329,7 +336,7 @@ export default function ProjectDescription({ project }) {
                         <User className="w-4 h-4" />
                         Cliente Externo
                       </h3>
-                      <div className="flex items-center gap-3 p-2 rounded-md bg-white dark:bg-gray-800">
+                      <div className="flex items-center gap-3 p-2 rounded-md bg-primary-bg">
                         <Avatar>
                           <AvatarImage src="/default-avatar.png" alt={project.contactPerson} />
                           <AvatarFallback>
@@ -346,7 +353,7 @@ export default function ProjectDescription({ project }) {
                 </TabsContent>
               </Tabs>
             </CardContent>
-            <CardFooter className="text-xs text-gray-500 pt-2 pb-4 px-4">
+            <CardFooter className="text-xs text-gray-500 pt-2 pb-4 px-4 bg-primary-bg">
               Última actualización: {formatDate(new Date().toISOString())}
             </CardFooter>
           </Card>
