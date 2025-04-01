@@ -1,47 +1,47 @@
-import { body, param } from "express-validator";
+import { check, param } from "express-validator";
 import { dniValidator } from "./dniValidator.js";
 import { emailValidator } from "./emailValidator.js";
 import { passwordValidator } from "./passwordValidator.js";
 
 export const registerUserValidator = [
-  body("name").notEmpty().withMessage("Nombre requerido"),
-  body("surname").notEmpty().withMessage("Apellidos requeridos"),
+  check("name").notEmpty().withMessage("Nombre requerido"),
+  check("surname").notEmpty().withMessage("Apellidos requeridos"),
   emailValidator,
   passwordValidator,
   dniValidator,
-  body("grade")
+  check("grade")
     .isIn(["INSO", "MAIS", "FIIS", "DIPI", "ANIV"])
     .withMessage("Grado no válido"),
 ];
 
 export const loginUserValidator = [
-  body("email").isEmail().withMessage("Email inválido"),
-  body("password").notEmpty().withMessage("Contraseña requerida"),
+  check("email").isEmail().withMessage("Email inválido"),
+  check("password").notEmpty().withMessage("Contraseña requerida"),
 ];
 
 export const verifyCodeValidator = [
-  body("email").isEmail().withMessage("Email inválido"),
-  body("code")
+  check("email").isEmail().withMessage("Email inválido"),
+  check("code")
     .isLength({ min: 6, max: 6 })
     .withMessage("El código debe tener 6 dígitos"),
 ];
 
 export const resendVerificationValidator = [
-  body("email").isEmail().withMessage("Email inválido"),
+  check("email").isEmail().withMessage("Email inválido"),
 ];
 
 export const updateUserValidator = [
-  body("name").optional().notEmpty(),
-  body("surname").optional().notEmpty(),
-  body("grade")
+  check("name").optional().notEmpty(),
+  check("surname").optional().notEmpty(),
+  check("grade")
     .optional()
     .isIn(["INSO", "MAIS", "FIIS", "DIPI", "ANIV"])
     .withMessage("Grado no válido"),
-  body("rol")
+  check("rol")
     .optional()
     .isIn(["admin", "moderator", "user"])
     .withMessage("Rol no válido"),
-  body("profileImage").optional().isString(),
+  check("profileImage").optional().isString(),
 ];
 
 export const userIdValidator = [
