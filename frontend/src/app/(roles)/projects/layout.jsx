@@ -1,6 +1,5 @@
 // app/layout.js
 import "@/app/globals.css";
-import ProjectsNavBar from "@/components/projects/ProjectsNavBar";
 
 export default function RootLayout({ children }) {
   return (

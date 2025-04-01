@@ -19,7 +19,7 @@ const config = {
     createThemes({
       // Aquí se pueden definir colores segun el tema, deben tener el mismo nombre
       light: {
-        "primary-bg": "#fff",
+        "primary-bg": "#ffffff",
         secundary: "#111827",
         "primary-text": "#000",
         "secundary-text": "#111827",

@@ -1,7 +1,9 @@
 "use client";
 
+//! LO DEL ACTIVE BAR HACERLO DESDE LA URL SABIENDO DONDE ESTAS!!!
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
+import Image from 'next/image';
 
 export default function ProjectsNavBar({ role }) {
     const { id: projectId } = useParams();
@@ -10,8 +12,8 @@ export default function ProjectsNavBar({ role }) {
     const links = [
         { name: "Vista general", href: `/projects/${projectId}`, match: `/projects/${projectId}` },
         { name: "Participantes", href: `/projects/${projectId}/participants`, match: `/projects/${projectId}/participants` },
-        { name: "Presupuesto", href: "/projects/areas", match: "/projects/areas" },
-        { name: "Convocatorias", href: "/projects/calendar", match: "/projects/calendar" },
+        { name: "Presupuesto", href: `/projects/${projectId}/budget`, match: `/projects/${projectId}/budget` },
+        { name: "Convocatorias", href: `/projects/${projectId}/call`, match:`/projects/${projectId}/call` },
         { name: "Calendario", href: `/projects/${projectId}/calendar`, match: `/projects/${projectId}/calendar` }
     ];
 
@@ -32,6 +34,10 @@ export default function ProjectsNavBar({ role }) {
                         </Link>
                     );
                 })}
+            </div>
+            <div className="flex gap-2 bg-secundary py-2 px-4 rounded-lg text-white">
+                <Image src={'/svg/settings-svgrepo-com.svg'} width={20} height={20} className="invert"></Image>
+                <button>Gestionar Proyecto</button>
             </div>
         </div>
     );
