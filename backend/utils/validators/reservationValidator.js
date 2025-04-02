@@ -1,7 +1,7 @@
-const { check } = require("express-validator");
-const validateResults = require("../utils/handleValidator.js");
+import { check } from "express-validator";
+import validateResults from "../handleValidator.js";
 
-const validatorCreateReservation = [
+export const validatorCreateReservation = [
     check("table")
         .exists().notEmpty()
         .isMongoId().withMessage("El ID de la mesa es inválido"),
@@ -31,5 +31,3 @@ const validatorCreateReservation = [
 
     validateResults
 ];
-
-module.exports = { validatorCreateReservation };
