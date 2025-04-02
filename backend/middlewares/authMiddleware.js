@@ -1,0 +1,60 @@
+import jwt from "jsonwebtoken";
+import User from "../models/User.js";
+
+/**
+ * Middleware para verificar si el usuario está autenticado
+ */
+export const authMiddleware = async (req, res, next) => {
+  try {
+    const token =
+      req.cookies?.token || req.headers.authorization?.split(" ")[1];
+
+    if (!token) {
+      return res
+        .status(401)
+        .json({ mensaje: "No autorizado. Token no proporcionado." });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.usuario = await User.findById(decoded.id).select("-password"); // Excluye la contraseña
+
+    if (!req.usuario) {
+      return res
+        .status(401)
+        .json({ mensaje: "Token inválido o usuario no encontrado." });
+    }
+
+    next();
+  } catch (error) {
+    console.error("❌ Error en autenticación:", error);
+    res.status(401).json({ mensaje: "Token inválido o expirado." });
+  }
+};
+
+/**
+ * Middleware para verificar si el usuario está autenticado (opcional), para tratarlo como un usuario anónimo
+ */
+export const authMiddlewareOptional = async (req, res, next) => {
+  try {
+    const token =
+      req.cookies?.token || req.headers.authorization?.split(" ")[1];
+
+    if (!token) {
+      req.usuario = null;
+      return next();
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.usuario = await User.findById(decoded.id).select("-password");
+
+    if (!req.usuario) {
+      req.usuario = null; //si el usuario no se encuentra, tratarlo como anónimo
+    }
+
+    next();
+  } catch (error) {
+    console.error("⚠ Error en autenticación opcional:", error);
+    req.usuario = null; //anónimo
+    next();
+  }
+};

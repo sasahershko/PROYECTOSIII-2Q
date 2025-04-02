@@ -28,3 +28,25 @@ export async function getUserRole() {
     return "guest";
   }
 }
+
+
+//para obtener el id del usuario para tema proyectos
+export async function getUserData() {
+  try {
+    const token = getTokenFromClient();
+
+    if (!token) {
+      return null;
+    }
+
+    //decodificamos token
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return {
+      id: payload.id || null, // Asegúrate de que el token contenga `id`
+      role: payload.rol || "guest",
+    };
+  } catch (error) {
+    console.error("Error en getUserData:", error);
+    return null;
+  }
+}

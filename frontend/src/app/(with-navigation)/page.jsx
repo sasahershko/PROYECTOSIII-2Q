@@ -1,52 +1,56 @@
 import React from "react";
+import Link from "next/link";
 import Carrusel from "@/components/landing/Carrusel";
-import InfoLanding from "@/components/landing/InfoLanding";
+import ContactoLanding from "@/components/landing/ContactoLanding";
 import CarruselProyectos from "@/components/landing/CarruselProyectos";
+import PorqueElegir from "@/components/landing/PorqueElegir";
+import MapaContacto from "@/components/landing/MapaContacto";
 
 export default function Home() {
   return (
     <div className="w-full flex flex-col items-center">
-      {/* Llamada a carrusel de imagenes */}
+      {/* Carrusel de imágenes (ancho completo) */}
       <div className="w-full">
         <Carrusel />
       </div>
 
+      {/* Flecha animada */}
       <div
-        className="h-20 min-w-full content-center flex justify-center items-center"
+        className="h-20 -top-20 relative min-w-full content-center flex justify-center items-center"
         id="info"
       >
-        <a href="#info">
+        <Link href="#info">
           <svg
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className="w-16 h-16 animate-bounce fill-secundary-text"
+            className="w-16 h-16 animate-bounce fill-white"
           >
-            <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
-            <g
-              id="SVGRepo_tracerCarrier"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            ></g>
-            <g id="SVGRepo_iconCarrier">
-              {" "}
-              <path
-                d="M12.3704 15.8351L18.8001 9.20467C19.2013 8.79094 18.9581 8 18.4297 8H5.5703C5.04189 8 4.79869 8.79094 5.1999 9.20467L11.6296 15.8351C11.8427 16.055 12.1573 16.0549 12.3704 15.8351Z"
-                fill=""
-              ></path>{" "}
-            </g>
+            <path
+              d="M12.3704 15.8351L18.8001 9.20467C19.2013 8.79094 18.9581 8 18.4297 8H5.5703C5.04189 8 4.79869 8.79094 5.1999 9.20467L11.6296 15.8351C11.8427 16.055 12.1573 16.0549 12.3704 15.8351Z"
+              fill=""
+            ></path>
           </svg>
-        </a>
+        </Link>
       </div>
 
-      {/* Llamada a info */}
-      <div className="w-full max-w-6xl">
-        <InfoLanding />
-      </div>
+      {/* Contenido principal centrado */}
+      <div className="w-full max-w-[90%] xl:max-w-[1400px] px-8 flex flex-col gap-16 mx-auto items-center">
+        {/* CONTACTO */}
+        <div className="w-full flex justify-center">
+          <ContactoLanding />
+        </div>
 
-      {/* Llamada a carrusel de proyectos */}
-      <div className="w-full max-w-6xl mt-8">
-        <CarruselProyectos />
+        {/* PROYECTOS EN DESARROLLO */}
+        <div className="w-full flex justify-center">
+          <CarruselProyectos />
+        </div>
+
+        {/* Sección de ¿Por qué elegir el Project Center? */}
+        <PorqueElegir />
+
+        {/* Sección Mapa y Contacto */}
+        <MapaContacto />
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Footer() {
   // Debe de ir en los layouts de las páginas para
@@ -6,7 +7,7 @@ export default function Footer() {
 
   return (
     <>
-      <footer className="w-full bg-secundary text-gray-400 py-6 flex justify-start items-left text-left flex-col px-80">
+      <div className="w-full bg-secundary text-gray-400 py-6 flex justify-start items-left text-left flex-col px-80">
         <div>
           <h3 className="bg-white/90 py-2 px-4 text-secundary font-semibold w-fit justify-start">
             MARCAS CON LAS QUE TRABAJAMOS
@@ -22,20 +23,20 @@ export default function Footer() {
               height={50}
             />
             <div className="flex flex-col justify-start items-start pl-12">
-              <a
+              <Link
                 href="https://u-tad.com/politica-de-privacidad/"
                 target="_blank"
                 className="pointer font-semibold hover:text-white/90"
               >
                 POLITICA DE PRIVACIDAD
-              </a>
-              <a
+              </Link>
+              <Link
                 href="https://u-tad.com/politica-de-cookies/"
                 target="_blank"
                 className="pointer font-semibold hover:text-white/90"
               >
                 POLITICA DE COOKIES
-              </a>
+              </Link>
               <br />
               <p>&copy; U-tad 2025 | Uup marketing digital</p>
               {/* Temporal, lo del copy es de la web de la U-tad */}
@@ -44,13 +45,13 @@ export default function Footer() {
           <div className="flex flex-col justify-end items-end h-full">
             <p>Calle Playa de Liencres, 2 bis. – Parque Europa Empresarial</p>
             <p>Edificio Bruselas – 28290 Las Rozas, Madrid</p>
-            <p className="mt-2">Tel 999 999 999</p>
+            <p className="mt-2">Tel: (+34) 900 373 379</p>
             <h3 className="bg-white/90 py-2 px-4 text-secundary font-semibold w-fit justify-start mt-2">
-              DESARROLLADO POR LA U-TAD
+              DESARROLLADO POR ALUMNOS DE U-TAD
             </h3>
           </div>
         </div>
-      </footer>
+      </div>
     </>
   );
 }

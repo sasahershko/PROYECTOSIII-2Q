@@ -1,17 +1,28 @@
 import express from "express";
 import {
   registerUser,
+  verifyCode,
+  resendVerificationCode,
   loginUser,
   getUserProfile,
+  getUserProfileById,
   getAllUsers,
   deleteUser,
-  updateUserRole,
+  updateUser,
+  getDeletedUsers,
+  restoreUser,
 } from "../controllers/userController.js";
+import { authMiddleware } from "../middlewares/authMiddleware.js";
+import { adminOrSelfMiddleware } from "../middlewares/adminOrSelfMiddleware.js";
 import {
-  authMiddleware,
-  adminMiddleware,
-  moderatorMiddleware,
-} from "../middleware/authMiddleware.js";
+  registerUserValidator,
+  loginUserValidator,
+  verifyCodeValidator,
+  resendVerificationValidator,
+  updateUserValidator,
+  userIdValidator,
+} from "../validators/userValidator.js";
+import { validateRequest } from "../middlewares/validateRequest.js";
 
 const userRouter = express.Router();
 
@@ -19,7 +30,7 @@ const userRouter = express.Router();
  * @swagger
  * tags:
  *   name: Usuarios
- *   description: Endpoints para gestionar usuarios
+ *   description: Endpoints para la gestión de usuarios
  */
 
 /**
@@ -28,6 +39,7 @@ const userRouter = express.Router();
  *   post:
  *     summary: Registrar un nuevo usuario
  *     tags: [Usuarios]
+ *     description: Permite registrar un usuario con validaciones de email y DNI.
  *     requestBody:
  *       required: true
  *       content:
@@ -60,7 +72,79 @@ const userRouter = express.Router();
  *       400:
  *         description: Algún campo es inválido o el correo ya está en uso.
  */
-userRouter.post("/register", registerUser);
+userRouter.post(
+  "/register",
+  registerUserValidator,
+  validateRequest,
+  registerUser
+);
+
+/**
+ * @swagger
+ * /api/users/verify-code:
+ *   post:
+ *     summary: Verificar código de autenticación
+ *     tags: [Usuarios]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, code]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: "usuario@u-tad.com"
+ *               code:
+ *                 type: string
+ *                 example: "123456"
+ *     responses:
+ *       200:
+ *         description: Código correcto, usuario verificado.
+ *       400:
+ *         description: Código incorrecto o intentos agotados.
+ *       404:
+ *         description: Usuario no encontrado.
+ */
+userRouter.post(
+  "/verify-code",
+  verifyCodeValidator,
+  validateRequest,
+  verifyCode
+);
+
+/**
+ * @swagger
+ * /api/users/resend-verification:
+ *   post:
+ *     summary: Reenviar el código de verificación
+ *     tags: [Usuarios]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: "usuario@u-tad.com"
+ *     responses:
+ *       200:
+ *         description: Código reenviado exitosamente.
+ *       400:
+ *         description: Ya verificado o espera antes de reenviar.
+ *       404:
+ *         description: Usuario no encontrado.
+ */
+userRouter.post(
+  "/resend-verification",
+  resendVerificationValidator,
+  validateRequest,
+  resendVerificationCode
+);
 
 /**
  * @swagger
@@ -84,84 +168,15 @@ userRouter.post("/register", registerUser);
  *                 example: "SecureP@ss123"
  *     responses:
  *       200:
- *         description: Login exitoso, devuelve el usuario y el token.
+ *         description: Login exitoso. Devuelve token y datos del usuario.
  *       400:
- *         description: Campos faltantes.
+ *         description: Datos incompletos.
  *       401:
- *         description: Credenciales incorrectas.
- */
-userRouter.post("/login", loginUser);
-
-/**
- * @swagger
- * /api/users/profile:
- *   get:
- *     summary: Obtener el perfil del usuario autenticado
- *     tags: [Usuarios]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Devuelve el perfil del usuario autenticado.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: string
- *                   example: "65a3f2e4b1c3e5a7d2a4c9b2"
- *                 name:
- *                   type: string
- *                   example: "Juan"
- *                 surname:
- *                   type: string
- *                   example: "Pérez"
- *                 email:
- *                   type: string
- *                   example: "juan@u-tad.com"
- *                 dni:
- *                   type: string
- *                   example: "12345678A"
- *                 grade:
- *                   type: string
- *                   example: "INSO"
- *                 rol:
- *                   type: string
- *                   example: "user"
- *       401:
- *         description: No autorizado, falta el token.
- *       404:
- *         description: Usuario no encontrado.
- */
-userRouter.get("/profile", authMiddleware, getUserProfile);
-
-/**
- * @swagger
- * /api/users/{id}:
- *   delete:
- *     summary: Eliminar un usuario (propio o por admin)
- *     tags: [Usuarios]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: ID del usuario a eliminar (puede ser el propio usuario o un admin eliminando cualquier cuenta)
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Usuario eliminado correctamente.
+ *         description: Credenciales inválidas o usuario eliminado.
  *       403:
- *         description: No tienes permisos para eliminar este usuario.
- *       404:
- *         description: Usuario no encontrado.
- *       500:
- *         description: Error en el servidor.
+ *         description: Usuario no verificado.
  */
-userRouter.delete("/:id", authMiddleware, deleteUser);
+userRouter.post("/login", loginUserValidator, validateRequest, loginUser);
 
 /**
  * @swagger
@@ -173,47 +188,40 @@ userRouter.delete("/:id", authMiddleware, deleteUser);
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Lista de todos los usuarios.
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: string
- *                     example: "65a3f2e4b1c3e5a7d2a4c9b2"
- *                   name:
- *                     type: string
- *                     example: "Juan"
- *                   surname:
- *                     type: string
- *                     example: "Pérez"
- *                   email:
- *                     type: string
- *                     example: "juan@u-tad.com"
- *                   dni:
- *                     type: string
- *                     example: "12345678A"
- *                   grade:
- *                     type: string
- *                     example: "INSO"
- *                   rol:
- *                     type: string
- *                     example: "user"
+ *         description: Lista de usuarios.
  *       401:
- *         description: No autorizado, falta el token.
- *       500:
- *         description: Error en el servidor.
+ *         description: No autorizado.
  */
 userRouter.get("/", authMiddleware, getAllUsers);
 
 /**
  * @swagger
- * /api/users/update-role/{id}:
+ * tags:
+ *   name: Usuarios
+ *   description: Endpoints para la gestión de usuarios
+ */
+
+/**
+ * @swagger
+ * /api/users/deleted:
+ *   get:
+ *     summary: Obtener usuarios eliminados (solo admin)
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de usuarios eliminados.
+ *       403:
+ *         description: No autorizado.
+ */
+userRouter.get("/deleted", authMiddleware, getDeletedUsers);
+
+/**
+ * @swagger
+ * /api/users/{id}/restore:
  *   put:
- *     summary: Actualizar el rol de un usuario (requiere ser admin)
+ *     summary: Restaurar un usuario eliminado
  *     tags: [Usuarios]
  *     security:
  *       - bearerAuth: []
@@ -221,7 +229,73 @@ userRouter.get("/", authMiddleware, getAllUsers);
  *       - in: path
  *         name: id
  *         required: true
- *         description: ID del usuario cuyo rol se actualizará
+ *         description: ID del usuario a restaurar
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Usuario restaurado correctamente.
+ *       403:
+ *         description: Solo los administradores pueden restaurar usuarios.
+ *       500:
+ *         description: Error al restaurar el usuario.
+ */
+userRouter.put(
+  "/:id/restore",
+  userIdValidator,
+  validateRequest,
+  authMiddleware,
+  restoreUser
+);
+
+/**
+ * @swagger
+ * /api/users/profile:
+ *   get:
+ *     summary: Obtener el perfil del usuario autenticado
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Perfil del usuario autenticado.
+ *       401:
+ *         description: Token no válido o no proporcionado.
+ */
+userRouter.get("/profile", authMiddleware, getUserProfile);
+
+/**
+ * @swagger
+ * /api/users/profile/{id}:
+ *   get:
+ *     summary: Obtener perfil público de un usuario por ID
+ *     tags: [Usuarios]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Perfil público del usuario.
+ *       404:
+ *         description: Usuario no encontrado.
+ */
+userRouter.get("/profile/:id", getUserProfileById);
+
+/**
+ * @swagger
+ * /api/users/{id}:
+ *   patch:
+ *     summary: Actualizar datos de usuario
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
  *         schema:
  *           type: string
  *     requestBody:
@@ -230,29 +304,71 @@ userRouter.get("/", authMiddleware, getAllUsers);
  *         application/json:
  *           schema:
  *             type: object
- *             required: [rol]
  *             properties:
+ *               name:
+ *                 type: string
+ *               surname:
+ *                 type: string
+ *               grade:
+ *                 type: string
+ *                 enum: [INSO, MAIS, FIIS, DIPI, ANIV]
  *               rol:
  *                 type: string
  *                 enum: [admin, moderator, user]
- *                 example: "moderator"
+ *               profileImage:
+ *                 type: string
  *     responses:
  *       200:
- *         description: Rol actualizado correctamente.
+ *         description: Usuario actualizado.
  *       400:
- *         description: Rol no válido.
+ *         description: Datos no válidos o intento de modificar email/password.
  *       403:
- *         description: No tienes permisos para actualizar el rol.
+ *         description: No autorizado.
+ *       404:
+ *         description: Usuario no encontrado.
+ */
+userRouter.patch(
+  "/:id",
+  userIdValidator,
+  updateUserValidator,
+  validateRequest,
+  authMiddleware,
+  adminOrSelfMiddleware,
+  updateUser
+);
+
+/**
+ * @swagger
+ * /api/users/{id}/restore:
+ *   put:
+ *     summary: Restaurar un usuario eliminado (soft delete)
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del usuario a restaurar.
+ *     responses:
+ *       200:
+ *         description: Usuario restaurado correctamente y referencias de proyectos actualizadas.
+ *       403:
+ *         description: Solo los administradores pueden realizar esta acción.
  *       404:
  *         description: Usuario no encontrado.
  *       500:
- *         description: Error en el servidor.
+ *         description: Error al restaurar el usuario.
  */
-userRouter.put(
-  "/update-role/:id",
+userRouter.delete(
+  "/:id",
+  userIdValidator,
+  validateRequest,
   authMiddleware,
-  adminMiddleware,
-  updateUserRole
+  adminOrSelfMiddleware,
+  deleteUser
 );
 
 export default userRouter;

@@ -6,6 +6,7 @@ const config = {
   content: [
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/ui/**/*.{js,ts,jsx,tsx}", //PARA SHADCN/UI
   ],
   theme: {
     extend: {
@@ -45,7 +46,7 @@ const config = {
         "primary-bg": "#282a36", // Fondo principal oscuro de Dracula
         secundary: "#44475a", // Fondo secundario
         "primary-text": "#f8f8f2", // Texto principal claro
-        "secundary-text": "#6272a4", // Texto secundario
+        "secundary-text": "#9aa8d5", // Texto secundario
         accent: "#ff79c6", // Acento vibrante
         card: "#44475a", // Fondo para tarjetas o paneles
       },
@@ -56,14 +57,6 @@ const config = {
         "secundary-text": "#81A1C1", // Texto secundario
         accent: "#88C0D0", // Acento frío y suave
         card: "#434C5E", // Fondo para tarjetas
-      },
-      solarizedDark: {
-        "primary-bg": "#002b36", // Fondo principal Solarized Dark
-        secundary: "#073642", // Fondo secundario
-        "primary-text": "#839496", // Texto principal
-        "secundary-text": "#586e75", // Texto secundario
-        accent: "#268bd2", // Acento en azul
-        card: "#073642", // Fondo para tarjetas
       },
     }),
   ],

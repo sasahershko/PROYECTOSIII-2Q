@@ -90,3 +90,57 @@ export const registerUser = async (formData) => {
   }
 };
 
+// Función para verificar el código de autenticación
+export const verifyUserCode = async ({ email, code }) => {
+  try {
+    const res = await fetch(`${process.env.BACK_URL}/api/users/verify-code`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, code }),
+    });
+
+    const contentType = res.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      throw new Error(`Error en el servidor: ${await res.text()}`);
+    }
+
+    const responseData = await res.json();
+    if (!res.ok) {
+      throw new Error(responseData.mensaje || "Código incorrecto.");
+    }
+
+    return responseData;
+  } catch (error) {
+    console.error("Error en la verificación de código:", error.message);
+    throw new Error(error.message || "No se pudo verificar el código.");
+  }
+};
+
+// Función para reenviar el código de verificación
+export const resendVerificationCode = async ({ email }) => {
+  try {
+    const res = await fetch(
+      `${process.env.BACK_URL}/api/users/resend-verification`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      }
+    );
+
+    const contentType = res.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      throw new Error(`Error en el servidor: ${await res.text()}`);
+    }
+
+    const responseData = await res.json();
+    if (!res.ok) {
+      throw new Error(responseData.mensaje || "No se pudo reenviar el código.");
+    }
+
+    return responseData;
+  } catch (error) {
+    console.error("Error en el reenvío del código:", error.message);
+    throw new Error(error.message || "Error al reenviar el código.");
+  }
+};

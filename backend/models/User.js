@@ -1,63 +1,52 @@
 import mongoose from "mongoose";
+import mongooseDelete from "mongoose-delete";
 
-// Función para calcular la letra correcta del DNI
-export const calcularLetraDNI = (dni) => {
-  const letras = "TRWAGMYFPDXBNJZSQVHLCKE";
-  return letras[dni % 23];
-};
-
-// Función de validación del DNI
-export const validarDNI = (dni) => {
-  const regex = /^\d{8}[A-Z]$/;
-  if (!regex.test(dni)) return false;
-
-  const numeros = parseInt(dni.slice(0, 8), 10);
-  const letra = dni.charAt(8);
-
-  return calcularLetraDNI(numeros) === letra;
-};
-
-// Función de validación de email
-export const validarEmail = (email) => {
-  return /@u-tad\.com$|@live\.u-tad\.com$/.test(email);
-};
-
-const userSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  surname: { type: String, required: true },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    validate: {
-      validator: validarEmail,
-      message: "Solo se permiten correos de U-TAD.",
+const userSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    surname: { type: String, required: true },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      // La validación se hace con express-validator
     },
-  },
-  password: { type: String, required: true },
-  dni: {
-    type: String,
-    required: true,
-    unique: true,
-    validate: {
-      validator: validarDNI,
-      message: "DNI inválido. Debe seguir el formato correcto.",
+    password: {
+      type: String,
+      required: true,
+      // Validación por express-validator
     },
+    dni: {
+      type: String,
+      required: true,
+      unique: true,
+      // Validación por express-validator
+    },
+    rol: {
+      type: String,
+      required: true,
+      enum: ["admin", "moderator", "user"],
+      default: "user",
+    },
+    grade: {
+      type: String,
+      required: true,
+      enum: ["INSO", "MAIS", "FIIS", "DIPI", "ANIV"],
+    },
+    projects: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "Project", default: [] },
+    ],
+    isVerified: { type: Boolean, default: false },
+    verificationCode: { type: String, default: null },
+    verificationAttempts: { type: Number, default: 3 },
+    verificationCodeExpires: { type: Date },
+    profileImage: { type: String, default: null },
   },
-  rol: {
-    type: String,
-    required: true,
-    enum: ["admin", "moderator", "user"],
-    default: "user",
-  },
-  grade: {
-    type: String,
-    required: true,
-    enum: ["INSO", "MAIS", "FIIS", "DIPI", "ANIV"], // Solo permite estos valores
-  },
-  projects: [{ type: mongoose.Schema.Types.ObjectId, ref: "Project" }], //relacion inversa
-});
+  { timestamps: true }
+);
+
+// 🔄 Activar soft delete con mongoose-delete
+userSchema.plugin(mongooseDelete, { deletedAt: true, overrideMethods: true });
 
 const User = mongoose.model("User", userSchema);
-
 export default User;
