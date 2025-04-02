@@ -20,3 +20,10 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZWQ3ZDQyN
   "startTime": "16:00",
   "endTime": "18:00"
 }
+
+
+###
+GET http://localhost:3000/api/reservations/ HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZWQ3ZDQyNTAzMjQ4MTYxNGUwY2ZjOSIsImVtYWlsIjoiaXZhbi5tYXJ0aW5lekBsaXZlLnUtdGFkLmNvbSIsImdyYWRlIjoiSU5TTyIsInJvbCI6InVzZXIiLCJpYXQiOjE3NDM2MTczNzcsImV4cCI6MTc0NDIyMjE3N30.BidgmXeIr0-01n4scWTSUPQsktZWbT1mL4-aC8iSQ-w
+

@@ -1,7 +1,8 @@
 import express from "express";
 import {
-  createReservation,/*,
-  getUserReservations,
+  createReservation,
+  getUserReservations
+  /*,
   getAllReservations,
   approveReservation,
   deleteReservation,*/
@@ -22,15 +23,12 @@ const reservationRouter = express.Router();
 // Crear una nueva reserva (solo usuarios autenticados)
 reservationRouter.post("/", authMiddleware, validatorCreateReservation, createReservation);
 
-
 reservationRouter.post("/table",validatorCreateTable,createTable);
 
+// Obtener reservas del usuario autenticado
+reservationRouter.get("/", authMiddleware, getUserReservations);
 
 /*
-
-// Obtener reservas del usuario autenticado
-reservationRouter.get("/user", authMiddleware, getUserReservations);
-
 // Obtener todas las reservas (solo admin)
 reservationRouter.get("/", authMiddleware, verificarPermisoProyecto, getAllReservations);
 
