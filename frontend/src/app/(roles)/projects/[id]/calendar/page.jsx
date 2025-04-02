@@ -3,12 +3,10 @@
 import React from "react";
 import { useParams } from "next/navigation";
 import ProjectsNavBar from "@/components/projects/ProjectsNavBar";
-import ProjectCalendar from "@/components/projects/Calendar"; // Importamos el componente del calendario
 
 const CalendarPage = () => {
   const { id: projectId } = useParams(); // Obtiene el ID del proyecto desde la URL
 
-  
   return (
     <>
       {/* Barra de navegación del proyecto con "Calendario" como pestaña activa */}
