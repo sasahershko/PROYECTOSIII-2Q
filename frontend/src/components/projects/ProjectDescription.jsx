@@ -29,7 +29,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { getUserData } from "@/lib/authClient";
 import { formatDate, getProjectDates } from "@/utils/projectUtils";
-import AddUserModal from "@/components/projects/AddUserModal";
+import AddUserModal from "@/components/projects/AddUserModalANTIGUO";
 
 //STATUS COLOR
 const getStatusColor = (status) => {

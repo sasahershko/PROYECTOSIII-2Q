@@ -27,7 +27,7 @@ export default function AddNotesModal({ user, isOpen, onClose }) {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            onClick={(e) => e.stopPropagation()} 
+            onClick={(e) => e.stopPropagation()} // Evita cerrar al hacer clic dentro del modal
           >
             <div>
               <p>hola</p>
