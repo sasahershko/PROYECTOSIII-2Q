@@ -18,6 +18,7 @@ reservationRouter.post("/", authMiddleware, validatorCreateReservation, createRe
 
 
 /*
+
 // Obtener reservas del usuario autenticado
 reservationRouter.get("/user", authMiddleware, getUserReservations);
 
