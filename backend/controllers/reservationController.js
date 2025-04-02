@@ -15,13 +15,13 @@ export const createReservation = async (req, res) => {
       return res.status(404).json({ message: "Mesa no encontrada." });
     }
 
-    /*
+
     // Verificar si el proyecto existe y pertenece al usuario
     const existingProject = await Project.findOne({ _id: project, members: userId });
     if (!existingProject) {
       return res.status(403).json({ message: "No tienes acceso a este proyecto." });
     }
-*/
+
 
     // Verificar disponibilidad de la mesa en la franja horaria
     const overlappingReservation = await Reservation.findOne({
@@ -34,7 +34,8 @@ export const createReservation = async (req, res) => {
       ],
     });
 
-    if (overlappingReservation && overlappingReservation.status != "rejected") {
+    //if (overlappingReservation && overlappingReservation.status != "rejected") {
+    if (overlappingReservation) {
       return res.status(400).json({ message: "La mesa ya está reservada en este horario." });
     }
 
@@ -53,7 +54,28 @@ export const createReservation = async (req, res) => {
     res.status(201).json({ message: "Reserva creada con éxito.", reservation: newReservation });
 
   } catch (error) {
-    console.error(error);
+    //console.error(error);
     res.status(500).json({ message: "Error al crear la reserva." });
+  }
+};
+
+
+export const getUserReservations = async (req, res) => {
+  try {
+    // El usuario autenticado está en req.usuario debido al middleware de autenticación
+    const userId = req.usuario._id;
+
+    // Buscar todas las reservas del usuario autenticado
+    const reservations = await Reservation.find({ user: userId });
+
+    if (reservations.length === 0) {
+      return res.status(404).json({ message: "No se encontraron reservas." });
+    }
+
+    // Devolver las reservas encontradas
+    res.status(200).json(reservations);
+  } catch (error) {
+    //console.error("Error al obtener las reservas del usuario:", error);
+    res.status(500).json({ message: "Error al obtener las reservas del usuario." });
   }
 };
