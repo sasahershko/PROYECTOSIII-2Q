@@ -20,19 +20,13 @@
 //   );
 // }
 
-
-
 import "@/app/globals.css";
 import { ThemeProvider } from "next-themes";
 
 export default function RootLayout({ children }) {
   return (
-
-    <html suppressHydrationWarning={true} lang="es" >
-      
-        <body>{children}</body>
-    
-    </html >
+    <html suppressHydrationWarning={true} lang="es">
+      <body>{children}</body>
+    </html>
   );
 }
-
