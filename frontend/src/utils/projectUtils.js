@@ -44,3 +44,21 @@ export const formatDate = (date) => {
     ];
   };
   
+
+  // CALCULAR EL TIMELINE
+export function calculateTimeline (startDate, endDate) {
+  const start = new Date(startDate)
+  const end = new Date(endDate)
+  const today = new Date()
+
+  const totalDuration = end.getTime() - start.getTime()
+  const elapsedDuration = today.getTime() - start.getTime()
+
+  // Calculate percentage (capped between 0-100)
+  const percentage = Math.max(0, Math.min(100, Math.round((elapsedDuration / totalDuration) * 100)))
+
+  // Calculate days remaining
+  const daysRemaining = Math.ceil((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+
+  return { percentage, daysRemaining }
+}

@@ -5,6 +5,7 @@ import { FileText } from "lucide-react";
 import { NotesIcon } from '@components/svgs';
 import AddNotesModal from './AddNotesModal';
 import TeamAndDetailsCard from "@/components/projects/TeamAndDetailsCard"
+import KeyDatesCard from '@/components/projects/KeyDatesCard';
 
 const getStatusColor = (status) => {
     const statusMap = {
@@ -125,14 +126,19 @@ export default function ProjectDescription({ project }) {
 
             {/* COLUMNA DERECHA ARRIBA */}
             <div className="col-span-1 ">
-
+                {/* {(userRole === "admin" || (userRole === "user" && (isParticipant || isResponsible))) && ( */}
+                <div className="space-y-6">
+                    <KeyDatesCard project={project} />
+                </div>
+                <div className="ml-10 mt-10">
+                    <TeamAndDetailsCard project={project} />
+                </div>
+                {/* )} */}
             </div>
 
             {/* COLUMNA DERECHA ABAJO */}
             <div className="col-span-1 ">
-                <div className="ml-10 mt-10">
-                    <TeamAndDetailsCard project={project} />
-                </div>
+
             </div>
 
         </div>

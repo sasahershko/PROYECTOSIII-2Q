@@ -28,7 +28,7 @@ import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { getUserData } from "@/lib/authClient";
-import { formatDate, getProjectDates } from "@/utils/projectUtils";
+import { formatDate, getProjectDates, calculateTimeline } from "@/utils/projectUtils";
 import AddUserModal from "@/components/projects/AddUserModalANTIGUO";
 
 //STATUS COLOR
@@ -42,24 +42,6 @@ const getStatusColor = (status) => {
   }
 
   return statusMap[status] || "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
-}
-
-// CALCULAR EL TIMELINE
-const calculateTimeline = (startDate, endDate) => {
-  const start = new Date(startDate)
-  const end = new Date(endDate)
-  const today = new Date()
-
-  const totalDuration = end.getTime() - start.getTime()
-  const elapsedDuration = today.getTime() - start.getTime()
-
-  // Calculate percentage (capped between 0-100)
-  const percentage = Math.max(0, Math.min(100, Math.round((elapsedDuration / totalDuration) * 100)))
-
-  // Calculate days remaining
-  const daysRemaining = Math.ceil((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-
-  return { percentage, daysRemaining }
 }
 
 export default function ProjectDescription({ project }) {

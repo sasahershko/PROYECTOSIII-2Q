@@ -1,6 +1,5 @@
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import GradeChip from "@components/ui/chip";
 
 export default function AddNotesModal({ user, isOpen, onClose }) {
   if (typeof window === "undefined") return null;
@@ -22,7 +21,7 @@ export default function AddNotesModal({ user, isOpen, onClose }) {
           onClick={handleBackdropClick}
         >
           <motion.div
-            className="relative bg-white p-6 rounded-xl shadow-2xl w-full max-w-4xl mx-4 my-8"
+            className="relative bg-white p-6 rounded-xl shadow-2xl w-[800px] max-w-4xl mx-4 my-8"
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
@@ -30,7 +29,7 @@ export default function AddNotesModal({ user, isOpen, onClose }) {
             onClick={(e) => e.stopPropagation()} 
           >
             <div>
-              <p>hola</p>
+              <p>AÑADIR USUARIO</p>
             </div>
           </motion.div>
         </motion.div>

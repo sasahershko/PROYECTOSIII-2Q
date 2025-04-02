@@ -30,7 +30,7 @@ export default function AddNotesModal({ user, isOpen, onClose }) {
             onClick={(e) => e.stopPropagation()} // Evita cerrar al hacer clic dentro del modal
           >
             <div>
-              <p>hola</p>
+              <p>Añadir notas</p>
             </div>
           </motion.div>
         </motion.div>

@@ -21,7 +21,7 @@ export default function TeamAndDetailsCard({ project }) {
     const [loading, setLoading] = useState(true)
 
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const closeNoteModal = () => setIsModalOpen(false);
+    // const  = () => setIsModalOpen(false);
 
 
     const handleNoteModal = (e) => {
@@ -65,16 +65,16 @@ export default function TeamAndDetailsCard({ project }) {
                                     <h3 className="text-lg font-semibold flex items-center gap-2">
                                         <Users className="w-4 h-4" /> Participantes
                                     </h3>
-                                    <div className='mt-6 mr-4 shadow-lg border w-[90px] h-[30px] rounded-lg flex justify-center items-center'>
+                                    <div className=' mr-4 shadow-lg border w-[90px] h-[30px] rounded-lg flex justify-center items-center'>
                                         <button onClick={handleNoteModal}>+ Añadir</button>
                                     </div>
 
-                                    {/* <AddUserModal
+                                    <AddUserModal
                                         isOpen={isModalOpen}
                                         onClose={() => setIsModalOpen(false)}
-                                        availableUsers={project.users}
-                                        onAddUser={(user) => console.log("Añadido:", user)}
-                                    /> */}
+                                        // availableUsers={project.users}
+                                        // onAddUser={(user) => console.log("Añadido:", user)}
+                                    />
 
                                 </div>
                                 <ScrollArea className="h-48 pr-4 space-y-3">
