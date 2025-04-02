@@ -7,19 +7,20 @@ import Project from "../models/Project.js";
 export const createReservation = async (req, res) => {
   try {
     const { table, project, date, startTime, endTime } = req.body;
-    const userId = req.user.id;
+    const userId = req.usuario.id;
 
     // Verificar si la mesa existe
     const existingTable = await Table.findById(table);
     if (!existingTable) {
       return res.status(404).json({ message: "Mesa no encontrada." });
     }
-
+    
     // Verificar si el proyecto existe y pertenece al usuario
     const existingProject = await Project.findOne({ _id: project, members: userId });
     if (!existingProject) {
       return res.status(403).json({ message: "No tienes acceso a este proyecto." });
     }
+
 
     // Verificar disponibilidad de la mesa en la franja horaria
     const overlappingReservation = await Reservation.findOne({
