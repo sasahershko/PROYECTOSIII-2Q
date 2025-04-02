@@ -1,5 +1,5 @@
 import Reservation from "../models/Reservation.js";
-import Table from "../models/Table.js";
+import Table from "../models/Tables.js";
 import Project from "../models/Project.js";
 
 

@@ -36,3 +36,13 @@ Content-Type: image/jpeg
 
 < ./RaccoonV3.jpg
 --boundary123--
+
+###
+POST 
+
+{
+  "number": 1,
+  "zone": "Zona A",
+  "capacity": 4
+}
+
