@@ -389,7 +389,7 @@ export default function Register() {
                     type="text"
                     maxLength="1"
                     className="w-12 h-14 text-center text-2xl font-semibold border border-gray-300 
-                 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-500 
+                 rounded-lg focus:outline-none focus:ring-4 focus:ring-accent
                  transition-all duration-200 shadow-md bg-gray-100"
                     value={formData.codigoVerificacion[index] || ""}
                     onChange={(e) => handleCodeChange(index, e.target.value)}
