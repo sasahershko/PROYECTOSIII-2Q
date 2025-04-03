@@ -9,7 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function KeyDatesCard({ project }) {
     const dates = getProjectDates(project);
-    console.log(dates);
 
     return (
         <div>
@@ -28,7 +27,7 @@ export default function KeyDatesCard({ project }) {
                             const label = i === 0 ? "Inicio" : i === 1 ? "Fin" : "Próxima revisión";
 
                             return (
-                                <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-primary-bg shadow-sm ">
+                                <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-primary-bg ">
                                     <div className="bg-primary-bg/10 rounded-full p-2">
                                         {date.icon === "calendar" && <Calendar className="w-4 h-4 text-primary-text" />}
                                         {date.icon === "clock" && <Clock className="w-4 h-4 text-primary" />}
