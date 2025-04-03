@@ -1,5 +1,6 @@
 import Project from "../models/Project.js";
 import User from "../models/User.js";
+import { matchedData } from 'express-validator';
 
 // 🔁 Validar IDs de usuarios y devolver lista filtrada (sin duplicados ni inexistentes)
 const filtrarUsuariosExistentes = async (ids = []) => {
@@ -290,3 +291,81 @@ export const restoreProject = async (req, res) => {
     });
   }
 };
+
+
+export const addNotes = async (req, res) => {
+  try {
+    const {
+      projectId,
+      note,
+      userWhoWrites,
+      userWhoRecieves = [],
+      tag = "no completada"
+    } = matchedData(req);
+
+    const project = await Project.findById(projectId);
+    if (!project) {
+      return res.status(404).json({ message: 'Proyecto no encontrado' });
+    }
+
+
+    //crear el objeto de la nota
+    const noteObject = {
+      note,
+      userWhoWrites,
+      userWhoRecieves, 
+      tag,
+      date: Date.now(),
+    };
+
+
+    //agregar la nota
+    project.pendingNotes.push(noteObject);
+    await project.save();
+
+    return res.status(200).send({ message: 'Nota agregada exitosamente' });
+
+  } catch (error) {
+    return res.status(500).send({ message: 'Error al agregar la nota' , error: error.message});
+  }
+}
+
+
+export const updateNote = async (req, res) => {
+
+  try {
+    const {
+      projectId,
+      noteIndex,
+      note,
+      userWhoWrites,
+      userWhoRecieves = [],
+      tag = "no completada"
+    } = matchedData(req);
+
+    const project = await Project.findById(projectId);
+    if (!project) {
+      return res.status(404).send({ message: 'Proyecto no encontrado' });
+    }
+
+    if (noteIndex < 0 || noteIndex >= project.pendingNotes.length) {
+      return res.status(404).send({ message: 'Índice no válido.' });
+    }
+
+    const updateNote = {
+      note,
+      userWhoWrites,
+      userWhoRecieves: userWhoRecieves || project.pendingNotes[noteIndex].userWhoRecieves,
+      tag: tag || project.pendingNotes[noteIndex].tag,
+      date: Date.now(),
+    }
+
+    project.pendingNotes[noteIndex] = updateNote;
+    await project.save();
+
+
+    return res.status(200).send({ message: 'Nota actualizada correctamente.'});
+  } catch (error) {
+    return res.status(500).send({ message: 'Error de servidor', error: error.message});
+  }
+}

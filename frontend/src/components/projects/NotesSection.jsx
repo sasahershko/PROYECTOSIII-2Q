@@ -56,7 +56,7 @@ export default function NotesSection({ notes = [] }) {
                             clipRule="evenodd"
                         />
                     </svg>
-                    <h2 className="text-xl font-semibold text-gray-800">Notas</h2>
+                    <h2 className="text-base font-semibold text-gray-800">Notas Pendientes</h2>
                 </div>
                 <button
                     onClick={handleNoteModal}

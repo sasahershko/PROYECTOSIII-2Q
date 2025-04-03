@@ -7,6 +7,8 @@ import {
   updateProject,
   getDeletedProjects,
   restoreProject,
+  addNotes,
+  updateNote
 } from "../controllers/projectController.js";
 import {
   authMiddleware,
@@ -18,6 +20,7 @@ import {
   updateProjectValidator,
   projectIdValidator,
 } from "../validators/projectValidator.js";
+import { createNoteValidator, updateNoteValidator } from "../validators/noteValidator.js";
 import { validateRequest } from "../middlewares/validateRequest.js";
 
 const projectRouter = express.Router();
@@ -335,5 +338,137 @@ projectRouter.put(
   validateRequest,
   restoreProject
 );
+
+
+/**
+ * @swagger
+ * /api/projects/note:
+ *   post:
+ *     summary: Agregar una nueva nota a un proyecto.
+ *     tags:
+ *       - Notas
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - projectId
+ *               - note
+ *               - userWhoWrites
+ *             properties:
+ *               projectId:
+ *                 type: string
+ *                 description: ID del proyecto al que se agregará la nota.
+ *                 example: "606d1f2c2f1b2c3a4d5e6f7g"
+ *               note:
+ *                 type: string
+ *                 description: Contenido de la nota.
+ *                 example: "Esta es una nueva nota."
+ *               userWhoWrites:
+ *                 type: string
+ *                 description: ID del usuario que escribe la nota.
+ *                 example: "606d1f2c2f1b2c3a4d5e6f8h"
+ *               userWhoReceives:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Lista de IDs de usuarios que recibirán la nota.
+ *                 example: ["606d1f2c2f1b2c3a4d5e6f9i"]
+ *               tag:
+ *                 type: string
+ *                 enum: ["completada", "no completada"]
+ *                 description: Estado de la nota.
+ *                 example: "no completada"
+ *     responses:
+ *       200:
+ *         description: Nota agregada exitosamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Nota agregada exitosamente"
+ *       404:
+ *         description: Proyecto no encontrado.
+ *       500:
+ *         description: Error interno del servidor.
+ */
+projectRouter.post('/note', authMiddleware, createNoteValidator, addNotes);
+
+/**
+ * @swagger
+ * /api/projects/note/{id}:
+ *   patch:
+ *     summary: Actualizar una nota existente en un proyecto.
+ *     tags:
+ *       - Notas
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del proyecto al que pertenece la nota.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - noteIndex
+ *               - note
+ *               - userWhoWrites
+ *             properties:
+ *               noteIndex:
+ *                 type: integer
+ *                 description: Índice de la nota dentro del arreglo pendingNotes del proyecto.
+ *                 example: 0
+ *               note:
+ *                 type: string
+ *                 description: Contenido actualizado de la nota.
+ *                 example: "Nota actualizada."
+ *               userWhoWrites:
+ *                 type: string
+ *                 description: ID del usuario que actualiza la nota.
+ *                 example: "606d1f2c2f1b2c3a4d5e6f8h"
+ *               userWhoReceives:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Lista de IDs de usuarios que recibirán la nota actualizada.
+ *                 example: ["606d1f2c2f1b2c3a4d5e6f9i"]
+ *               tag:
+ *                 type: string
+ *                 enum: ["completada", "no completada"]
+ *                 description: Estado actualizado de la nota.
+ *                 example: "completada"
+ *     responses:
+ *       200:
+ *         description: Nota actualizada correctamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Nota actualizada correctamente."
+ *       400:
+ *         description: Índice no válido o datos incorrectos.
+ *       404:
+ *         description: Proyecto o nota no encontrado.
+ *       500:
+ *         description: Error interno del servidor.
+ */
+projectRouter.patch('/note/:id', authMiddleware, updateNoteValidator, updateNote);
 
 export default projectRouter;
