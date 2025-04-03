@@ -1,8 +1,8 @@
-"use client"; 
+"use client";
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-
+import { getIdeas } from "@lib/ideas"; 
 
 const areaColors = {
   INSO: "bg-blue-100",
@@ -21,15 +21,10 @@ export default function IdeasPage() {
   useEffect(() => {
     async function fetchIdeas() {
       try {
-        const response = await fetch(
-          "https://surviving-poppy-sasahershko-72589d6b.koyeb.app/api/ideas"
-        );
-        if (!response.ok) throw new Error("Error al obtener ideas");
-
-        const data = await response.json();
-        setIdeas(data); 
+        const data = await getIdeas(); 
+        setIdeas(data);
       } catch (err) {
-        setError(err.message); 
+        setError(err.message);
       } finally {
         setLoading(false);
       }
@@ -59,11 +54,10 @@ export default function IdeasPage() {
         {ideas.length > 0 ? (
           ideas.map((idea) => (
             <Link
-              href={`/ideas/${idea._id}`} // 
+              href={`/ideas/${idea._id}`}
               key={idea._id}
               className="w-[25%] aspect-square border border-gray-300 rounded shadow-sm overflow-hidden hover:shadow-lg transition"
             >
-              
               <div className={`${areaColors[idea.grado] || "bg-gray-100"} h-2 w-full`} />
               <div className="p-4 flex flex-col justify-between h-[calc(100%-0.5rem)]">
                 <div>

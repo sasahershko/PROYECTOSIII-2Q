@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-
+import { getIdeaById, updateIdea, deleteIdea } from "@lib/ideas";
 
 const areaColors = {
   INSO: "bg-blue-100",
@@ -13,12 +13,12 @@ const areaColors = {
 };
 
 export default function IdeaDetailPage() {
-  const { id } = useParams(); 
-  const router = useRouter(); 
+  const { id } = useParams();
+  const router = useRouter();
   const [idea, setIdea] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isEditing, setIsEditing] = useState(false); // Alterna entre vista y modo edición
+  const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     nombre: "",
     descripcion: "",
@@ -26,14 +26,10 @@ export default function IdeaDetailPage() {
   });
 
   useEffect(() => {
-    // Carga los datos de la idea al montar el componente
     async function fetchIdea() {
       try {
-        const res = await fetch(`https://surviving-poppy-sasahershko-72589d6b.koyeb.app/api/ideas/${id}`);
-        if (!res.ok) throw new Error("No se pudo cargar la idea");
-        const data = await res.json();
+        const data = await getIdeaById(id);
         setIdea(data);
-        // Rellena el formulario con los datos actuales de la idea
         setFormData({
           nombre: data.nombre,
           descripcion: data.descripcion,
@@ -49,22 +45,11 @@ export default function IdeaDetailPage() {
     if (id) fetchIdea();
   }, [id]);
 
-  // Envia los cambios realizados a la API
   const handleUpdate = async () => {
     try {
-      const res = await fetch(`https://surviving-poppy-sasahershko-72589d6b.koyeb.app/api/ideas/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!res.ok) throw new Error("Error al actualizar la idea");
-
-      const updated = await res.json();
+      const updated = await updateIdea(id, formData);
       setIdea(updated);
-      setIsEditing(false); // Salimos del modo edicion
+      setIsEditing(false);
       alert("Idea actualizada correctamente");
     } catch (err) {
       console.error(err);
@@ -72,20 +57,14 @@ export default function IdeaDetailPage() {
     }
   };
 
-  // Elimina la idea y vuelve a la pagina principal
   const handleDelete = async () => {
     const confirmDelete = window.confirm("¿Estás seguro de que deseas eliminar esta idea?");
     if (!confirmDelete) return;
 
     try {
-      const res = await fetch(`https://surviving-poppy-sasahershko-72589d6b.koyeb.app/api/ideas/${id}`, {
-        method: "DELETE",
-      });
-
-      if (!res.ok) throw new Error("Error al eliminar la idea");
-
+      await deleteIdea(id);
       alert("Idea eliminada correctamente");
-      router.push("/ideas"); // Redirigimos tras eliminar
+      router.push("/ideas");
     } catch (err) {
       console.error(err);
       alert("Error al eliminar la idea");
@@ -98,13 +77,20 @@ export default function IdeaDetailPage() {
 
   return (
     <div className="pt-12 px-4 max-w-3xl mx-auto">
+      {/* 🔙 Botón para volver */}
+      <button
+        onClick={() => router.push("/ideas")}
+        className="mb-4 flex items-center gap-2 text-gray-600 hover:text-black transition"
+      >
+        <span className="text-2xl">&larr;</span>
+        <span>Volver a ideas</span>
+      </button>
+
       <div className="border border-gray-300 rounded shadow-md overflow-hidden">
-        {/* Banda de color segun el grado */}
         <div className={`${areaColors[idea.grado] || "bg-gray-100"} h-4 w-full`} />
 
         <div className="p-6 space-y-4">
           {isEditing ? (
-            // Modo edicion
             <>
               <input
                 type="text"
@@ -145,7 +131,6 @@ export default function IdeaDetailPage() {
               </div>
             </>
           ) : (
-            // Vista normal de la idea
             <>
               <h1 className="text-3xl font-bold">{idea.nombre}</h1>
               <p className="text-gray-800 text-lg whitespace-pre-line">{idea.descripcion}</p>

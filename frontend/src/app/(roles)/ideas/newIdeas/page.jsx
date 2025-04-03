@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation"; 
+import { useRouter } from "next/navigation";
+import { getProfile } from "@lib/profile";
+import { createIdea } from "@lib/ideas";
 
 export default function NewIdeaPage() {
   const [formData, setFormData] = useState({
@@ -10,39 +12,19 @@ export default function NewIdeaPage() {
   });
 
   const [user, setUser] = useState(null);
-  const router = useRouter(); 
+  const router = useRouter();
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchUser = async () => {
       try {
-        // Busca el token en las cookies del navegador
-        const token = document.cookie
-          .split("; ")
-          .find((row) => row.startsWith("token="))
-          ?.split("=")[1];
-
-        if (!token) throw new Error("Token no encontrado");
-
-        // Llamada al endpoint que nos da el usuario autenticado
-        const res = await fetch(
-          "https://surviving-poppy-sasahershko-72589d6b.koyeb.app/api/users/profile",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`, // Envia el token en la cabecera
-            },
-          }
-        );
-
-        if (!res.ok) throw new Error("Error al obtener el perfil");
-
-        const data = await res.json();
+        const data = await getProfile();
         setUser(data);
       } catch (error) {
         console.error("Error al obtener el perfil:", error);
       }
     };
 
-    fetchProfile();
+    fetchUser();
   }, []);
 
   const handleSubmit = async (e) => {
@@ -53,32 +35,15 @@ export default function NewIdeaPage() {
       return;
     }
 
-    // Envia los datos incluyendo el ID del usuario autenticado
     const ideaData = {
       ...formData,
       usuario: user.id,
     };
 
     try {
-      const response = await fetch(
-        "https://surviving-poppy-sasahershko-72589d6b.koyeb.app/api/ideas",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(ideaData),
-        }
-      );
-
-      if (!response.ok) throw new Error("Error al crear la idea");
-
-      const newIdea = await response.json();
+      await createIdea(ideaData); 
       alert("¡Idea creada con éxito!");
-
-      // Redirige a la pagina de ideas 
       router.push("/ideas");
-
     } catch (error) {
       console.error(error);
       alert("Error al crear la idea");
