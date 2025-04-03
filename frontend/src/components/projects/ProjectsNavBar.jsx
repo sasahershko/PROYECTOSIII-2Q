@@ -6,8 +6,8 @@ import { useParams, usePathname } from "next/navigation";
 import Image from 'next/image';
 
 export default function ProjectsNavBar({ role }) {
-    const { id: projectId } = useParams();
-    const pathname = usePathname();
+  const { id: projectId } = useParams();
+  const pathname = usePathname();
 
     const links = [
         { name: "Vista general", href: `/projects/${projectId}`, match: `/projects/${projectId}` },

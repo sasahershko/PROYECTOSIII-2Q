@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from 'next/link';
+import Link from "next/link";
 
 export default function Footer() {
   // Debe de ir en los layouts de las páginas para
@@ -45,9 +45,9 @@ export default function Footer() {
           <div className="flex flex-col justify-end items-end h-full">
             <p>Calle Playa de Liencres, 2 bis. – Parque Europa Empresarial</p>
             <p>Edificio Bruselas – 28290 Las Rozas, Madrid</p>
-            <p className="mt-2">Tel 999 999 999</p>
+            <p className="mt-2">Tel: (+34) 900 373 379</p>
             <h3 className="bg-white/90 py-2 px-4 text-secundary font-semibold w-fit justify-start mt-2">
-              DESARROLLADO POR LA U-TAD
+              DESARROLLADO POR ALUMNOS DE U-TAD
             </h3>
           </div>
         </div>
