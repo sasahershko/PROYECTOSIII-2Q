@@ -5,9 +5,20 @@ import {
   getAllProjects,
   deleteProject,
   updateProject,
+  getDeletedProjects,
+  restoreProject,
 } from "../controllers/projectController.js";
-import { authMiddleware, authMiddlewareOptional } from "../middleware/authMiddleware.js";
-import { verificarPermisoProyecto } from "../middleware/projectAuthMiddleware.js";
+import {
+  authMiddleware,
+  authMiddlewareOptional,
+} from "../middlewares/authMiddleware.js";
+import { verificarPermisoProyecto } from "../middlewares/projectAuthMiddleware.js";
+import {
+  createProjectValidator,
+  updateProjectValidator,
+  projectIdValidator,
+} from "../validators/projectValidator.js";
+import { validateRequest } from "../middlewares/validateRequest.js";
 
 const projectRouter = express.Router();
 
@@ -15,62 +26,8 @@ const projectRouter = express.Router();
  * @swagger
  * tags:
  *   name: Proyectos
- *   description: Endpoints para gestionar proyectos
+ *   description: Endpoints para gestionar proyectos (solo proyectos no eliminados)
  */
-
-/**
- * @swagger
- * /api/projects:
- *   get:
- *     summary: Obtener todos los proyectos
- *     tags: [Proyectos]
- *     responses:
- *       200:
- *         description: Lista de proyectos obtenida con éxito.
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   _id:
- *                     type: string
- *                     example: "67bc57737e86e4b15d13830b"
- *                   name:
- *                     type: string
- *                     example: "Proyecto de prueba"
- *                   contactPerson:
- *                     type: string
- *                     example: "Ejemplo contacto"
- *                   company:
- *                     type: string
- *                     example: "U-TAD"
- *                   area:
- *                     type: string
- *                     example: "Ingeniería del SW"
- *                   responsibles:
- *                     type: array
- *                     items:
- *                       type: string
- *                     example: ["67b62dd740c49029ad73d9eb"]
- *                   users:
- *                     type: array
- *                     items:
- *                       type: string
- *                     example: ["67b6730a953a36e3b39ab73c"]
- *                   startDate:
- *                     type: string
- *                     format: date
- *                     example: "2024-02-24"
- *                   endDate:
- *                     type: string
- *                     format: date
- *                     example: "2024-06-30"
- *       500:
- *         description: Error interno del servidor.
- */
-projectRouter.get("/", authMiddlewareOptional, getAllProjects);
 
 /**
  * @swagger
@@ -86,68 +43,121 @@ projectRouter.get("/", authMiddlewareOptional, getAllProjects);
  *         application/json:
  *           schema:
  *             type: object
- *             required: [name, contactPerson, company, area, description, startDate, endDate]
+ *             required:
+ *               - name
+ *               - contactPerson
+ *               - company
+ *               - area
+ *               - description
+ *               - startDate
+ *               - endDate
  *             properties:
  *               name:
  *                 type: string
- *                 example: "Nuevo Proyecto"
+ *                 example: "Plataforma Gestión Académica"
  *               contactPerson:
  *                 type: string
- *                 example: "María López"
+ *                 example: "Juan Pérez"
  *               company:
  *                 type: string
  *                 enum: ["U-TAD", "ILION", "OTROS"]
  *                 example: "U-TAD"
  *               area:
  *                 type: string
- *                 example: "Desarrollo Web"
+ *                 enum: ["INSO", "MAIS", "FIIS", "DIPI", "ANIV", "DIDI"]
+ *                 example: "INSO"
  *               responsibles:
  *                 type: array
  *                 items:
  *                   type: string
- *                 example: ["67b62dd740c49029ad73d9eb"]
+ *                 example: ["660e3c8a4f3caa23e483bdf1"]
  *               users:
  *                 type: array
  *                 items:
  *                   type: string
- *                 example: ["67b6730a953a36e3b39ab73c"]
+ *                 example: ["660e3c8a4f3caa23e483bdf2"]
  *               benefit:
  *                 type: string
- *                 example: "Incremento de productividad"
- *               projectFolder:
+ *                 example: "Facilita la gestión centralizada"
+ *               folder:
  *                 type: string
- *                 example: "/projects/proyecto1"
+ *                 example: "/ruta/a/la/carpeta"
  *               description:
  *                 type: string
- *                 example: "Este es un proyecto de desarrollo web."
+ *                 example: "Este proyecto busca unificar herramientas académicas."
  *               practicesAgreement:
  *                 type: boolean
- *                 example: false
+ *                 example: true
  *               practicesStudents:
  *                 type: integer
- *                 example: 2
+ *                 example: 3
  *               sdpStudents:
  *                 type: integer
- *                 example: 3
+ *                 example: 2
  *               startDate:
  *                 type: string
  *                 format: date
- *                 example: "2024-02-24"
+ *                 example: "2025-04-01"
+ *               reviewDates:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: date
+ *                 example: ["2025-04-15", "2025-05-10"]
  *               endDate:
  *                 type: string
  *                 format: date
- *                 example: "2024-06-30"
+ *                 example: "2025-07-01"
  *     responses:
  *       201:
  *         description: Proyecto creado con éxito.
  *       400:
- *         description: Datos inválidos o campos requeridos faltantes.
+ *         description: Validaciones fallidas o datos incorrectos.
  *       401:
- *         description: No autorizado (falta token de autenticación).
+ *         description: No autorizado.
  *       500:
  *         description: Error interno del servidor.
  */
-projectRouter.post("/create", authMiddleware, createProject);
+projectRouter.post(
+  "/create",
+  authMiddleware,
+  createProjectValidator,
+  validateRequest,
+  createProject
+);
+
+/**
+ * @swagger
+ * tags:
+ *   name: Proyectos
+ *   description: Endpoints para gestionar proyectos (solo proyectos no eliminados)
+ */
+
+projectRouter.get("/", authMiddlewareOptional, getAllProjects);
+
+/**
+ * @swagger
+ * /api/projects/deleted:
+ *   get:
+ *     summary: Obtener todos los proyectos eliminados (soft delete)
+ *     tags: [Proyectos]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de proyectos eliminados.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Project'
+ *       403:
+ *         description: Solo los administradores pueden ver proyectos eliminados.
+ *       500:
+ *         description: Error al obtener los proyectos eliminados.
+ */
+projectRouter.get("/deleted", authMiddleware, getDeletedProjects);
 
 /**
  * @swagger
@@ -159,86 +169,23 @@ projectRouter.post("/create", authMiddleware, createProject);
  *       - in: path
  *         name: id
  *         required: true
- *         description: ID del proyecto a obtener.
  *         schema:
  *           type: string
  *     responses:
  *       200:
  *         description: Proyecto encontrado con éxito.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 _id:
- *                   type: string
- *                   example: "67bc57737e86e4b15d13830b"
- *                 name:
- *                   type: string
- *                   example: "Proyecto de prueba"
- *                 contactPerson:
- *                   type: string
- *                   example: "Ejemplo contacto"
- *                 company:
- *                   type: string
- *                   example: "U-TAD"
- *                 area:
- *                   type: string
- *                   example: "Ingeniería del SW"
- *                 responsibles:
- *                   type: array
- *                   items:
- *                     type: string
- *                   example: ["67b62dd740c49029ad73d9eb"]
- *                 users:
- *                   type: array
- *                   items:
- *                     type: string
- *                   example: ["67b6730a953a36e3b39ab73c"]
- *                 startDate:
- *                   type: string
- *                   format: date
- *                   example: "2024-02-24"
- *                 endDate:
- *                   type: string
- *                   format: date
- *                   example: "2024-06-30"
  *       404:
- *         description: Proyecto no encontrado.
+ *         description: Proyecto no encontrado o eliminado.
  *       500:
  *         description: Error interno del servidor.
  */
-projectRouter.get("/:id", getProjectById);
-
-/**
- * @swagger
- * /api/projects/{id}:
- *   delete:
- *     summary: Eliminar un proyecto
- *     description: Permite a un administrador o a un responsable del proyecto eliminarlo. También se eliminan las referencias del proyecto en los usuarios asociados.
- *     tags:
- *       - Proyectos
- *     security:
- *       - BearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: ID del proyecto a eliminar
- *     responses:
- *       200:
- *         description: Proyecto eliminado correctamente y referencias en usuarios limpiadas.
- *       403:
- *         description: No tienes permisos para eliminar este proyecto.
- *       404:
- *         description: Proyecto no encontrado.
- *       500:
- *         description: Error en el servidor.
- */
-projectRouter.delete("/:id", verificarPermisoProyecto, deleteProject);
-
+projectRouter.get(
+  "/:id",
+  projectIdValidator,
+  validateRequest,
+  authMiddlewareOptional,
+  getProjectById
+);
 
 /**
  * @swagger
@@ -264,53 +211,42 @@ projectRouter.delete("/:id", verificarPermisoProyecto, deleteProject);
  *             properties:
  *               name:
  *                 type: string
- *                 example: "Proyecto actualizado"
  *               contactPerson:
  *                 type: string
- *                 example: "Juan Pérez"
  *               company:
  *                 type: string
- *                 enum: ["U-TAD", "ILION", "OTROS"]
- *                 example: "ILION"
+ *                 enum: [U-TAD, ILION, OTROS]
  *               area:
  *                 type: string
- *                 example: "Inteligencia Artificial"
+ *                 enum: [INSO, MAIS, FIIS, DIPI, ANIV, DIDI]
  *               responsibles:
  *                 type: array
  *                 items:
  *                   type: string
- *                 example: ["67b62dd740c49029ad73d9eb"]
  *               users:
  *                 type: array
  *                 items:
  *                   type: string
- *                 example: ["67b6730a953a36e3b39ab73c"]
  *               benefit:
  *                 type: string
- *                 example: "Automatización de procesos"
- *               projectFolder:
+ *               folder:
  *                 type: string
- *                 example: "/projects/proyecto_actualizado"
  *               description:
  *                 type: string
- *                 example: "Actualización de características del proyecto."
  *               practicesAgreement:
  *                 type: boolean
- *                 example: true
  *               practicesStudents:
  *                 type: integer
- *                 example: 5
+ *                 minimum: 0
  *               sdpStudents:
  *                 type: integer
- *                 example: 4
+ *                 minimum: 0
  *               startDate:
  *                 type: string
  *                 format: date
- *                 example: "2024-03-01"
  *               endDate:
  *                 type: string
  *                 format: date
- *                 example: "2024-12-15"
  *     responses:
  *       200:
  *         description: Proyecto actualizado con éxito.
@@ -325,6 +261,79 @@ projectRouter.delete("/:id", verificarPermisoProyecto, deleteProject);
  *       500:
  *         description: Error interno del servidor.
  */
-projectRouter.put("/:id", authMiddleware, updateProject);
+projectRouter.put(
+  "/:id",
+  authMiddleware,
+  projectIdValidator,
+  updateProjectValidator,
+  validateRequest,
+  updateProject
+);
+
+/**
+ * @swagger
+ * /api/projects/{id}:
+ *   delete:
+ *     summary: Eliminar un proyecto (soft delete)
+ *     tags: [Proyectos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Proyecto marcado como eliminado.
+ *       403:
+ *         description: No autorizado.
+ *       404:
+ *         description: Proyecto no encontrado.
+ *       500:
+ *         description: Error interno del servidor.
+ */
+projectRouter.delete(
+  "/:id",
+  authMiddleware,
+  projectIdValidator,
+  validateRequest,
+  verificarPermisoProyecto,
+  deleteProject
+);
+
+/**
+ * @swagger
+ * /api/projects/{id}/restore:
+ *   put:
+ *     summary: Restaurar un proyecto eliminado (soft delete)
+ *     tags: [Proyectos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID del proyecto a restaurar.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Proyecto restaurado correctamente.
+ *       403:
+ *         description: Solo administradores pueden restaurar proyectos.
+ *       404:
+ *         description: Proyecto no encontrado.
+ *       500:
+ *         description: Error al restaurar el proyecto.
+ */
+projectRouter.put(
+  "/:id/restore",
+  authMiddleware,
+  projectIdValidator,
+  validateRequest,
+  restoreProject
+);
 
 export default projectRouter;

@@ -24,9 +24,4 @@ export const themeConfig = {
     className: "nord",
     displayName: "Nord",
   },
-  solarizedDark: {
-    type: "dark",
-    className: "solarizedDark",
-    displayName: "Solarized Oscuro",
-  },
 };

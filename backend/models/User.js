@@ -1,54 +1,52 @@
 import mongoose from "mongoose";
-import { validarEmail, validarDNI } from "../utils/validators.js"; // Importamos validaciones externas
+import mongooseDelete from "mongoose-delete";
 
-const userSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  surname: { type: String, required: true },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    validate: {
-      validator: validarEmail,
-      message: "Solo se permiten correos de U-TAD.",
+const userSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    surname: { type: String, required: true },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      // La validación se hace con express-validator
     },
-  },
-  password: { type: String, required: true },
-  dni: {
-    type: String,
-    required: true,
-    unique: true,
-    validate: {
-      validator: validarDNI,
-      message: "DNI inválido. Debe seguir el formato correcto.",
+    password: {
+      type: String,
+      required: true,
+      // Validación por express-validator
     },
+    dni: {
+      type: String,
+      required: true,
+      unique: true,
+      // Validación por express-validator
+    },
+    rol: {
+      type: String,
+      required: true,
+      enum: ["admin", "moderator", "user"],
+      default: "user",
+    },
+    grade: {
+      type: String,
+      required: true,
+      enum: ["INSO", "MAIS", "FIIS", "DIPI", "ANIV"],
+    },
+    projects: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "Project", default: [] },
+    ],
+    isVerified: { type: Boolean, default: false },
+    verificationCode: { type: String, default: null },
+    verificationAttempts: { type: Number, default: 3 },
+    verificationCodeExpires: { type: Date },
+    profileImage: { type: String, default: null },
   },
-  rol: {
-    type: String,
-    required: true,
-    enum: ["admin", "moderator", "user"],
-    default: "user",
-  },
-  grade: {
-    type: String,
-    required: true,
-    enum: ["INSO", "MAIS", "FIIS", "DIPI", "ANIV"], // Solo permite estos valores
-  },
-  projects: [{ type: mongoose.Schema.Types.ObjectId, ref: "Project" }], //relacion inversa
+  { timestamps: true }
+);
 
-  // Campos para la verificación del código de 6 dígitos
-  isVerified: { type: Boolean, default: false }, // Indica si el usuario ya verificó su cuenta
-  verificationCode: { type: String, default: null }, // Código de verificación temporal
-  verificationAttempts: { type: Number, default: 3 }, // Número de intentos
-  verificationCodeExpires: { type: Date }, // Expiración del código
-  createdAt: { type: Date, default: Date.now }, // Fecha de creación
-
-
-
-  //CAMPO PARA LA URL DE LA IAMGEN
-  profileImage: { type: String, default: null },
-});
+// 🔄 Activar soft delete con mongoose-delete
+userSchema.plugin(mongooseDelete, { deletedAt: true, overrideMethods: true });
 
 const User = mongoose.model("User", userSchema);
-
 export default User;

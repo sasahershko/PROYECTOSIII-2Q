@@ -1,34 +1,43 @@
-import { FaUsers, FaLightbulb, FaNetworkWired, FaGraduationCap } from "react-icons/fa";
+import {
+  FaUsers,
+  FaLightbulb,
+  FaNetworkWired,
+  FaGraduationCap,
+} from "react-icons/fa";
 
 const beneficios = [
   {
-    icon: <FaGraduationCap size={30} className="text-blue-500" />,
+    icon: <FaGraduationCap size={38} className="text-accent" />,
     title: "Gestión Centralizada",
     description: "Todos tus proyectos en un solo lugar",
   },
   {
-    icon: <FaUsers size={30} className="text-blue-500" />,
+    icon: <FaUsers size={38} className="text-accent" />,
     title: "Colaboración",
     description: "Trabaja con estudiantes y profesionales",
   },
   {
-    icon: <FaLightbulb size={30} className="text-blue-500" />,
+    icon: <FaLightbulb size={38} className="text-accent" />,
     title: "Innovación",
     description: "Acceso a herramientas de última generación",
   },
   {
-    icon: <FaNetworkWired size={30} className="text-blue-500" />,
+    icon: <FaNetworkWired size={38} className="text-accent" />,
     title: "Networking",
     description: "Conecta con empresas líderes",
-  }
+  },
 ];
 
 const PorqueElegir = () => {
   return (
-    <div className="w-full max-w-7xl bg-gray-100 mx-auto py-14 px-10 mb-6">
+    <div className="w-full max-w-7xl bg-card mx-auto py-14 px-10 mb-6 rounded-xl shadow-md">
       <div className="container max-w-7xl mx-auto px-6">
-        <h2 className="text-3xl font-bold text-center mb-12">
-          ¿Por qué elegir el Project Center de U-tad?
+        <h2 className="text-[42px] font-bold text-center mb-14">
+          <span>¿Por qué elegir el </span>
+          <span className="bg-gradient-to-b from-white to-50% to-accent bg-clip-text text-transparent">
+            Project Center
+          </span>
+          <span> de U-tad?</span>
         </h2>
 
         {/* Beneficios */}
@@ -36,8 +45,10 @@ const PorqueElegir = () => {
           {beneficios.map((beneficio, idx) => (
             <div key={idx} className="flex flex-col items-center">
               {beneficio.icon}
-              <h3 className="text-lg font-semibold mt-4">{beneficio.title}</h3>
-              <p className="text-gray-600 mt-2">{beneficio.description}</p>
+              <h3 className="text-xl font-semibold mt-4">{beneficio.title}</h3>
+              <p className="text-secundary-text mt-2">
+                {beneficio.description}
+              </p>
             </div>
           ))}
         </div>

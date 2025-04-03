@@ -4,25 +4,41 @@ import { useEffect } from "react";
 import { useTheme } from "next-themes";
 import { themeConfig } from "@utils/themeConfig";
 
-export default function ThemeUpdater() {
-  const { theme } = useTheme();
+const THEME_KEY = "theme";
 
+export default function ThemeUpdater() {
+  const { theme, setTheme } = useTheme();
+
+  // Comprobar siempre si hay un tema almacenado o, en su defecto, detectar la preferencia del sistema
+  useEffect(() => {
+    const storedTheme = localStorage.getItem(THEME_KEY);
+    if (storedTheme && themeConfig[storedTheme]) {
+      if (theme !== storedTheme) {
+        setTheme(storedTheme);
+      }
+    } else {
+      // No hay tema almacenado: detecta la preferencia del sistema
+      const systemPrefersDark = window.matchMedia(
+        "(prefers-color-scheme: dark)"
+      ).matches;
+      // Por ejemplo: si el sistema es dark, asignamos "nord"; en caso contrario "light"
+      const randomChance = Math.random();
+      const defaultTheme = systemPrefersDark
+        ? "dark"
+        : randomChance < 0.01
+        ? "pink"
+        : "light";
+      if (theme !== defaultTheme) {
+        setTheme(defaultTheme);
+      }
+      localStorage.setItem(THEME_KEY, defaultTheme);
+    }
+  }, [theme, setTheme]);
+
+  // Actualiza el DOM según el tema actual
   useEffect(() => {
     if (theme && themeConfig[theme]) {
       const { type, className } = themeConfig[theme];
-
-      if (themeConfig[theme]) {
-        // Obtiene el estilo inline actual (si existe)
-        let currentStyle = document.documentElement.getAttribute("style") || "";
-        // Elimina cualquier declaración previa de color-scheme
-        console.log("Estilo actual del <html>:", currentStyle);
-        currentStyle = currentStyle
-          .replace(/color-scheme:\s*(light|dark);?/gi, "")
-          .trim();
-        // Agrega el color-scheme deseado
-        const updatedStyle = `${currentStyle}color-scheme: ${type};`;
-        document.documentElement.setAttribute("style", updatedStyle);
-      }
 
       // Remueve las clases de tema previas
       Object.values(themeConfig).forEach(({ className: cn }) => {
@@ -32,11 +48,14 @@ export default function ThemeUpdater() {
       // Agrega la clase del tema actual
       document.documentElement.classList.add(className);
 
-      // console.log(
-      //   "Estilo final del <html>:",
-      //   document.documentElement.getAttribute("style")
-      // );
-      // console.log("Clases del <html>:", document.documentElement.className);
+      // Actualiza el atributo inline style para la propiedad color-scheme
+      let currentStyle = document.documentElement.getAttribute("style") || "";
+      // Elimina cualquier declaración previa de color-scheme
+      currentStyle = currentStyle
+        .replace(/color-scheme:\s*(light|dark);?/gi, "")
+        .trim();
+      const updatedStyle = `${currentStyle} color-scheme: ${type};`;
+      document.documentElement.setAttribute("style", updatedStyle);
     }
   }, [theme]);
 

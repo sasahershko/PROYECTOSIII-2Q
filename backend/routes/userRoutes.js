@@ -9,8 +9,20 @@ import {
   getAllUsers,
   deleteUser,
   updateUser,
+  getDeletedUsers,
+  restoreUser,
 } from "../controllers/userController.js";
-import { authMiddleware } from "../middleware/authMiddleware.js";
+import { authMiddleware } from "../middlewares/authMiddleware.js";
+import { adminOrSelfMiddleware } from "../middlewares/adminOrSelfMiddleware.js";
+import {
+  registerUserValidator,
+  loginUserValidator,
+  verifyCodeValidator,
+  resendVerificationValidator,
+  updateUserValidator,
+  userIdValidator,
+} from "../validators/userValidator.js";
+import { validateRequest } from "../middlewares/validateRequest.js";
 
 const userRouter = express.Router();
 
@@ -60,7 +72,12 @@ const userRouter = express.Router();
  *       400:
  *         description: Algún campo es inválido o el correo ya está en uso.
  */
-userRouter.post("/register", registerUser);
+userRouter.post(
+  "/register",
+  registerUserValidator,
+  validateRequest,
+  registerUser
+);
 
 /**
  * @swagger
@@ -68,7 +85,6 @@ userRouter.post("/register", registerUser);
  *   post:
  *     summary: Verificar código de autenticación
  *     tags: [Usuarios]
- *     description: Verifica un código de autenticación enviado al correo del usuario.
  *     requestBody:
  *       required: true
  *       content:
@@ -91,15 +107,19 @@ userRouter.post("/register", registerUser);
  *       404:
  *         description: Usuario no encontrado.
  */
-userRouter.post("/verify-code", verifyCode);
+userRouter.post(
+  "/verify-code",
+  verifyCodeValidator,
+  validateRequest,
+  verifyCode
+);
 
 /**
  * @swagger
  * /api/users/resend-verification:
  *   post:
- *     summary: Reenviar el código de verificación al correo del usuario
+ *     summary: Reenviar el código de verificación
  *     tags: [Usuarios]
- *     description: Permite reenviar el código de verificación si el usuario aún no está verificado. Tiene un cooldown de 50 segundos entre cada reenvío.
  *     requestBody:
  *       required: true
  *       content:
@@ -115,13 +135,16 @@ userRouter.post("/verify-code", verifyCode);
  *       200:
  *         description: Código reenviado exitosamente.
  *       400:
- *         description: El usuario ya está verificado o hay que esperar antes de reenviar el código.
+ *         description: Ya verificado o espera antes de reenviar.
  *       404:
  *         description: Usuario no encontrado.
- *       500:
- *         description: Error en el servidor.
  */
-userRouter.post("/resend-verification", resendVerificationCode);
+userRouter.post(
+  "/resend-verification",
+  resendVerificationValidator,
+  validateRequest,
+  resendVerificationCode
+);
 
 /**
  * @swagger
@@ -129,7 +152,6 @@ userRouter.post("/resend-verification", resendVerificationCode);
  *   post:
  *     summary: Iniciar sesión
  *     tags: [Usuarios]
- *     description: Autentica a un usuario y devuelve un token JWT.
  *     requestBody:
  *       required: true
  *       content:
@@ -146,13 +168,15 @@ userRouter.post("/resend-verification", resendVerificationCode);
  *                 example: "SecureP@ss123"
  *     responses:
  *       200:
- *         description: Login exitoso.
+ *         description: Login exitoso. Devuelve token y datos del usuario.
  *       400:
- *         description: Datos incorrectos.
+ *         description: Datos incompletos.
  *       401:
- *         description: Credenciales inválidas.
+ *         description: Credenciales inválidas o usuario eliminado.
+ *       403:
+ *         description: Usuario no verificado.
  */
-userRouter.post("/login", loginUser);
+userRouter.post("/login", loginUserValidator, validateRequest, loginUser);
 
 /**
  * @swagger
@@ -172,6 +196,60 @@ userRouter.get("/", authMiddleware, getAllUsers);
 
 /**
  * @swagger
+ * tags:
+ *   name: Usuarios
+ *   description: Endpoints para la gestión de usuarios
+ */
+
+/**
+ * @swagger
+ * /api/users/deleted:
+ *   get:
+ *     summary: Obtener usuarios eliminados (solo admin)
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de usuarios eliminados.
+ *       403:
+ *         description: No autorizado.
+ */
+userRouter.get("/deleted", authMiddleware, getDeletedUsers);
+
+/**
+ * @swagger
+ * /api/users/{id}/restore:
+ *   put:
+ *     summary: Restaurar un usuario eliminado
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID del usuario a restaurar
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Usuario restaurado correctamente.
+ *       403:
+ *         description: Solo los administradores pueden restaurar usuarios.
+ *       500:
+ *         description: Error al restaurar el usuario.
+ */
+userRouter.put(
+  "/:id/restore",
+  userIdValidator,
+  validateRequest,
+  authMiddleware,
+  restoreUser
+);
+
+/**
+ * @swagger
  * /api/users/profile:
  *   get:
  *     summary: Obtener el perfil del usuario autenticado
@@ -180,37 +258,9 @@ userRouter.get("/", authMiddleware, getAllUsers);
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Devuelve el perfil del usuario autenticado.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: string
- *                   example: "65a3f2e4b1c3e5a7d2a4c9b2"
- *                 name:
- *                   type: string
- *                   example: "Juan"
- *                 surname:
- *                   type: string
- *                   example: "Pérez"
- *                 email:
- *                   type: string
- *                   example: "juan@u-tad.com"
- *                 dni:
- *                   type: string
- *                   example: "12345678A"
- *                 grade:
- *                   type: string
- *                   example: "INSO"
- *                 rol:
- *                   type: string
- *                   example: "user"
+ *         description: Perfil del usuario autenticado.
  *       401:
- *         description: No autorizado, falta el token.
- *       404:
- *         description: Usuario no encontrado.
+ *         description: Token no válido o no proporcionado.
  */
 userRouter.get("/profile", authMiddleware, getUserProfile);
 
@@ -218,40 +268,19 @@ userRouter.get("/profile", authMiddleware, getUserProfile);
  * @swagger
  * /api/users/profile/{id}:
  *   get:
- *     summary: Obtener el perfil público de un usuario por ID
+ *     summary: Obtener perfil público de un usuario por ID
  *     tags: [Usuarios]
- *     description: Permite a cualquier usuario obtener información pública de otro usuario mediante su ID.
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         description: ID del usuario que se quiere consultar.
  *         schema:
  *           type: string
  *     responses:
  *       200:
- *         description: Datos del usuario obtenidos exitosamente.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 _id:
- *                   type: string
- *                   description: ID del usuario.
- *                 nombre:
- *                   type: string
- *                   description: Nombre del usuario.
- *                 apellidos:
- *                   type: string
- *                   description: Apellidos del usuario.
- *                 foto:
- *                   type: string
- *                   description: URL de la foto de perfil.
+ *         description: Perfil público del usuario.
  *       404:
  *         description: Usuario no encontrado.
- *       500:
- *         description: Error en el servidor.
  */
 userRouter.get("/profile/:id", getUserProfileById);
 
@@ -259,7 +288,7 @@ userRouter.get("/profile/:id", getUserProfileById);
  * @swagger
  * /api/users/{id}:
  *   patch:
- *     summary: Actualizar datos de un usuario
+ *     summary: Actualizar datos de usuario
  *     tags: [Usuarios]
  *     security:
  *       - bearerAuth: []
@@ -267,7 +296,6 @@ userRouter.get("/profile/:id", getUserProfileById);
  *       - in: path
  *         name: id
  *         required: true
- *         description: ID del usuario a actualizar.
  *         schema:
  *           type: string
  *     requestBody:
@@ -279,33 +307,41 @@ userRouter.get("/profile/:id", getUserProfileById);
  *             properties:
  *               name:
  *                 type: string
- *                 example: "Nuevo Nombre"
  *               surname:
  *                 type: string
- *                 example: "Nuevo Apellido"
  *               grade:
  *                 type: string
- *                 example: "INSO"
+ *                 enum: [INSO, MAIS, FIIS, DIPI, ANIV]
+ *               rol:
+ *                 type: string
+ *                 enum: [admin, moderator, user]
  *               profileImage:
  *                 type: string
- *                 example: "https://example.com/nueva-imagen.jpg"
  *     responses:
  *       200:
  *         description: Usuario actualizado.
  *       400:
- *         description: Intento de modificar email o contraseña bloqueado.
+ *         description: Datos no válidos o intento de modificar email/password.
  *       403:
  *         description: No autorizado.
  *       404:
  *         description: Usuario no encontrado.
  */
-userRouter.patch("/:id", authMiddleware, updateUser);
+userRouter.patch(
+  "/:id",
+  userIdValidator,
+  updateUserValidator,
+  validateRequest,
+  authMiddleware,
+  adminOrSelfMiddleware,
+  updateUser
+);
 
 /**
  * @swagger
- * /api/users/{id}:
- *   delete:
- *     summary: Eliminar usuario
+ * /api/users/{id}/restore:
+ *   put:
+ *     summary: Restaurar un usuario eliminado (soft delete)
  *     tags: [Usuarios]
  *     security:
  *       - bearerAuth: []
@@ -313,17 +349,26 @@ userRouter.patch("/:id", authMiddleware, updateUser);
  *       - in: path
  *         name: id
  *         required: true
- *         description: ID del usuario a eliminar.
  *         schema:
  *           type: string
+ *         description: ID del usuario a restaurar.
  *     responses:
  *       200:
- *         description: Usuario eliminado correctamente.
+ *         description: Usuario restaurado correctamente y referencias de proyectos actualizadas.
  *       403:
- *         description: No tienes permisos.
+ *         description: Solo los administradores pueden realizar esta acción.
  *       404:
  *         description: Usuario no encontrado.
+ *       500:
+ *         description: Error al restaurar el usuario.
  */
-userRouter.delete("/:id", authMiddleware, deleteUser);
+userRouter.delete(
+  "/:id",
+  userIdValidator,
+  validateRequest,
+  authMiddleware,
+  adminOrSelfMiddleware,
+  deleteUser
+);
 
 export default userRouter;

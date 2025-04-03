@@ -2,63 +2,66 @@ import { FaMapMarkerAlt, FaEnvelope, FaPhone } from "react-icons/fa";
 
 const MapaContacto = () => {
   return (
-    <section className="w-full max-w-7xl mx-auto px-10 mb-12">
-      <h2 className="text-3xl font-bold text-center mb-8">
-        ¿Tienes preguntas? Contáctanos
+    <section className="w-full max-w-7xl mx-auto px-10 mb-24">
+      <h2 className="text-5xl font-bold text-center mb-12">
+        ¿Tienes preguntas? &nbsp;
+        <span className="bg-gradient-to-b from-white to-50% to-accent text-5xl bg-clip-text text-transparent">
+          Contáctanos
+        </span>
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Formulario */}
-        <div className="bg-white p-6 rounded-lg">
+        <div className=" p-6 rounded-lg">
           <form>
-            <label className="block text-gray-700 font-semibold mb-2">
+            <label className="block text-primary-text font-semibold mb-2">
               Nombre
             </label>
             <input
               type="text"
               placeholder="Tu Nombre"
-              className="w-full p-3 border rounded-lg mb-4"
+              className="w-full p-3 rounded-lg mb-4 border border-transparent focus:border-accent focus:outline focus:outline-accent bg-card"
             />
 
-            <label className="block text-gray-700 font-semibold mb-2">
+            <label className="block text-primary-text font-semibold mb-2">
               Correo Electrónico
             </label>
             <input
               type="email"
               placeholder="tu@email.com"
-              className="w-full p-3 border rounded-lg mb-4"
+              className="w-full p-3 rounded-lg border border-transparent focus:border-accent focus:outline focus:outline-accent mb-4 bg-card"
             />
 
-            <label className="block text-gray-700 font-semibold mb-2">
+            <label className="block text-primary-text font-semibold mb-2">
               Mensaje
             </label>
             <textarea
               placeholder="Tu mensaje"
-              className="w-full p-3 border rounded-lg h-32 mb-4"
+              className="w-full p-3 border border-transparent focus:border-accent focus:outline focus:outline-accent rounded-lg h-32 mb-4 bg-card"
             />
 
-            <button className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
+            <button className="w-full bg-accent text-white py-3 rounded-lg font-semibold hover:bg-accent/80 transition">
               Enviar Mensaje
             </button>
           </form>
         </div>
 
         {/* Información de contacto y mapa */}
-        <div className="bg-gray-100 p-6 rounded-lg shadow-md">
+        <div className="bg-card p-6 rounded-lg shadow-md">
           <h3 className="text-xl font-bold mb-4">Información de Contacto</h3>
 
           <div className="flex items-center gap-3 mb-3">
-            <FaMapMarkerAlt className="text-blue-600" />
+            <FaMapMarkerAlt className="text-accent" />
             <span>Plz. de la Almunia de Doña Godina, 6, 28031 Madrid</span>
           </div>
 
           <div className="flex items-center gap-3 mb-3">
-            <FaEnvelope className="text-blue-600" />
+            <FaEnvelope className="text-accent" />
             <span>saudade.artiaga@u-tad.com</span>
           </div>
 
           <div className="flex items-center gap-3 mb-6">
-            <FaPhone className="text-blue-600" />
+            <FaPhone className="text-accent" />
             <span>+34 900 373 379</span>
           </div>
 

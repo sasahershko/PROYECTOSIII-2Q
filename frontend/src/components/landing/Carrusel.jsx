@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { FaChevronLeft } from "react-icons/fa";
+import { FaChevronRight } from "react-icons/fa";
 
 const Carrusel = () => {
   const [index, setIndex] = useState(0);
@@ -20,7 +22,7 @@ const Carrusel = () => {
   }, []);
 
   return (
-    <div className="relative w-full h-[85vh] overflow-hidden">
+    <div className="relative w-full h-[93vh] overflow-hidden">
       {/* Animación de imágenes */}
       <div className="relative w-full h-full">
         <AnimatePresence>
@@ -51,12 +53,12 @@ const Carrusel = () => {
           <div className="flex gap-[24px] mt-[14px]">
             <Link
               href="#proyectos"
-              className="bg-blue-600 text-white px-[24px] py-[11px] rounded-lg font-semibold hover:bg-blue-700 transition"
+              className="bg-accent text-white px-[24px] py-[11px] rounded-lg font-semibold hover:bg-accent/80 transition"
             >
               Explorar Proyectos
             </Link>
             <Link
-              href="#contacto"
+              href="#info"
               className="border border-white text-white px-[24px] py-[11px] rounded-lg font-semibold hover:bg-white hover:text-black transition"
             >
               ¡Trabaja Con Nosotros!
@@ -66,18 +68,43 @@ const Carrusel = () => {
       </div>
 
       {/* Botones de navegación (Flechas en los bordes) */}
-      <button
-        className="absolute top-1/2 left-4 transform -translate-y-1/2 text-white bg-black/50 p-3 rounded-full z-20 hover:bg-black/70"
-        onClick={() => setIndex((index - 1 + imagenes.length) % imagenes.length)}
+      <motion.button
+        className="absolute text-3xl top-1/2 left-0 transform -translate-y-1/2 text-white p-3 z-20 h-[93vh] w-24 overflow-hidden"
+        onClick={() =>
+          setIndex((index - 1 + imagenes.length) % imagenes.length)
+        }
       >
-        &#9664;
-      </button>
-      <button
-        className="absolute top-1/2 right-4 transform -translate-y-1/2 text-white bg-black/50 p-3 rounded-full z-20 hover:bg-black/70"
+        {/* Overlay que anima la opacidad */}
+        <motion.div
+          className="absolute inset-0"
+          initial={{ opacity: 0 }}
+          whileHover={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+          style={{
+            backgroundImage:
+              "linear-gradient(to left, rgba(255,255,255,0) 0%, rgba(0,0,0,0.2) 90%)",
+          }}
+        />
+        <FaChevronLeft className="text-3xl left-2 relative" />
+      </motion.button>
+
+      <motion.button
+        className="absolute text-3xl top-1/2 right-0 transform -translate-y-1/2 text-white p-3 z-20 h-[93vh] w-24 overflow-hidden"
         onClick={() => setIndex((index + 1) % imagenes.length)}
       >
-        &#9654;
-      </button>
+        {/* Overlay que anima la opacidad */}
+        <motion.div
+          className="absolute inset-0"
+          initial={{ opacity: 0 }}
+          whileHover={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(0,0,0,0.2) 90%)",
+          }}
+        />
+        <FaChevronRight className="text-3xl -right-8 relative" />
+      </motion.button>
     </div>
   );
 };
