@@ -7,12 +7,12 @@ export default function Footer() {
 
   return (
     <>
-      <div className="w-full bg-secundary text-gray-400 py-6 flex flex-col px-4 md:px-16 lg:px-80">
+      <div className="w-full bg-secundary text-gray-400 py-8 flex flex-col px-4 md:px-16 lg:px-80">
         <div className="flex flex-col justify-center items-center mb-4 sm:justify-start sm:items-start">
           <h3 className="bg-white/90 py-2 px-4 text-secundary font-semibold w-fit">
             MARCAS CON LAS QUE TRABAJAMOS
           </h3>
-          <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-2 px-16 sm:px-0 w-full place-items-center">
+          <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-2 px-16 sm:px-0 w-full place-items-center">
             {[
               {
                 src: "/logos/EmpresasColaboradoras/Abai.webp",
