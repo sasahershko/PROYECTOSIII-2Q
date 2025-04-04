@@ -5,6 +5,8 @@ import { getUsers } from "@lib/users";
 
 export default function UserSelector({ selectedUsers, setSelectedUsers, label }) {
   const [users, setUsers] = useState([]);
+  const [search, setSearch] = useState("");
+  const [filteredUsers, setFilteredUsers] = useState([]);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -19,10 +21,25 @@ export default function UserSelector({ selectedUsers, setSelectedUsers, label })
     fetchUsers();
   }, []);
 
-  const handleAddUser = (userId) => {
-    if (!selectedUsers.includes(userId)) {
-      setSelectedUsers([...selectedUsers, userId]);
+  useEffect(() => {
+    if (search.trim() === "") {
+      setFilteredUsers([]);
+    } else {
+      const filtered = users.filter((user) =>
+        `${user.name} ${user.surname} ${user.email} ${user.dni}`
+          .toLowerCase()
+          .includes(search.toLowerCase())
+      );
+      setFilteredUsers(filtered);
     }
+  }, [search, users]);
+
+  const handleAddUser = (user) => {
+    if (!selectedUsers.includes(user._id)) {
+      setSelectedUsers([...selectedUsers, user._id]);
+    }
+    setSearch("");
+    setFilteredUsers([]);
   };
 
   const handleRemoveUser = (userId) => {
@@ -30,30 +47,51 @@ export default function UserSelector({ selectedUsers, setSelectedUsers, label })
   };
 
   return (
-    <div className="mb-4">
-      <label className="block font-semibold">{label}</label>
-      <select
-        className="w-full border rounded p-2 mb-2"
-        onChange={(e) => handleAddUser(e.target.value)}
-        defaultValue=""
-      >
-        <option value="" disabled>Seleccionar usuario</option>
-        {users.map((user) => (
-          <option key={user._id} value={user._id}>
-            {user.name} ({user.email})
-          </option>
-        ))}
-      </select>
+    <div className="mb-6 relative">
+      <label className="block font-semibold mb-2 text-gray-700">{label}</label>
+      <input
+        type="text"
+        className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        placeholder="Buscar usuario por nombre, email o DNI"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
 
-      <div className="flex flex-wrap gap-2 mt-2">
+      {filteredUsers.length > 0 && (
+        <ul className="absolute z-20 w-full bg-white border border-gray-300 rounded-lg shadow-lg mt-1 max-h-64 overflow-y-auto">
+          {filteredUsers.map((user) => (
+            <li
+              key={user._id}
+              className="p-3 hover:bg-blue-50 cursor-pointer transition-all"
+              onClick={() => handleAddUser(user)}
+            >
+              <div className="text-sm font-medium text-gray-800">
+                {user.name} {user.surname}
+              </div>
+              <div className="text-xs text-gray-500">{user.email}</div>
+              <div className="text-xs text-gray-400">DNI: {user.dni}</div>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
         {selectedUsers.map((userId) => {
           const user = users.find((u) => u._id === userId);
           return user ? (
-            <div key={user._id} className="bg-gray-200 px-3 py-1 rounded flex items-center space-x-2">
-              <span>{user.name}</span>
+            <div
+              key={user._id}
+              className="bg-gray-100 p-4 rounded-lg shadow-sm flex justify-between items-center"
+            >
+              <div>
+                <div className="font-medium text-gray-800">
+                  {user.name} {user.surname}
+                </div>
+                <div className="text-sm text-gray-500">{user.email}</div>
+              </div>
               <button
                 onClick={() => handleRemoveUser(user._id)}
-                className="text-red-600 font-bold"
+                className="text-red-600 font-bold text-lg hover:text-red-800"
               >
                 ✖
               </button>
