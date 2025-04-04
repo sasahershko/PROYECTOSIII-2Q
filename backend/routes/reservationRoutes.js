@@ -33,7 +33,7 @@ reservationRouter.get("/", authMiddleware, getUserReservations);
 //PENDIENTE DE TEST ⬇️⬇️⬇️
 
 // Obtener todas las reservas (solo admin)
-reservationRouter.get("/", authMiddleware, adminOrSelfMiddleware, getAllReservations);
+reservationRouter.get("/all", authMiddleware, adminOrSelfMiddleware, getAllReservations);
 
 
 // Aprobar una reserva (solo admin)
@@ -41,7 +41,7 @@ reservationRouter.put("/:id/approve", authMiddleware, adminOrSelfMiddleware, app
 
 
 //Rechazar una reserva (solo admin)
-reservationRouter.delete("/:id/reject", authMiddleware, adminOrSelfMiddleware, rejectReservation);
+reservationRouter.put("/:id/reject", authMiddleware, adminOrSelfMiddleware, rejectReservation);
 
 
 //Borrar una reserva (admin o dueño de la reserva)
