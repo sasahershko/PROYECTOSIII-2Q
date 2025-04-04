@@ -330,18 +330,18 @@ export const addNotes = async (req, res) => {
   }
 }
 
-
 export const updateNote = async (req, res) => {
-
   try {
     const {
-      projectId,
       noteIndex,
       note,
       userWhoWrites,
-      userWhoRecieves = [],
-      tag = "no completada"
+      userWhoReceives,
+      tag
     } = matchedData(req);
+
+    const projectId = req.params.id;
+    console.log(projectId);
 
     const project = await Project.findById(projectId);
     if (!project) {
@@ -352,20 +352,23 @@ export const updateNote = async (req, res) => {
       return res.status(404).send({ message: 'Índice no válido.' });
     }
 
-    const updateNote = {
-      note,
-      userWhoWrites,
-      userWhoRecieves: userWhoRecieves || project.pendingNotes[noteIndex].userWhoRecieves,
-      tag: tag || project.pendingNotes[noteIndex].tag,
-      date: Date.now(),
-    }
+    const existingNote = project.pendingNotes[noteIndex];
 
-    project.pendingNotes[noteIndex] = updateNote;
+    const updatedNote = {
+      ...existingNote.toObject(), 
+      ...(note && { note }),
+      ...(userWhoWrites && { userWhoWrites }),
+      ...(userWhoReceives && { userWhoReceives }),
+      ...(tag && { tag }),
+      date: Date.now()
+    };
+
+    project.pendingNotes[noteIndex] = updatedNote;
     await project.save();
 
+    return res.status(200).send({ message: 'Nota actualizada correctamente.' });
 
-    return res.status(200).send({ message: 'Nota actualizada correctamente.'});
   } catch (error) {
-    return res.status(500).send({ message: 'Error de servidor', error: error.message});
+    return res.status(500).send({ message: 'Error de servidor', error: error.message });
   }
-}
+};

@@ -342,7 +342,7 @@ projectRouter.put(
 
 /**
  * @swagger
- * /api/projects/note:
+ * /api/projects/note/{id}:
  *   post:
  *     summary: Agregar una nueva nota a un proyecto.
  *     tags:
@@ -356,14 +356,9 @@ projectRouter.put(
  *           schema:
  *             type: object
  *             required:
- *               - projectId
  *               - note
  *               - userWhoWrites
  *             properties:
- *               projectId:
- *                 type: string
- *                 description: ID del proyecto al que se agregará la nota.
- *                 example: "606d1f2c2f1b2c3a4d5e6f7g"
  *               note:
  *                 type: string
  *                 description: Contenido de la nota.
@@ -399,7 +394,7 @@ projectRouter.put(
  *       500:
  *         description: Error interno del servidor.
  */
-projectRouter.post('/note', authMiddleware, createNoteValidator, addNotes);
+projectRouter.post('/note/:id', authMiddleware, createNoteValidator, addNotes);
 
 /**
  * @swagger
@@ -425,8 +420,6 @@ projectRouter.post('/note', authMiddleware, createNoteValidator, addNotes);
  *             type: object
  *             required:
  *               - noteIndex
- *               - note
- *               - userWhoWrites
  *             properties:
  *               noteIndex:
  *                 type: integer
