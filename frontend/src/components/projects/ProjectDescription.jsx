@@ -30,22 +30,6 @@ export default function ProjectDescription({ project }) {
         setIsNoteModalOpen(!isNoteModalOpen);
     };
 
-
-    // const notas = [
-    //     {
-    //         note: 'Hola buenas tardes estamos aqui probando',
-    //         from: 'Saray',
-    //         to: 'Enrique',
-    //         timeStamp: 'Hace 5 horas'
-    //     },
-    //     {
-    //         note: 'PODJAPFOISJAOSDJFOWIEJF',
-    //         from: 'Enrique',
-    //         to: 'Saray',
-    //         timeStamp: 'Hace 4 horas'
-    //     }
-    // ]
-
     return (
         <div className="h-screen grid grid-cols-3 grid-rows-2 mb-10">
 

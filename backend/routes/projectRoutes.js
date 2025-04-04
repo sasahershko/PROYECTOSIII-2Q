@@ -9,7 +9,8 @@ import {
   restoreProject,
   addNotes,
   updateNote,
-  hardDeleteProject
+  hardDeleteProject,
+  updateProjectBudget
 } from "../controllers/projectController.js";
 import {
   authMiddleware,
@@ -20,6 +21,7 @@ import {
   createProjectValidator,
   updateProjectValidator,
   projectIdValidator,
+  budgetValidator
 } from "../validators/projectValidator.js";
 import { createNoteValidator, updateNoteValidator } from "../validators/noteValidator.js";
 import { validateRequest } from "../middlewares/validateRequest.js";
@@ -498,4 +500,6 @@ projectRouter.post('/note/:id', authMiddleware, createNoteValidator, addNotes);
  */
 projectRouter.patch('/note/:id', authMiddleware, updateNoteValidator, updateNote);
 
+
+projectRouter.patch('/budget/:id', authMiddleware, budgetValidator, updateProjectBudget);
 export default projectRouter;
