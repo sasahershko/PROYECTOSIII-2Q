@@ -7,6 +7,7 @@ import {
   updateProject,
   getDeletedProjects,
   restoreProject,
+  hardDeleteProject,
 } from "../controllers/projectController.js";
 import {
   authMiddleware,
@@ -305,6 +306,39 @@ projectRouter.delete(
 
 /**
  * @swagger
+ * /api/projects/hard/{id}:
+ *   delete:
+ *     summary: Eliminar un proyecto permanentemente (hard delete)
+ *     tags: [Proyectos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID del proyecto a eliminar
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Proyecto eliminado permanentemente y referencias limpiadas.
+ *       403:
+ *         description: Solo los administradores pueden realizar esta acción.
+ *       404:
+ *         description: Proyecto no encontrado.
+ *       500:
+ *         description: Error al eliminar el proyecto.
+ */
+projectRouter.delete(
+  "/hard/:id",
+  projectIdValidator,
+  validateRequest,
+  authMiddleware,
+  hardDeleteProject
+);
+
+/**
+ * @swagger
  * /api/projects/{id}/restore:
  *   put:
  *     summary: Restaurar un proyecto eliminado (soft delete)
@@ -322,7 +356,7 @@ projectRouter.delete(
  *       200:
  *         description: Proyecto restaurado correctamente.
  *       403:
- *         description: Solo administradores pueden restaurar proyectos.
+ *         description: Solo los administradores pueden realizar esta acción.
  *       404:
  *         description: Proyecto no encontrado.
  *       500:
