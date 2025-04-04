@@ -30,8 +30,8 @@ const beneficios = [
 
 const PorqueElegir = () => {
   return (
-    <div className="w-full max-w-7xl bg-card mx-auto py-14 px-10 mb-6 rounded-xl shadow-md">
-      <div className="container max-w-7xl mx-auto px-6">
+    <div className="container max-w-7xl mx-auto px-10">
+      <div className="w-full max-w-7xl light:bg-gray-100 mx-auto rounded-xl px-10 py-14 mb-6">
         <h2 className="text-[42px] font-bold text-center mb-14">
           <span>¿Por qué elegir el </span>
           <span className="bg-gradient-to-b from-white to-50% to-accent bg-clip-text text-transparent">
