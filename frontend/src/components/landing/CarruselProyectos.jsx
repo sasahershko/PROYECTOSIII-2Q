@@ -1,30 +1,45 @@
-"use client";
+'use client';
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getProjects } from "@/lib/projects";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import areaImages from "@/lib/areaImages";
 import Link from "next/link";
 
 export default function CarruselProyectos() {
   const [proyectos, setProyectos] = useState([]);
   const [proyectoSeleccionado, setProyectoSeleccionado] = useState(null);
+  const [currentPage, setCurrentPage] = useState(0);
+  const itemsPerPage = 4;
 
   const areaColors = {
-    INSO: "bg-blue-400",
-    MAIS: "bg-red-400",
-    FIIS: "bg-green-400",
-    DIPI: "bg-cyan-400",
-    ANIV: "bg-yellow-400",
-    DIDI: "bg-pink-400",
-    OTROS: "bg-gray-400",
+    "INSO": "bg-blue-400",
+    "MAIS": "bg-red-400",
+    "FIIS": "bg-green-400",
+    "DIPI": "bg-cyan-400",
+    "ANIV": "bg-yellow-400",
+    "DIDI": "bg-pink-400",
+    "OTROS": "bg-gray-400"
   };
 
   const statusColors = {
     "No iniciado": "bg-gray-500",
     "En proceso": "bg-blue-500",
     "En espera": "bg-orange-500",
-    Completado: "bg-green-600",
+    "Completado": "bg-green-600"
   };
+
+  const proyectosFiltrados = proyectos.filter((p) => p._id !== proyectoSeleccionado?._id);
+  const totalPages = Math.ceil(proyectosFiltrados.length / itemsPerPage);
+
+  const proyectosAMostrar = proyectosFiltrados.slice(
+    currentPage * itemsPerPage,
+    (currentPage + 1) * itemsPerPage
+  );
+
+  const nextPage = () => setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1));
+  const prevPage = () => setCurrentPage((prev) => Math.max(prev - 1, 0));
+
 
   useEffect(() => {
     getProjects().then((data) => {
@@ -35,11 +50,14 @@ export default function CarruselProyectos() {
 
   if (proyectos.length === 0) {
     return (
-      <div className="w-full max-w-7xl mx-auto px-4 min-h-[120px]">
-        <h2 className="text-4xl font-bold mb-4 p-2 px-4 text-align-left inline-block">
-          PROYECTOS EN DESARROLLO
+      <div className="w-full max-w-7xl mx-auto px-10 mb-10 min-h-[120px]">
+        <h2 className="text-5xl font-[730] inline-block text-primary-text">
+          <span className="bg-gradient-to-b from-white to-50% to-accent text-5xl bg-clip-text text-transparent">
+            Proyectos
+          </span>
+          <span> Destacados</span>
         </h2>
-        <p className="text-gray-400 text-center text-lg">
+        <p className="mt-10 text-gray-400 text-center text-lg">
           No hay proyectos disponibles en este momento.
         </p>
       </div>
@@ -47,18 +65,27 @@ export default function CarruselProyectos() {
   }
 
   return (
-    <div id="proyectos" className="w-full max-w-7xl px-10 mb-12">
-      {" "}
-      {/* Se añadió mb-28 para margen inferior */}
-      <h2 className="text-4xl font-bold mb-4 p-2 px-4 text-align-left inline-block">
-        PROYECTOS EN DESARROLLO
-      </h2>
+    <div id="proyectos" className="w-full max-w-7xl px-10 mb-10">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-5xl font-[730] inline-block text-primary-text">
+          <span className="bg-gradient-to-b from-white to-50% to-accent text-5xl bg-clip-text text-transparent">
+            Proyectos
+          </span>
+          <span> Destacados</span>
+        </h2>
+        
+        <Link href="/projects">
+          <button className="mb-2 bg-blue-600 text-white font-semibold px-4 py-2 rounded hover:bg-blue-700 transition">
+            Ver Más Proyectos
+          </button>
+        </Link>
+      </div>
+
       {/* Contenedor de Imagen + Grid con más ancho para la imagen */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-4">
-        {" "}
-        {/* Aumentamos el ancho de la imagen */}
-        {/* Imagen del Proyecto Seleccionado con Animación */}
-        <div className="bg-gray-100 rounded-lg flex items-center justify-center w-full h-[400px] overflow-hidden relative">
+      <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-6">
+
+        {/* Proyecto destacado */}
+        <div className="relative rounded-lg overflow-hidden shadow-md flex flex-col h-[560px]">
           <AnimatePresence mode="wait">
             <motion.div
               key={proyectoSeleccionado?._id}
@@ -66,104 +93,78 @@ export default function CarruselProyectos() {
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: 50, opacity: 0 }}
               transition={{ duration: 0.5 }}
-              className="absolute w-full h-full flex items-center justify-center"
+              className="flex flex-col h-full"
             >
               <img
-                src={
-                  areaImages[proyectoSeleccionado?.area] || areaImages["Otros"]
-                }
+                src={areaImages[proyectoSeleccionado?.area] || areaImages["Otros"]}
                 alt={proyectoSeleccionado?.name}
-                className="w-full h-full object-cover rounded-lg"
+                className="w-full h-full overflow-hidden"
               />
+              {/* Info extra */}
+              <div className="flex-col left-0 w-full h-[150px] bg-opacity-90 p-4">
+                <span className={`text-sm font-semibold text-white inline-block mb-2 px-2 py-1 rounded-full ${areaColors[proyectoSeleccionado?.area] || 'bg-gray-400'}`}>
+                  {proyectoSeleccionado?.area}
+                </span>
+                <h3 className="text-xl font-bold">{proyectoSeleccionado?.name}</h3>
+                <p className="text-sm line-clamp-2">{proyectoSeleccionado?.description}</p>
+                <Link href={`/projects/${proyectoSeleccionado?._id}`}>
+                  <span className="text-blue-600 text-sm font-semibold mt-2 inline-block hover:underline">Ver más →</span>
+                </Link>
+              </div>
             </motion.div>
           </AnimatePresence>
         </div>
-        {/* Grid de Proyectos */}
-        <div className="grid grid-cols-3 grid-rows-3 gap-3 w-full">
-          {proyectos.slice(0, 8).map((proyecto, idx) => (
-            <motion.button
-              key={idx}
-              onClick={() => setProyectoSeleccionado(proyecto)}
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.98 }}
-              className={`relative group border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all bg-white w-full h-[120px] p-0
-                ${
-                  proyectoSeleccionado?._id === proyecto._id
-                    ? "shadow-lg shadow-gray-400/50"
-                    : ""
-                }
-              `}
-            >
-              {/* Imagen según el área */}
-              <div className="w-full h-[75%] bg-gray-200 flex items-center justify-center overflow-hidden">
-                <img
-                  src={areaImages[proyecto.area] || areaImages["Otros"]}
-                  alt={proyecto.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
 
-              {/* Área del grado */}
-              <div
-                className={`w-full h-[25%] flex items-center justify-center text-white text-xs font-semibold transition-all
-                  ${areaColors[proyecto.area] || "bg-gray-400"}
-                `}
-              >
-                {proyecto.area}
-              </div>
-            </motion.button>
-          ))}
-
-          {/* Ver más proyectos */}
-          <Link
-            href="/projects"
-            className="border-2 border-dashed rounded-lg flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-all text-center h-[105px]"
+        {/* Contenedor del grid con flechas a los lados */}
+        <div className="relative w-full">
+          {/* Flecha izquierda */}
+          <button
+            onClick={prevPage}
+            className="absolute left-[-25px] top-1/2 transform -translate-y-1/2 z-10 rounded-full p-3 text-gray-700"
           >
-            + Ver más
-            <br />
-            proyectos
-          </Link>
+            <FaChevronLeft size={10} />
+          </button>
+
+          {/* Grid de proyectos */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
+            {proyectosAMostrar.map((proyecto, idx) => (
+              <motion.button
+                key={idx}
+                onClick={() => setProyectoSeleccionado(proyecto)}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.98 }}
+                className={`relative group rounded-lg overflow-hidden shadow hover:shadow-md transition-all text-left 
+                  ${proyectoSeleccionado?._id === proyecto._id ? 'shadow-lg shadow-gray-400/50' : ''}`}
+              >
+                {/* Imagen */}
+                <div className="h-32 w-full overflow-hidden">
+                  <img
+                    src={areaImages[proyecto.area] || areaImages["Otros"]}
+                    alt={proyecto.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+
+                {/* Información */}
+                <div className="p-3">
+                  <span className={`text-xs font-semibold px-2 py-1 rounded-full text-white ${areaColors[proyecto.area] || 'bg-gray-400'}`}>
+                    {proyecto.area}
+                  </span>
+                  <h4 className="mt-2 font-bold text-md">{proyecto.name}</h4>
+                  <p className="text-xs dark:text-gray-400 line-clamp-2 mt-2">{proyecto.description}</p>
+                </div>
+              </motion.button>
+            ))}
+          </div>
+
+          {/* Flecha derecha */}
+          <button
+            onClick={nextPage}
+            className="absolute right-[-25px] top-1/2 transform -translate-y-1/2 z-10 rounded-full p-3 text-gray-700"
+          >
+            <FaChevronRight size={10} />
+          </button>
         </div>
-      </div>
-      {/* Detalle del Proyecto Seleccionado con Animación */}
-      <div className="relative mt-6">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={proyectoSeleccionado?._id}
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -20, opacity: 0 }}
-            transition={{ duration: 0.4 }}
-            className="bg-white shadow-md border p-4 rounded-lg"
-          >
-            <h3 className="text-lg font-bold">{proyectoSeleccionado?.name}</h3>
-            <p className="mt-2 text-gray-600">
-              {proyectoSeleccionado?.description}
-            </p>
-            <div className="mt-3 flex gap-3">
-              <span
-                className={`px-2 py-1 rounded-md text-white text-xs ${
-                  areaColors[proyectoSeleccionado?.area] || "bg-gray-400"
-                }`}
-              >
-                {proyectoSeleccionado?.area}
-              </span>
-              <span
-                className={`px-2 py-1 rounded-md text-white text-xs ${
-                  statusColors[
-                    proyectoSeleccionado?.pStatus?.[
-                      proyectoSeleccionado.pStatus.length - 1
-                    ]?.status
-                  ] || "bg-gray-400"
-                }`}
-              >
-                {proyectoSeleccionado?.pStatus?.[
-                  proyectoSeleccionado.pStatus.length - 1
-                ]?.status || "Sin estado"}
-              </span>
-            </div>
-          </motion.div>
-        </AnimatePresence>
       </div>
     </div>
   );

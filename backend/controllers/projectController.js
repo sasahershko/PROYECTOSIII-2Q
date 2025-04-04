@@ -230,9 +230,7 @@ export const deleteProject = async (req, res) => {
         .json({ mensaje: "No tienes permisos para eliminar este proyecto." });
     }
 
-    await User.updateMany({ projects: id }, { $pull: { projects: id } });
-    await proyecto.delete();
-
+    await proyecto.delete(); // Soft delete
     res
       .status(200)
       .json({ mensaje: "Proyecto eliminado correctamente (soft delete)" });
@@ -275,10 +273,6 @@ export const restoreProject = async (req, res) => {
     await Project.restore({ _id: id });
 
     const restoredProject = await Project.findById(id);
-    await User.updateMany(
-      { _id: { $in: restoredProject.users } },
-      { $addToSet: { projects: restoredProject._id } }
-    );
 
     res.status(200).json({
       mensaje: "Proyecto restaurado correctamente.",
@@ -370,5 +364,39 @@ export const updateNote = async (req, res) => {
 
   } catch (error) {
     return res.status(500).send({ message: 'Error de servidor', error: error.message });
+  }
+};
+
+
+export const hardDeleteProject = async (req, res) => {
+  try {
+    if (req.usuario.rol !== "admin") {
+      return res.status(403).json({
+        mensaje:
+          "Solo los administradores pueden eliminar proyectos permanentemente.",
+      });
+    }
+
+    const { id } = req.filteredData;
+
+    const proyecto = await Project.findOneWithDeleted({ _id: id });
+    if (!proyecto) {
+      return res.status(404).json({ mensaje: "Proyecto no encontrado." });
+    }
+
+    // Eliminar referencia del proyecto en todos los usuarios
+    await User.updateMany({ projects: id }, { $pull: { projects: id } });
+
+    // Eliminar definitivamente el proyecto
+    await Project.deleteOne({ _id: id });
+
+    res
+      .status(200)
+      .json({ mensaje: "Proyecto eliminado permanentemente (hard delete)." });
+  } catch (error) {
+    res.status(500).json({
+      mensaje: "Error al eliminar proyecto permanentemente",
+      error: error.message,
+    });
   }
 };
