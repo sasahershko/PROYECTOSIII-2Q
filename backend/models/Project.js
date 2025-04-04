@@ -34,7 +34,7 @@ const pendingNotesSchema = new Schema(
       ref: "User",
       required: true,
     },
-    userWhoReceives: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    userWhoRecieves: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     tag: {
       type: String,
       required: true,

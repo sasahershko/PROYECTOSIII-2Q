@@ -1,5 +1,5 @@
+import { validateResults} from "../utils/handleValidator.js"
 import {check} from 'express-validator';
-import { validateResults} from '../utils/handleValidator';
 
 export const createNoteValidator = [
   check("projectId")
