@@ -14,7 +14,8 @@ export async function middleware(req) {
   if (!token) {
     if (
       req.nextUrl.pathname === "/login" ||
-      req.nextUrl.pathname === "/register"
+      req.nextUrl.pathname === "/register" ||
+      req.nextUrl.pathname === "projects"
     ) {
       return NextResponse.next(); // Permitir acceso sin token
     }
@@ -22,47 +23,34 @@ export async function middleware(req) {
   }
 
   try {
-    // const secret = new TextEncoder().encode(process.env.JWT_SECRET); //convertir la clave secreta en un array de bytes (jwtVerify requiere un Uint8Array)
-    // const { payload } = await jwtVerify(token, secret); //verificar el token (si el token es modificado o expirado, lanza error)
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET); //convertir la clave secreta en un array de bytes (jwtVerify requiere un Uint8Array)
+    const { payload } = await jwtVerify(token, secret); //verificar el token (si el token es modificado o expirado, lanza error)
 
-    // const userRole = payload.rol;
+    const userRole = payload.rol;
 
     //si ya estás autenticado y en la página de login o register, redirigir según el rol
-    // if (
-    //   req.nextUrl.pathname.startsWith("/login") ||
-    //   req.nextUrl.pathname.startsWith("/register")
-    // ) {
-    //   if (userRole === "admin") {
-    //     return NextResponse.redirect(new URL("/admin", req.url));
-    //   }
-    //   if (userRole === "user") {
-    //     return NextResponse.redirect(new URL("/user", req.url));
-    //   }
-    //   return NextResponse.next();
-    // }
+    if (
+      req.nextUrl.pathname.startsWith("/login") ||
+      req.nextUrl.pathname.startsWith("/register")
+    ) {
+      if (userRole === "admin") {
+        return NextResponse.redirect(new URL("/admin", req.url));
+      }
+      if (userRole === "user") {
+        return NextResponse.redirect(new URL("/", req.url));
+      }
+      return NextResponse.next();
+    }
 
-    // //si ya estás en la página /admin y eres admin, no hacer nada
-    // if (req.nextUrl.pathname.startsWith("/admin") && userRole === "admin") {
-    //   return NextResponse.next();
-    // }
+    //si ya estás en la página /admin y eres admin, no hacer nada
+    if (req.nextUrl.pathname.startsWith("/admin") && userRole === "admin") {
+      return NextResponse.next();
+    }
 
-    // //si ya estás en la página /user y eres user, no hacer nada
-    // if (
-    //   req.nextUrl.pathname.startsWith("/user") &&
-    //   (userRole === "user" || userRole === "admin")
-    // ) {
-    //   return NextResponse.next();
-    // }
-
-    // //si estás en la página admin pero no eres admin, redirigir al inicio
-    // if (req.nextUrl.pathname.startsWith("/admin") && userRole !== "admin") {
-    //   return NextResponse.redirect(new URL("/", req.url));
-    // }
-
-    // //si estás en la página user pero no eres estudiante, redirigir al inicio
-    // if (req.nextUrl.pathname.startsWith("/user") && userRole !== "user") {
-    //   return NextResponse.redirect(new URL("/", req.url));
-    // }
+    //si estás en la página admin pero no eres admin, redirigir al inicio
+    if (req.nextUrl.pathname.startsWith("/admin") && userRole !== "admin") {
+      return NextResponse.redirect(new URL("/", req.url));
+    }
 
     //si todo está correcto
     return NextResponse.next();

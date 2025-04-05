@@ -23,8 +23,6 @@ export default function ProjectPage() {
 
     return (
         <>
-            {/*!CAMBIAR LO DEL ROL */}
-            <ProjectsNavBar role='admin'/> 
             <ProjectDescription project={project} />
         </>
     );

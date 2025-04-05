@@ -1,5 +1,7 @@
 import Project from "../models/Project.js";
 import User from "../models/User.js";
+import { matchedData } from 'express-validator';
+import {calculateBudget } from '../utils/budget.js'
 
 // 🔁 Validar IDs de usuarios y devolver lista filtrada (sin duplicados ni inexistentes)
 const filtrarUsuariosExistentes = async (ids = []) => {
@@ -71,6 +73,7 @@ export const createProject = async (req, res) => {
     });
   }
 };
+
 
 // Obtener todos los proyectos (no eliminados)
 export const getAllProjects = async (req, res) => {
@@ -285,6 +288,88 @@ export const restoreProject = async (req, res) => {
   }
 };
 
+
+export const addNotes = async (req, res) => {
+  try {
+    const {
+      projectId,
+      note,
+      userWhoWrites,
+      userWhoRecieves = [],
+      tag = "no completada"
+    } = matchedData(req);
+
+    const project = await Project.findById(projectId);
+    if (!project) {
+      return res.status(404).json({ message: 'Proyecto no encontrado' });
+    }
+
+
+    //crear el objeto de la nota
+    const noteObject = {
+      note,
+      userWhoWrites,
+      userWhoRecieves,
+      tag,
+      date: Date.now(),
+    };
+
+
+    //agregar la nota
+    project.pendingNotes.push(noteObject);
+    await project.save();
+
+    return res.status(200).send({ message: 'Nota agregada exitosamente' });
+
+  } catch (error) {
+    return res.status(500).send({ message: 'Error al agregar la nota', error: error.message });
+  }
+}
+
+export const updateNote = async (req, res) => {
+  try {
+    const {
+      noteIndex,
+      note,
+      userWhoWrites,
+      userWhoReceives,
+      tag
+    } = matchedData(req);
+
+    const projectId = req.params.id;
+    console.log(projectId);
+
+    const project = await Project.findById(projectId);
+    if (!project) {
+      return res.status(404).send({ message: 'Proyecto no encontrado' });
+    }
+
+    if (noteIndex < 0 || noteIndex >= project.pendingNotes.length) {
+      return res.status(404).send({ message: 'Índice no válido.' });
+    }
+
+    const existingNote = project.pendingNotes[noteIndex];
+
+    const updatedNote = {
+      ...existingNote.toObject(),
+      ...(note && { note }),
+      ...(userWhoWrites && { userWhoWrites }),
+      ...(userWhoReceives && { userWhoReceives }),
+      ...(tag && { tag }),
+      date: Date.now()
+    };
+
+    project.pendingNotes[noteIndex] = updatedNote;
+    await project.save();
+
+    return res.status(200).send({ message: 'Nota actualizada correctamente.' });
+
+  } catch (error) {
+    return res.status(500).send({ message: 'Error de servidor', error: error.message });
+  }
+};
+
+
 export const hardDeleteProject = async (req, res) => {
   try {
     if (req.usuario.rol !== "admin") {
@@ -314,6 +399,61 @@ export const hardDeleteProject = async (req, res) => {
     res.status(500).json({
       mensaje: "Error al eliminar proyecto permanentemente",
       error: error.message,
+    });
+  }
+};
+
+export const updateProjectBudget = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body.budget;
+
+    const project = await Project.findById(id);
+    if (!project) {
+      return res.status(404).json({ message: "Proyecto no encontrado" });
+    }
+
+    if (!project.budget) {
+      project.budget = {};
+    }
+
+    // fusionar valores enviados con los existentes
+    const mergedBudget = {
+      ...project.budget,
+      ...updates,
+      tutors: {
+        ...project.budget.tutors,
+        ...(updates.tutors || {})
+      },
+      interns: {
+        ...project.budget.interns,
+        ...(updates.interns || {})
+      }
+    };
+
+    // eliminar cálculos anteriores
+    delete mergedBudget.tutors?.subtotal;
+    delete mergedBudget.interns?.subtotal;
+    delete mergedBudget.totalGeneral;
+
+    // calcular presupuesto actualizado
+    calculateBudget(mergedBudget);
+
+    // guardar nuevo presupuesto en el proyecto
+    project.budget = mergedBudget;
+
+    await project.save();
+
+    return res.status(200).json({
+      message: "Presupuesto actualizado correctamente",
+      budget: project.budget
+    });
+
+  } catch (error) {
+    console.error("Error al actualizar el presupuesto:", error);
+    return res.status(500).json({
+      message: "Error del servidor",
+      error: error.message
     });
   }
 };
