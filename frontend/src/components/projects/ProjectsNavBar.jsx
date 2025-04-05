@@ -35,7 +35,7 @@ export default function ProjectsNavBar({ role }) {
                     );
                 })}
             </div>
-            <Link href={`/projects/${id}/modify-project`} className="flex gap-2 bg-secundary py-2 px-4 rounded-lg text-white">
+            <Link href={`/projects/${projectId}/modify-project`} className="flex gap-2 bg-secundary py-2 px-4 rounded-lg text-white">
                 <Image src={'/svg/settings-svgrepo-com.svg'} alt='settings' width={20} height={20} className="invert"></Image>
                 <p>Gestionar Proyecto</p>
             </Link>

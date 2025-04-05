@@ -1,9 +1,14 @@
+import { useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import GradeChip from "@components/ui/chip";
+import UserSelector from "@/components/UserSelector";
 
 export default function AddNotesModal({ user, isOpen, onClose }) {
   if (typeof window === "undefined") return null;
+
+  const [note, setNote] = useState("");
+  const [tag, setTag] = useState("no completada");
+  const [userWhoReceives, setUserWhoReceives] = useState([]); // por ahora vacío
 
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) {
@@ -27,10 +32,47 @@ export default function AddNotesModal({ user, isOpen, onClose }) {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            onClick={(e) => e.stopPropagation()} // Evita cerrar al hacer clic dentro del modal
+            onClick={(e) => e.stopPropagation()}
           >
-            <div>
-              <p>Añadir notas</p>
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold mb-4">Añadir nota</h2>
+
+              <div className="mb-4">
+                <label className="block font-medium mb-1">Nota</label>
+                <textarea
+                  className="w-full border rounded p-2"
+                  rows={4}
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder="Escribe aquí la nota..."
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="block font-medium mb-1">Estado</label>
+                <select
+                  className="w-full border rounded p-2"
+                  value={tag}
+                  onChange={(e) => setTag(e.target.value)}
+                >
+                  <option value="no completada">No completada</option>
+                  <option value="completada">Completada</option>
+                </select>
+              </div>
+
+              {/* Placeholder para selección de usuarios */}
+              <div className="mb-4">
+                <label className="block font-medium mb-1">Usuarios que reciben</label>
+                <p className="text-sm text-gray-500">(pendiente de implementar buscador o selección)</p>
+              </div>
+              {/* <UserSelector
+                label="Destinatarios"
+                selectedUsers={selectedUsers}
+                setSelectedUsers={setSelectedUsers}
+                availableUsers={projectUsers}
+              /> */}
+
+              {/* Aquí luego pondrás el botón de enviar */}
             </div>
           </motion.div>
         </motion.div>

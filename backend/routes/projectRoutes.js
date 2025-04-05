@@ -500,6 +500,97 @@ projectRouter.post('/note/:id', authMiddleware, createNoteValidator, addNotes);
  */
 projectRouter.patch('/note/:id', authMiddleware, updateNoteValidator, updateNote);
 
-
+/**
+ * @swagger
+ * /api/projects/budget/{id}:
+ *   patch:
+ *     summary: Actualizar el presupuesto de un proyecto
+ *     tags: [Proyectos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID del proyecto al que se le actualizará el presupuesto
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               budget:
+ *                 type: object
+ *                 properties:
+ *                   title:
+ *                     type: string
+ *                     example: "Presupuesto inicial"
+ *                   reason:
+ *                     type: string
+ *                     example: "Proyecto de colaboración con empresa externa"
+ *                   generalComments:
+ *                     type: string
+ *                     example: "Versión preliminar"
+ *                   tutors:
+ *                     type: object
+ *                     properties:
+ *                       numTutors:
+ *                         type: number
+ *                         example: 2
+ *                       estimatedHours:
+ *                         type: number
+ *                         example: 10
+ *                       pricePerHour:
+ *                         type: number
+ *                         example: 25
+ *                   interns:
+ *                     type: object
+ *                     properties:
+ *                       numInterns:
+ *                         type: number
+ *                         example: 1
+ *                       estimatedHours:
+ *                         type: number
+ *                         example: 80
+ *                       pricePerHour:
+ *                         type: number
+ *                         example: 12
+ *                   extraExpenses:
+ *                     type: array
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         description:
+ *                           type: string
+ *                           example: "Licencia software"
+ *                         quantity:
+ *                           type: number
+ *                           example: 3
+ *                         unitPrice:
+ *                           type: number
+ *                           example: 50
+ *     responses:
+ *       200:
+ *         description: Presupuesto actualizado correctamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Presupuesto actualizado correctamente"
+ *                 budget:
+ *                   $ref: '#/components/schemas/Budget'
+ *       400:
+ *         description: Datos inválidos.
+ *       404:
+ *         description: Proyecto no encontrado.
+ *       500:
+ *         description: Error interno del servidor.
+ */
 projectRouter.patch('/budget/:id', authMiddleware, budgetValidator, updateProjectBudget);
 export default projectRouter;
