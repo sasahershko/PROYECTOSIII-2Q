@@ -30,7 +30,7 @@ reservationRouter.post("/table",validatorCreateTable, authMiddleware, adminOrSel
 reservationRouter.get("/", authMiddleware, getUserReservations);
 
 
-//PENDIENTE DE TEST ⬇️⬇️⬇️
+//PENDIENTE DE TEST ⬇️⬇️⬇️ (con admin)
 
 // Obtener todas las reservas (solo admin)
 reservationRouter.get("/all", authMiddleware, adminOrSelfMiddleware, getAllReservations);
