@@ -83,3 +83,36 @@ export async function getProjectById(projectId) {
     throw new Error(error.message || "No se pudo obtener el proyecto.");
   }
 }
+
+export async function updateProjectBudget(projectId, budgetData) {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+
+    const res = await fetch(`${process.env.BACK_URL}/api/projects/budget/${projectId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: JSON.stringify(budgetData),
+    });
+
+    const contentType = res.headers.get("content-type");
+
+    if (!contentType || !contentType.includes("application/json")) {
+      throw new Error(`Error del servidor: ${await res.text()}`);
+    }
+
+    const responseData = await res.json();
+
+    if (!res.ok) {
+      throw new Error(responseData.message || "Error desconocido.");
+    }
+
+    return responseData;
+  } catch (error) {
+    console.error("Error al actualizar el presupuesto:", error.message);
+    throw new Error(error.message || "No se pudo actualizar el presupuesto.");
+  }
+}
