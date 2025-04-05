@@ -12,7 +12,7 @@ export default function KeyDatesCard({ project }) {
 
     return (
         <div>
-            <Card className="shadow-sm bg-primary-bg w-[500px] ml-12 mt-10">
+            <Card className="shadow-sm bg-primary-bg w-[500px] ml-12 mt-10 p-4">
                 <CardHeader className="pb-3">
                     <CardTitle className="text-lg flex items-center gap-2">
                         <CalendarIcon className="w-4 h-4" />

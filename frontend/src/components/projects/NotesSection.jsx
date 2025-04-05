@@ -36,17 +36,17 @@ export default function NotesSection({ notes = [] }) {
         //   .map((part) => part[0])
         //   .join("")
         //   .toUpperCase()
-        console.log('GETINITIALS', name)
+        console.log('GET INITIALS', name)
     }
 
     return (
-        <div className="border rounded-xl shadow-lg overflow-hidden bg-white">
+        <div className="border rounded-xl shadow-lg overflow-hidden bg-card">
             {/* Cabecera */}
-            <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b px-6 py-4 flex justify-between items-center">
+            <div className="bg-card border-b px-6 py-4 flex justify-between items-center">
                 <div className="flex items-center gap-2">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5 text-gray-600"
+                        className="h-5 w-5 text-primary-text"
                         viewBox="0 0 20 20"
                         fill="currentColor"
                     >
@@ -56,11 +56,11 @@ export default function NotesSection({ notes = [] }) {
                             clipRule="evenodd"
                         />
                     </svg>
-                    <h2 className="text-base font-semibold text-gray-800">Notas Pendientes</h2>
+                    <h2 className="text-base font-semibold text-primary-text">Notas Pendientes</h2>
                 </div>
                 <button
                     onClick={handleNoteModal}
-                    className="bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-md shadow-sm transition-all border border-gray-200 hover:shadow flex items-center gap-1"
+                    className="bg-primary-bg hover:bg-primary-bg/50 text-primary-text px-4 py-2 rounded-md shadow-sm transition-all border border-gray-200 hover:shadow flex items-center gap-1"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                         <path
@@ -76,7 +76,7 @@ export default function NotesSection({ notes = [] }) {
             <AddNotesModal isOpen={isNoteModalOpen} onClose={closeNoteModal} />
 
             {/* Contenido */}
-            <div className="p-4 h-[320px] overflow-auto bg-gray-50">
+            <div className="p-4 h-[320px] overflow-auto bg-primary-bg">
                 {notes.length > 0 ? (
                     <div className="space-y-4">
                         {notes.map((nota, index) => {

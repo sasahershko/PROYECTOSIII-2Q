@@ -79,14 +79,14 @@ const projectSchema = new Schema(
         numTutors: { type: Number, default: 0 },
         estimatedHours: { type: Number, default: 0 },
         pricePerHour: { type: Number, default: 0 },
-        subtotal: { type: Number, default: 0 }, //! calcular aqui?
+        subtotal: { type: Number, default: 0 }, 
       },
 
       interns: {
         numInterns: { type: Number, default: 0 },
         estimatedHours: { type: Number, default: 0 },
         pricePerHour: { type: Number, default: 0 },
-        subtotal: { type: Number, default: 0 }, //! calcular aqui?
+        subtotal: { type: Number, default: 0 },
       },
 
       extraExpenses: [
@@ -94,7 +94,7 @@ const projectSchema = new Schema(
           description: { type: String, required: true },
           quantity: { type: Number, required: true },
           unitPrice: { type: Number, required: true },
-          subtotal: { type: Number, required: true }, //! calcular aqui?
+          subtotal: { type: Number, required: true }, 
         },
       ],
 

@@ -78,20 +78,12 @@ export const createProject = async (req, res) => {
 export const patchProject = async (req, res) => {
   try {
     const { id } = req.filteredData;
-    const { usuario } = req;
     const data = req.filteredData;
 
     // Buscar proyecto por ID
     const project = await Project.findById(id);
     if (!project) {
       return res.status(404).json({ mensaje: "Proyecto no encontrado." });
-    }
-
-    // Verificar permisos: solo el admin o los responsables pueden editar
-    if (usuario.rol !== "admin" && !project.responsibles.includes(usuario._id)) {
-      return res
-        .status(403)
-        .json({ mensaje: "No tienes permisos para editar este proyecto." });
     }
 
     // Validar coherencia de fechas si se envían ambas

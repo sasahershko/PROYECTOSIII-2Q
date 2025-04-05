@@ -49,7 +49,7 @@ export default function TeamAndDetailsCard({ project }) {
     if (loading || !(userRole === "admin" || (userRole === "user" && (isParticipant || isResponsible)))) return null
 
     return (
-        <Card className="shadow-sm max-w-[520px]">
+        <Card className="shadow-sm max-w-[520px] p-0.5 rounded-t-lg">
             <CardContent className="p-0 bg-primary-bg">
                 <Tabs defaultValue="team" className="w-full">
                     <TabsList className="grid grid-cols-2 w-full rounded-t-lg rounded-b-none">
@@ -58,7 +58,7 @@ export default function TeamAndDetailsCard({ project }) {
                     </TabsList>
 
                     {/* TEAM */}
-                    <TabsContent value="team" className="p-4 pt-6 space-y-6">
+                    <TabsContent value="team" className="p-4 pt-6 space-y-6 rounded-lg">
                         {project.users?.length > 0 && (
                             <div>
                                 <div className="flex items-center justify-between mb-3">

@@ -27,7 +27,7 @@ export default function AddNotesModal({ user, isOpen, onClose }) {
           onClick={handleBackdropClick}
         >
           <motion.div
-            className="relative bg-white p-6 rounded-xl shadow-2xl w-full max-w-4xl mx-4 my-8"
+            className="relative bg-primary-bg p-6 rounded-xl shadow-2xl w-full max-w-4xl mx-4 my-8 "
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
@@ -63,7 +63,7 @@ export default function AddNotesModal({ user, isOpen, onClose }) {
               {/* Placeholder para selección de usuarios */}
               <div className="mb-4">
                 <label className="block font-medium mb-1">Usuarios que reciben</label>
-                <p className="text-sm text-gray-500">(pendiente de implementar buscador o selección)</p>
+                <p className="text-sm text-secundary-text">(pendiente de implementar buscador o selección)</p>
               </div>
               {/* <UserSelector
                 label="Destinatarios"
