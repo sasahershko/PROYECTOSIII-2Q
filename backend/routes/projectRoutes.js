@@ -403,7 +403,7 @@ projectRouter.put(
  *                 type: string
  *                 description: ID del usuario que escribe la nota.
  *                 example: "606d1f2c2f1b2c3a4d5e6f8h"
- *               userWhoReceives:
+ *               userWhoRecieves:
  *                 type: array
  *                 items:
  *                   type: string
@@ -469,7 +469,7 @@ projectRouter.post('/note/:id', authMiddleware, createNoteValidator, addNotes);
  *                 type: string
  *                 description: ID del usuario que actualiza la nota.
  *                 example: "606d1f2c2f1b2c3a4d5e6f8h"
- *               userWhoReceives:
+ *               userWhoRecieves:
  *                 type: array
  *                 items:
  *                   type: string

@@ -105,7 +105,7 @@ export const getProjectById = async (req, res) => {
       .populate("responsibles", "name")
       .populate("users", "name")
       .populate("pendingNotes.userWhoWrites", "name")
-      .populate("pendingNotes.userWhoReceives", "name");
+      .populate("pendingNotes.userWhoRecieves", "name");
 
     if (!project)
       return res.status(404).json({ mensaje: "Proyecto no encontrado" });
@@ -332,7 +332,7 @@ export const updateNote = async (req, res) => {
       noteIndex,
       note,
       userWhoWrites,
-      userWhoReceives,
+      userWhoRecieves,
       tag
     } = matchedData(req);
 
@@ -354,7 +354,7 @@ export const updateNote = async (req, res) => {
       ...existingNote.toObject(),
       ...(note && { note }),
       ...(userWhoWrites && { userWhoWrites }),
-      ...(userWhoReceives && { userWhoReceives }),
+      ...(userWhoRecieves && { userWhoRecieves }),
       ...(tag && { tag }),
       date: Date.now()
     };
