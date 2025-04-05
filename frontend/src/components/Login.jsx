@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { loginUser } from "@/lib/auth";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Login() {
   const [formData, setFormData] = useState({ correo: "", password: "" });
@@ -18,10 +19,7 @@ export default function Login() {
     }
 
     try {
-      // Llamar a la función del archivo `auth.js` para hacer login
       await loginUser({ email: formData.correo, password: formData.password });
-
-      // Redirigir al home después del login exitoso
       router.push("/");
     } catch (error) {
       setError(error.message);
@@ -29,28 +27,44 @@ export default function Login() {
   };
 
   return (
-    <div className="flex-1 flex justify-center items-center px-8 py-12">
-      {/* Alerta de error animada */}
-      {error && (
-        <div
-          onClick={() => setError("")}
-          className="absolute top-60 md:left-1/4 left-[50vw] min-w-[80%] md:min-w-min max-w-[80vw] md:max-w-[40vw] bg-red-600 text-white px-6 py-3 rounded shadow-lg z-50 animate-slideUp cursor-default"
-        >
-          <div className="flex justify-between items-center">
-            <span>{error}</span>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setError("");
-              }}
-              className="ml-4 text-xl font-bold cursor-pointer"
-            >
-              ×
-            </button>
-          </div>
-        </div>
-      )}
-      <div className="bg-white p-12 rounded-lg shadow-lg w-full max-w-lg">
+    <motion.div
+      className="flex-1 flex justify-center items-center px-8 py-12"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            onClick={() => setError("")}
+            className="absolute top-60 md:left-1/4 left-[50vw] min-w-[80%] md:min-w-min max-w-[80vw] md:max-w-[40vw] bg-red-600 text-white px-6 py-3 rounded shadow-lg z-50 animate-slideUp cursor-default"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="flex justify-between items-center">
+              <span>{error}</span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setError("");
+                }}
+                className="ml-4 text-xl font-bold cursor-pointer"
+              >
+                ×
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <motion.div
+        className="bg-white p-12 rounded-lg shadow-lg w-full max-w-lg"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+      >
         <h2 className="text-2xl font-bold text-gray-900 mb-6">
           Iniciar Sesión
         </h2>
@@ -97,7 +111,7 @@ export default function Login() {
             Regístrate
           </a>
         </p>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

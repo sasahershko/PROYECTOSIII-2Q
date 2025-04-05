@@ -28,10 +28,14 @@ export async function getProjects() {
 
 export async function createProject(formData) {
   try {
+    const cookieStore = cookies();
+    const token = cookieStore.get("token")?.value;
+
     const res = await fetch(`${process.env.BACK_URL}/api/projects/create`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
       },
       body: JSON.stringify(formData),
     });
@@ -56,6 +60,7 @@ export async function createProject(formData) {
 }
 
 export async function getProjectById(projectId) {
+
   try {
     const res = await fetch(
       `${process.env.BACK_URL}/api/projects/${projectId}`,

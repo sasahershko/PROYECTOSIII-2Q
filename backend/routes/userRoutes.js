@@ -8,6 +8,7 @@ import {
   getUserProfileById,
   getAllUsers,
   deleteUser,
+  hardDeleteUser,
   updateUser,
   getDeletedUsers,
   restoreUser,
@@ -286,9 +287,9 @@ userRouter.get("/profile/:id", getUserProfileById);
 
 /**
  * @swagger
- * /api/users/{id}:
- *   patch:
- *     summary: Actualizar datos de usuario
+ * /api/users/{id}/restore:
+ *   put:
+ *     summary: Restaurar un usuario eliminado (soft delete)
  *     tags: [Usuarios]
  *     security:
  *       - bearerAuth: []
@@ -296,36 +297,18 @@ userRouter.get("/profile/:id", getUserProfileById);
  *       - in: path
  *         name: id
  *         required: true
+ *         description: ID del usuario a restaurar.
  *         schema:
  *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *               surname:
- *                 type: string
- *               grade:
- *                 type: string
- *                 enum: [INSO, MAIS, FIIS, DIPI, ANIV]
- *               rol:
- *                 type: string
- *                 enum: [admin, moderator, user]
- *               profileImage:
- *                 type: string
  *     responses:
  *       200:
- *         description: Usuario actualizado.
- *       400:
- *         description: Datos no válidos o intento de modificar email/password.
+ *         description: Usuario restaurado correctamente.
  *       403:
- *         description: No autorizado.
+ *         description: Solo los administradores pueden realizar esta acción.
  *       404:
  *         description: Usuario no encontrado.
+ *       500:
+ *         description: Error al restaurar el usuario.
  */
 userRouter.patch(
   "/:id",
@@ -339,9 +322,9 @@ userRouter.patch(
 
 /**
  * @swagger
- * /api/users/{id}/restore:
- *   put:
- *     summary: Restaurar un usuario eliminado (soft delete)
+ * /api/users/{id}:
+ *   delete:
+ *     summary: Eliminar un usuario (soft delete)
  *     tags: [Usuarios]
  *     security:
  *       - bearerAuth: []
@@ -349,18 +332,18 @@ userRouter.patch(
  *       - in: path
  *         name: id
  *         required: true
+ *         description: ID del usuario a eliminar.
  *         schema:
  *           type: string
- *         description: ID del usuario a restaurar.
  *     responses:
  *       200:
- *         description: Usuario restaurado correctamente y referencias de proyectos actualizadas.
+ *         description: Usuario marcado como eliminado (soft delete).
  *       403:
- *         description: Solo los administradores pueden realizar esta acción.
+ *         description: No autorizado para eliminar este usuario.
  *       404:
  *         description: Usuario no encontrado.
  *       500:
- *         description: Error al restaurar el usuario.
+ *         description: Error al eliminar el usuario.
  */
 userRouter.delete(
   "/:id",
@@ -369,6 +352,39 @@ userRouter.delete(
   authMiddleware,
   adminOrSelfMiddleware,
   deleteUser
+);
+
+/**
+ * @swagger
+ * /api/users/hard/{id}:
+ *   delete:
+ *     summary: Eliminar un usuario permanentemente (hard delete)
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID del usuario a eliminar
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Usuario eliminado permanentemente y referencias limpiadas.
+ *       403:
+ *         description: Solo los administradores pueden realizar esta acción.
+ *       404:
+ *         description: Usuario no encontrado.
+ *       500:
+ *         description: Error al eliminar el usuario.
+ */
+userRouter.delete(
+  "/hard/:id",
+  userIdValidator,
+  validateRequest,
+  authMiddleware,
+  hardDeleteUser
 );
 
 export default userRouter;

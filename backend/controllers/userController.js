@@ -368,20 +368,7 @@ export const deleteUser = async (req, res) => {
       return res.status(404).json({ mensaje: "Usuario no encontrado" });
     }
 
-    // 🔄 Eliminar referencias de este usuario en proyectos
-    await Project.updateMany(
-      {
-        $or: [{ responsibles: id }, { users: id }],
-      },
-      {
-        $pull: {
-          responsibles: id,
-          users: id,
-        },
-      }
-    );
-
-    await user.delete(); // Soft delete
+    await user.delete(); // Soft delete con mongoose-delete
     res.status(200).json({ mensaje: "Usuario eliminado (soft delete)" });
   } catch (error) {
     res
@@ -420,26 +407,55 @@ export const restoreUser = async (req, res) => {
 
     const { id } = req.filteredData;
 
-    // 1. Restaurar usuario
-    await User.restore({ _id: id });
-
-    // 2. Buscar proyectos (activos o eliminados) donde el usuario participaba antes
-    const proyectos = await Project.findWithDeleted({
-      $or: [{ responsibles: id }, { users: id }],
-    });
-
-    // 3. Volver a añadir la referencia del proyecto en el usuario restaurado
-    await User.updateOne(
-      { _id: id },
-      { $addToSet: { projects: { $each: proyectos.map((p) => p._id) } } }
-    );
+    await User.restore({ _id: id }); // Restaurar soft delete
 
     res.status(200).json({
-      mensaje: "Usuario restaurado correctamente y proyectos actualizados.",
+      mensaje: "Usuario restaurado correctamente.",
     });
   } catch (error) {
     res.status(500).json({
       mensaje: "Error al restaurar usuario",
+      error: error.message,
+    });
+  }
+};
+
+export const hardDeleteUser = async (req, res) => {
+  try {
+    if (req.usuario.rol !== "admin") {
+      return res.status(403).json({
+        mensaje:
+          "Solo los administradores pueden eliminar usuarios permanentemente.",
+      });
+    }
+
+    const { id } = req.filteredData;
+
+    const user = await User.findOneWithDeleted({ _id: id });
+    if (!user) {
+      return res.status(404).json({ mensaje: "Usuario no encontrado." });
+    }
+
+    // Eliminar referencias del usuario en los proyectos
+    await Project.updateMany(
+      { $or: [{ responsibles: id }, { users: id }] },
+      {
+        $pull: {
+          responsibles: id,
+          users: id,
+        },
+      }
+    );
+
+    // Eliminar definitivamente el usuario
+    await User.deleteOne({ _id: id });
+
+    res
+      .status(200)
+      .json({ mensaje: "Usuario eliminado permanentemente (hard delete)." });
+  } catch (error) {
+    res.status(500).json({
+      mensaje: "Error al eliminar usuario permanentemente",
       error: error.message,
     });
   }

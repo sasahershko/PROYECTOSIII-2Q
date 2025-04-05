@@ -13,6 +13,7 @@ import {
   validarConfirmacionPassword,
   validarGrado,
 } from "../utils/validations";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -79,7 +80,7 @@ export default function Register() {
     };
 
     try {
-      const response = await registerUser(userData);
+      await registerUser(userData);
       setUsuarioTemporal(userData);
       setCurrentStep(5);
     } catch (error) {
@@ -94,7 +95,7 @@ export default function Register() {
     }
 
     try {
-      const response = await verifyUserCode({
+      await verifyUserCode({
         email: usuarioTemporal.email,
         code: formData.codigoVerificacion,
       });
@@ -233,12 +234,22 @@ export default function Register() {
   const progress = Math.min(((currentStep - 1) / 4) * 100, 100);
 
   return (
-    <div className="flex-1 flex justify-center items-center px-8 py-12">
+    <motion.div
+      className="flex-1 flex justify-center items-center px-8 py-12"
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+    >
       {/* Alerta de error animada */}
       {error && (
-        <div
+        <motion.div
           onClick={() => setError("")}
           className="absolute top-44 md:left-1/4 left-[50vw] min-w-[80%] max-w-[80vw] md:max-w-[40vw] md:min-w-min bg-red-600 text-white px-6 py-3 rounded shadow-lg z-50 animate-slideUp cursor-default"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
         >
           <div className="flex justify-between items-center">
             <span>{error}</span>
@@ -252,161 +263,203 @@ export default function Register() {
               ×
             </button>
           </div>
-        </div>
+        </motion.div>
       )}
-      <div className="bg-white p-12 rounded-lg shadow-lg w-full max-w-lg">
+      <motion.div
+        className="bg-white p-12 rounded-lg shadow-lg w-full max-w-lg"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+      >
         <div className="relative mb-10 flex flex-col gap-1">
           <div className="text-sm text-gray-700">{currentStep} de 5</div>
           <div className="w-full bg-gray-300 rounded-full h-2.5 flex flex-col gap-6">
-            <div
+            <motion.div
               className="bg-accent h-2.5 rounded-full transition-all duration-300 ease-in-out"
-              style={{ width: `${progress}%` }}
-            ></div>
+              initial={{ width: "0%" }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.4, ease: "easeInOut" }}
+            />
           </div>
         </div>
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Registro</h2>
-        {/* Barra de progreso */}
-
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Vista 1: Nombre y Apellidos */}
-          {currentStep === 1 && (
-            <>
-              <input
-                type="text"
-                name="nombre"
-                value={formData.nombre}
-                onChange={(e) =>
-                  setFormData({ ...formData, nombre: e.target.value })
-                }
-                className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent placeholder-gray-500"
-                placeholder="Nombre"
-                required
-              />
-              <input
-                type="text"
-                name="apellido"
-                value={formData.apellido}
-                onChange={(e) =>
-                  setFormData({ ...formData, apellido: e.target.value })
-                }
-                className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent placeholder-gray-500"
-                placeholder="Apellidos"
-                required
-              />
-            </>
-          )}
-
-          {/* Vista 2: Correo Electrónico y DNI */}
-          {currentStep === 2 && (
-            <>
-              <input
-                type="email"
-                name="correo"
-                value={formData.correo}
-                onChange={(e) =>
-                  setFormData({ ...formData, correo: e.target.value })
-                }
-                className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent placeholder-gray-500"
-                placeholder="Correo Electrónico"
-                required
-              />
-              <input
-                type="text"
-                name="dni"
-                value={formData.dni}
-                onChange={(e) =>
-                  setFormData({ ...formData, dni: e.target.value })
-                }
-                className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent placeholder-gray-500"
-                placeholder="DNI"
-                required
-              />
-            </>
-          )}
-
-          {/* Vista 3: Contraseña y Confirmar Contraseña */}
-          {currentStep === 3 && (
-            <>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={(e) =>
-                  setFormData({ ...formData, password: e.target.value })
-                }
-                className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent placeholder-gray-500"
-                placeholder="Contraseña"
-                required
-              />
-              <input
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={(e) =>
-                  setFormData({ ...formData, confirmPassword: e.target.value })
-                }
-                className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent placeholder-gray-500"
-                placeholder="Confirmar Contraseña"
-                required
-              />
-            </>
-          )}
-
-          {/* Vista 4: Selección del grado */}
-          {currentStep === 4 && (
-            <select
-              name="grado"
-              value={formData.grado}
-              onChange={(e) =>
-                setFormData({ ...formData, grado: e.target.value })
-              }
-              className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent"
-              required
-            >
-              <option value="" disabled>
-                Selecciona un grado
-              </option>
-              {gradosPermitidos.map((grado, index) => (
-                <option key={index} value={grado}>
-                  {grado}
-                </option>
-              ))}
-            </select>
-          )}
-
-          {/* Paso 5: Verificación de código */}
-          {currentStep === 5 && (
-            <>
-              <p className="mb-4 text-gray-700">
-                Te hemos enviado un código de verificación a {formData.correo}.
-                Introduce el código para continuar.
-              </p>
-              <div className="flex justify-center gap-3 mb-4">
-                {[...Array(6)].map((_, index) => (
-                  <input
-                    key={index}
-                    id={`code-${index}`}
-                    type="text"
-                    maxLength="1"
-                    className="w-12 h-14 text-center text-2xl font-semibold border border-gray-300 
-                 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-500 
-                 transition-all duration-200 shadow-md bg-gray-100"
-                    value={formData.codigoVerificacion[index] || ""}
-                    onChange={(e) => handleCodeChange(index, e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(index, e)}
-                    onPaste={handlePaste}
-                  />
-                ))}
-              </div>
-              <button
-                type="button"
-                onClick={handleVerifyCode}
-                className="w-full bg-accent text-white py-3 rounded-lg font-semibold hover:bg-accent/85 relative top-3"
+          <AnimatePresence mode="wait">
+            {currentStep === 1 && (
+              <motion.div
+                key="step1"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
               >
-                Verificar Código
-              </button>
-            </>
-          )}
+                {/* Vista 1: Nombre y Apellidos */}
+                <input
+                  type="text"
+                  name="nombre"
+                  value={formData.nombre}
+                  onChange={(e) =>
+                    setFormData({ ...formData, nombre: e.target.value })
+                  }
+                  className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent placeholder-gray-500 mb-6"
+                  placeholder="Nombre"
+                  required
+                />
+                <input
+                  type="text"
+                  name="apellido"
+                  value={formData.apellido}
+                  onChange={(e) =>
+                    setFormData({ ...formData, apellido: e.target.value })
+                  }
+                  className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent placeholder-gray-500"
+                  placeholder="Apellidos"
+                  required
+                />
+              </motion.div>
+            )}
+
+            {currentStep === 2 && (
+              <motion.div
+                key="step2"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+              >
+                {/* Vista 2: Correo Electrónico y DNI */}
+                <input
+                  type="email"
+                  name="correo"
+                  value={formData.correo}
+                  onChange={(e) =>
+                    setFormData({ ...formData, correo: e.target.value })
+                  }
+                  className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent placeholder-gray-500 mb-6"
+                  placeholder="Correo Electrónico"
+                  required
+                />
+                <input
+                  type="text"
+                  name="dni"
+                  value={formData.dni}
+                  onChange={(e) =>
+                    setFormData({ ...formData, dni: e.target.value })
+                  }
+                  className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent placeholder-gray-500"
+                  placeholder="DNI"
+                  required
+                />
+              </motion.div>
+            )}
+
+            {currentStep === 3 && (
+              <motion.div
+                key="step3"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+              >
+                {/* Vista 3: Contraseña y Confirmar Contraseña */}
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
+                  className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent placeholder-gray-500 mb-6"
+                  placeholder="Contraseña"
+                  required
+                />
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      confirmPassword: e.target.value,
+                    })
+                  }
+                  className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent placeholder-gray-500"
+                  placeholder="Confirmar Contraseña"
+                  required
+                />
+              </motion.div>
+            )}
+
+            {currentStep === 4 && (
+              <motion.div
+                key="step4"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+              >
+                {/* Vista 4: Selección del grado */}
+                <select
+                  name="grado"
+                  value={formData.grado}
+                  onChange={(e) =>
+                    setFormData({ ...formData, grado: e.target.value })
+                  }
+                  className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent"
+                  required
+                >
+                  <option value="" disabled>
+                    Selecciona un grado
+                  </option>
+                  {gradosPermitidos.map((grado, index) => (
+                    <option key={index} value={grado}>
+                      {grado}
+                    </option>
+                  ))}
+                </select>
+              </motion.div>
+            )}
+
+            {currentStep === 5 && (
+              <motion.div
+                key="step5"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+              >
+                {/* Paso 5: Verificación de código */}
+                <p className="mb-4 text-gray-700">
+                  Te hemos enviado un código de verificación a {formData.correo}
+                  . Introduce el código para continuar.
+                </p>
+                <div className="flex justify-center gap-3 mb-4">
+                  {[...Array(6)].map((_, index) => (
+                    <input
+                      key={index}
+                      id={`code-${index}`}
+                      type="text"
+                      maxLength="1"
+                      className="w-12 h-14 text-center text-2xl font-semibold border border-gray-300 
+                      rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-500 
+                      transition-all duration-200 shadow-md bg-gray-100"
+                      value={formData.codigoVerificacion[index] || ""}
+                      onChange={(e) => handleCodeChange(index, e.target.value)}
+                      onKeyDown={(e) => handleKeyDown(index, e)}
+                      onPaste={handlePaste}
+                    />
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={handleVerifyCode}
+                  className="w-full bg-accent text-white py-3 rounded-lg font-semibold hover:bg-accent/85 relative top-3"
+                >
+                  Verificar Código
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Botones de navegación */}
           <div className="flex justify-between mt-6 gap-4">
@@ -445,7 +498,7 @@ export default function Register() {
               <button
                 type="button"
                 onClick={handleResendCode}
-                disabled={cooldown > 0} // Bloquear mientras el cooldown esté activo
+                disabled={cooldown > 0}
                 className={`w-full py-3 rounded-lg font-semibold text-white ${
                   cooldown > 0
                     ? "bg-gray-400 cursor-not-allowed"
@@ -464,7 +517,7 @@ export default function Register() {
             Inicia sesión
           </a>
         </p>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
