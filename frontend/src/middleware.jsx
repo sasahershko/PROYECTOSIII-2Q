@@ -14,8 +14,7 @@ export async function middleware(req) {
   if (!token) {
     if (
       req.nextUrl.pathname === "/login" ||
-      req.nextUrl.pathname === "/register" ||
-      req.nextUrl.pathname === "projects"
+      req.nextUrl.pathname === "/register"
     ) {
       return NextResponse.next(); // Permitir acceso sin token
     }
