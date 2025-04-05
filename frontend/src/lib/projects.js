@@ -60,6 +60,7 @@ export async function createProject(formData) {
 }
 
 export async function getProjectById(projectId) {
+
   try {
     const res = await fetch(
       `${process.env.BACK_URL}/api/projects/${projectId}`,

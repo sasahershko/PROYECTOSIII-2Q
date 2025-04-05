@@ -8,7 +8,7 @@ export default function AddNotesModal({ user, isOpen, onClose }) {
 
   const [note, setNote] = useState("");
   const [tag, setTag] = useState("no completada");
-  const [userWhoReceives, setUserWhoReceives] = useState([]); // por ahora vacío
+  const [userWhoRecieves, setuserWhoRecieves] = useState([]); // por ahora vacío
 
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) {

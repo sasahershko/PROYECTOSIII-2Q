@@ -3,7 +3,7 @@ import { useState } from "react"
 import AddNotesModal from "./AddNotesModal"
 
 export default function NotesSection({ notes = [] }) {
-    notes.map(n => console.log('USER WHO RECIEVES: ', n.userWhoReceives))
+    notes.map(n => console.log('USER WHO RECIEVES: ', n.userWhoRecieves))
     const [isNoteModalOpen, setIsNoteModalOpen] = useState(false)
     const closeNoteModal = () => setIsNoteModalOpen(false)
 
@@ -98,8 +98,8 @@ export default function NotesSection({ notes = [] }) {
                                                 <div className="flex items-center gap-2">
                                                     <span className="font-medium">{nota.userWhoWrites}</span>
                                                     <span className="text-gray-400">→</span>
-                                                    {Array.isArray(nota.userWhoReceives) &&
-                                                        nota.userWhoReceives.map((userId, i) => (
+                                                    {Array.isArray(nota.userWhoRecieves) &&
+                                                        nota.userWhoRecieves.map((userId, i) => (
                                                             <span key={i} className="text-gray-600">
                                                                 {userId.toString()}
                                                             </span>
