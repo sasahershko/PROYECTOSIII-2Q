@@ -299,7 +299,7 @@ export const addNotes = async (req, res) => {
 
     const projectId = req.params.id;
 
-    const project = await Project.findById(id);
+    const project = await Project.findById(projectId);
     if (!project) {
       return res.status(404).json({ message: 'Proyecto no encontrado' });
     }
