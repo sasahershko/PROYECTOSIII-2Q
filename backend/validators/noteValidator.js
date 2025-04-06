@@ -4,9 +4,7 @@ import {check} from 'express-validator';
 export const createNoteValidator = [
    check("note")
     .notEmpty()
-    .withMessage("La nota es obligatoria")
-    .isLength({ min: 5 })
-    .withMessage("La nota debe tener al menos 5 caracteres"),
+    .withMessage("La nota es obligatoria"),
   check("userWhoRecieves")
     .optional()
     .isArray()
@@ -45,4 +43,9 @@ export const updateNoteValidator = [
     .isIn(["completada", "no completada"])
     .withMessage("El tag debe ser 'completada' o 'no completada'"),
     validateResults
+];
+
+
+export const deleteNoteValidator= [
+  check('noteIndex').isInt({ min: 0 }).withMessage('noteIndex debe ser un número entero'),
 ];

@@ -217,6 +217,7 @@ export const deleteProject = async (req, res) => {
   try {
     const { id } = req.filteredData;
     const usuario = req.usuario;
+    const hardDelete = req.query.hard === "true"; 
 
     const proyecto = await Project.findById(id);
     if (!proyecto) {
@@ -232,16 +233,29 @@ export const deleteProject = async (req, res) => {
         .json({ mensaje: "No tienes permisos para eliminar este proyecto." });
     }
 
-    await proyecto.delete(); // Soft delete
-    res
-      .status(200)
-      .json({ mensaje: "Proyecto eliminado correctamente (soft delete)" });
+    if (hardDelete) {
+      // 🔥 Hard delete
+      await Project.findByIdAndDelete(id);
+      await User.updateMany({ projects: id }, { $pull: { projects: id } });
+
+      return res.status(200).json({
+        mensaje: "Proyecto eliminado completamente (hard delete)",
+      });
+    } else {
+      // 🗑️ Soft delete
+      await proyecto.delete();
+      return res.status(200).json({
+        mensaje: "Proyecto eliminado correctamente (soft delete)",
+      });
+    }
   } catch (error) {
-    res
-      .status(500)
-      .json({ mensaje: "Error al eliminar proyecto", error: error.message });
+    res.status(500).json({
+      mensaje: "Error al eliminar proyecto",
+      error: error.message,
+    });
   }
 };
+
 
 export const getDeletedProjects = async (req, res) => {
   try {
@@ -298,6 +312,7 @@ export const addNotes = async (req, res) => {
     } = matchedData(req);
 
     const projectId = req.params.id;
+    console.log(projectId);
 
     const project = await Project.findById(projectId);
     if (!project) {
@@ -365,6 +380,32 @@ export const updateNote = async (req, res) => {
 
   } catch (error) {
     return res.status(500).send({ message: 'Error de servidor', error: error.message });
+  }
+};
+
+
+export const deleteNote = async (req, res) => {
+  try {
+    const { noteIndex } = matchedData(req);
+    console.log(noteIndex)
+    const projectId = req.params.id;
+
+    const project = await Project.findById(projectId);
+    if (!project) {
+      return res.status(404).json({ message: 'Proyecto no encontrado' });
+    }
+
+    if (noteIndex < 0 || noteIndex >= project.pendingNotes.length) {
+      return res.status(400).json({ message: 'Índice de nota no válido' });
+    }
+    console.log(' NOTA SELECCIONADA: ',project.pendingNotes[noteIndex].note);
+
+    project.pendingNotes.splice(noteIndex, 1); 
+    await project.save();
+
+    return res.status(200).json({ message: 'Nota eliminada correctamente' });
+  } catch (error) {
+    return res.status(500).json({ message: 'Error al eliminar la nota', error: error.message });
   }
 };
 
