@@ -4,11 +4,11 @@ import ProjectsNavBar from "@/components/projects/ProjectsNavBar";
 import ProjectDescription from "@/components/projects/ProjectDescription";
 import SpinLoader from "@components/SpinLoader";
 import { getProjectById } from '@lib/projects';
-import {useParams} from 'next/navigation';
+import { useParams } from 'next/navigation';
 
 
 export default function ProjectPage() {
-    const { id } = useParams(); 
+    const { id } = useParams();
     const [project, setProject] = useState(null);
 
     useEffect(() => {
@@ -19,7 +19,13 @@ export default function ProjectPage() {
         }
     }, [id]);
 
-    if (!project) return <SpinLoader />;
+    if (!project) {
+        return (
+            <div className="pt-44 flex items-center justify-center">
+                <SpinLoader size="49px" />
+            </div>
+        );
+    }
 
     return (
         <>

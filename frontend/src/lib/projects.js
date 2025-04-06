@@ -123,6 +123,9 @@ export async function addNote(noteData, projectId) {
     const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value;
 
+    console.log(` Authorization: Bearer ${token}`);
+    console.log(JSON.stringify(noteData), 'PROJECTID: ', projectId);
+
     const res = await fetch(`${process.env.BACK_URL}/api/projects/note/${projectId}`, {
       method: "POST",
       headers: {
@@ -132,18 +135,22 @@ export async function addNote(noteData, projectId) {
       body: JSON.stringify(noteData),
     });
 
+
     const contentType = res.headers.get("content-type");
+        
+
     if (!contentType || !contentType.includes("application/json")) {
       throw new Error(`Error en el servidor: ${await res.text()}`);
     }
 
     const responseData = await res.json();
 
+
     if (!res.ok) {
-      throw new Error(responseData.message || "Error desconocido.");
+      throw new Error(responseData.error);
     }
 
-    return responseData.message; // Puedes retornar el mensaje o el objeto completo si lo prefieres
+    return responseData.message; 
   } catch (error) {
     console.error("Error al agregar la nota:", error.message);
     throw new Error(error.message || "No se pudo agregar la nota.");

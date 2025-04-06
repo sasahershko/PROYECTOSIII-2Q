@@ -35,7 +35,6 @@ export default function AddNotesModal({ projectId, projectUsers, isOpen, onClose
         tag,
         userWhoRecieves,
       };
-      
 
       await addNote(noteData, projectId);
 

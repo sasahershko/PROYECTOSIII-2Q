@@ -4,9 +4,7 @@ import {check} from 'express-validator';
 export const createNoteValidator = [
    check("note")
     .notEmpty()
-    .withMessage("La nota es obligatoria")
-    .isLength({ min: 5 })
-    .withMessage("La nota debe tener al menos 5 caracteres"),
+    .withMessage("La nota es obligatoria"),
   check("userWhoRecieves")
     .optional()
     .isArray()

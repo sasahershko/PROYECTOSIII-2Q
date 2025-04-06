@@ -290,6 +290,7 @@ export const restoreProject = async (req, res) => {
 
 
 export const addNotes = async (req, res) => {
+  console.log('HOLA')
   try {
     const {
       note,
@@ -298,6 +299,7 @@ export const addNotes = async (req, res) => {
     } = matchedData(req);
 
     const projectId = req.params.id;
+    console.log(projectId);
 
     const project = await Project.findById(projectId);
     if (!project) {
