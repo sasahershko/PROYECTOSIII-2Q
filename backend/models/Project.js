@@ -49,7 +49,11 @@ const projectSchema = new Schema(
   {
     name: { type: String, required: true },
     //! DEBERÍA TENER CORREO Y NÚMERO DE TELÉFONO
-    contactPerson: { type: String, required: true },
+    contactPerson: {
+      name: { type: String, required: true },
+      email: { type: String, required: true },
+      phone: { type: String, required: true },
+    },
     company: {
       type: String,
       required: true,

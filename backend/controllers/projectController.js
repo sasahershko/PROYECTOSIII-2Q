@@ -129,16 +129,17 @@ export const updateProject = async (req, res) => {
       return res.status(404).json({ mensaje: "Proyecto no encontrado." });
     }
 
+    // Validación de permisos
     if (
       usuario.rol !== "admin" &&
       !existingProject.responsibles.includes(usuario._id)
     ) {
-      return res
-        .status(403)
-        .json({ mensaje: "No tienes permisos para actualizar este proyecto." });
+      return res.status(403).json({
+        mensaje: "No tienes permisos para actualizar este proyecto.",
+      });
     }
 
-    // Validación: fechas coherentes
+    // Validación de fechas coherentes
     if (
       data.startDate &&
       data.endDate &&
@@ -150,7 +151,7 @@ export const updateProject = async (req, res) => {
       });
     }
 
-    // Validación de usuarios y responsables
+    // Validación de responsables
     if (data.responsibles) {
       const validResponsibles = await User.find({
         _id: { $in: data.responsibles },
@@ -162,6 +163,7 @@ export const updateProject = async (req, res) => {
       }
     }
 
+    // Validación de usuarios
     if (data.users) {
       const validUsers = await User.find({ _id: { $in: data.users } });
       if (validUsers.length !== data.users.length) {
@@ -171,7 +173,19 @@ export const updateProject = async (req, res) => {
       }
     }
 
-    // Fusionar usuarios y responsables si están presentes
+    // Validación de datos de contacto
+    if (data.contactPerson) {
+      const { name, email, phone } = data.contactPerson;
+      if (!name || !email || !phone) {
+        return res.status(400).json({
+          mensaje: "La persona de contacto debe incluir nombre, correo y teléfono.",
+        });
+      }
+
+      data.contactPerson = { name, email, phone };
+    }
+
+    // Fusionar usuarios y responsables
     if (data.responsibles || data.users) {
       const uniqueUsers = [
         ...new Set([
@@ -182,12 +196,50 @@ export const updateProject = async (req, res) => {
       data.users = uniqueUsers;
     }
 
-    const updatedProject = await Project.findByIdAndUpdate(
-      id,
-      { $set: data },
-      { new: true }
-    );
+    // Validación básica de presupuestos
+    if (data.budget) {
+      const budget = data.budget;
 
+      // Calcular subtotales
+      if (budget.tutors) {
+        budget.tutors.subtotal =
+          (budget.tutors.numTutors || 0) *
+          (budget.tutors.estimatedHours || 0) *
+          (budget.tutors.pricePerHour || 0);
+      }
+
+      if (budget.interns) {
+        budget.interns.subtotal =
+          (budget.interns.numInterns || 0) *
+          (budget.interns.estimatedHours || 0) *
+          (budget.interns.pricePerHour || 0);
+      }
+
+      //Gastos extras
+      if (Array.isArray(budget.extraExpenses)) {
+        budget.extraExpenses = budget.extraExpenses.map((item) => ({
+          ...item,
+          subtotal: item.quantity * item.unitPrice,
+        }));
+      }
+
+      // Calcular total general
+      const totalExtra = (budget.extraExpenses || []).reduce(
+        (sum, item) => sum + item.subtotal,
+        0
+      );
+
+      budget.totalGeneral =
+        (budget.tutors?.subtotal || 0) +
+        (budget.interns?.subtotal || 0) +
+        totalExtra;
+
+      data.budget = budget;
+    }
+
+    const updatedProject = await Project.findByIdAndUpdate(id, { $set: data }, { new: true });
+
+   
     if (data.users) {
       await User.updateMany({ projects: id }, { $pull: { projects: id } });
       await User.updateMany(
@@ -207,6 +259,9 @@ export const updateProject = async (req, res) => {
     });
   }
 };
+
+
+
 
 /**
  * @desc Eliminar un proyecto y limpiar referencias en usuarios (soft delete)
