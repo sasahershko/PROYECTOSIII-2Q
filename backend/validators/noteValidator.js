@@ -44,3 +44,8 @@ export const updateNoteValidator = [
     .withMessage("El tag debe ser 'completada' o 'no completada'"),
     validateResults
 ];
+
+
+export const deleteNoteValidator= [
+  check('noteIndex').isInt({ min: 0 }).withMessage('noteIndex debe ser un número entero'),
+];

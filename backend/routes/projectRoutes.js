@@ -9,6 +9,7 @@ import {
   restoreProject,
   addNotes,
   updateNote,
+  deleteNote,
   hardDeleteProject,
   updateProjectBudget
 } from "../controllers/projectController.js";
@@ -23,7 +24,7 @@ import {
   projectIdValidator,
   budgetValidator
 } from "../validators/projectValidator.js";
-import { createNoteValidator, updateNoteValidator } from "../validators/noteValidator.js";
+import { createNoteValidator, updateNoteValidator, deleteNoteValidator } from "../validators/noteValidator.js";
 import { validateRequest } from "../middlewares/validateRequest.js";
 
 const projectRouter = express.Router();
@@ -267,7 +268,7 @@ projectRouter.get(
  *       500:
  *         description: Error interno del servidor.
  */
-projectRouter.put(
+projectRouter.patch(
   "/:id",
   authMiddleware,
   projectIdValidator,
@@ -280,7 +281,8 @@ projectRouter.put(
  * @swagger
  * /api/projects/{id}:
  *   delete:
- *     summary: Eliminar un proyecto (soft delete)
+ *     summary: Eliminar un proyecto (soft o hard delete)
+ *     description: Elimina un proyecto. Por defecto realiza un soft delete. Para eliminar permanentemente (hard delete), añadir el parámetro de consulta `?hard=true`.
  *     tags: [Proyectos]
  *     security:
  *       - bearerAuth: []
@@ -288,11 +290,18 @@ projectRouter.put(
  *       - in: path
  *         name: id
  *         required: true
+ *         description: ID del proyecto a eliminar.
  *         schema:
  *           type: string
+ *       - in: query
+ *         name: hard
+ *         required: false
+ *         description: Si se establece como `true`, se realiza un hard delete.
+ *         schema:
+ *           type: boolean
  *     responses:
  *       200:
- *         description: Proyecto marcado como eliminado.
+ *         description: Proyecto eliminado correctamente.
  *       403:
  *         description: No autorizado.
  *       404:
@@ -300,6 +309,7 @@ projectRouter.put(
  *       500:
  *         description: Error interno del servidor.
  */
+
 projectRouter.delete(
   "/:id",
   authMiddleware,
@@ -498,6 +508,9 @@ projectRouter.post('/note/:id', authMiddleware, createNoteValidator, addNotes);
  *         description: Error interno del servidor.
  */
 projectRouter.patch('/note/:id', authMiddleware, updateNoteValidator, updateNote);
+
+
+projectRouter.delete('/note/:id', authMiddleware, deleteNoteValidator, deleteNote);
 
 /**
  * @swagger

@@ -31,8 +31,7 @@ export default function ProjectDescription({ project }) {
     };
 
     return (
-        <div className="max-h-screen grid grid-cols-3 grid-rows-2 mb-10">
-
+        <div className="max-h-screen grid grid-cols-3 grid-rows-2">
             {/* COLUMNA IZQUIERDA */}
             <div className="col-span-2 row-span-2">
                 <div className="flex mt-10 gap-2 ">

@@ -1,15 +1,25 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { createProject } from "@lib/projects";
 import UserSelector from "@components/UserSelector";
 import { FaCheckCircle } from "react-icons/fa";
 import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { updateProject, deleteProject } from "@lib/projects";
 
 export default function ModifyProjectForm({ project }) {
   const router = useRouter();
+
+  const handleDelete = async (isHardDelete = false) => {
+    try {
+      await deleteProject(project._id, isHardDelete);
+      router.push("/projects");
+    } catch (err) {
+      console.error("Error al eliminar el proyecto:", err.message);
+    }
+  };
+
 
   const [formData, setFormData] = useState({
     name: project?.name || "",
@@ -88,16 +98,12 @@ export default function ModifyProjectForm({ project }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Convertir responsables a un array si es un string
-    if (!Array.isArray(formData.responsibles)) {
-      formData.responsibles = [formData.responsibles];
-    }
-
     try {
-      console.log('Editando...')
-      // router.push('/projects');
+      await updateProject(project._id, formData);
+
+      router.push(`/projects/${project._id}`);
     } catch (error) {
-      console.log('Error')
+      console.error("Error al guardar el proyecto:", error.message);
     }
   };
 
@@ -408,76 +414,6 @@ export default function ModifyProjectForm({ project }) {
               </div>
             </div>
 
-
-            {/* Configuración de Convocatoria */}
-            {/* <div className="border-b border-secundary-text pb-6">
-                  <h2 className="text-2xl font-bold text-primary-text mb-6 flex items-center">
-                    <span className="w-8 h-8 bg-accent rounded-full flex items-center justify-center text-white mr-3 text-sm">
-                      7
-                    </span>
-                    Configuración de Convocatoria
-                  </h2>
-      
-                  <div className="bg-primary-bg p-4 rounded-lg mb-6">
-                    <label className="inline-flex items-center">
-                      <input
-                        type="checkbox"
-                        name="practicesAgreement"
-                        checked={formData.practicesAgreement}
-                        onChange={handleChange}
-                        className="w-5 h-5 text-accent border-secundary-text rounded focus:ring-accent"
-                      />
-                      <span className="ml-2 text-primary-text font-medium">
-                        ¿Es un Proyecto de Convocatoria?
-                      </span>
-                    </label>
-                  </div>
-      
-                  <div className="grid grid-cols-1 gap-6 mb-6">
-                    <div>
-                      <label className="block text-sm font-medium mb-2 text-primary-text">
-                        Nombre de Convocatoria
-                      </label>
-                      <input
-                        type="text"
-                        name="convocatoriaName"
-                        value={formData.convocatoriaName}
-                        onChange={handleChange}
-                        className="w-full bg-primary-bg border border-secundary-text rounded-lg p-3 text-primary-text focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition duration-200"
-                      />
-                    </div>
-                  </div>
-      
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium mb-2 text-primary-text">
-                        Fecha de Inicio de Convocatoria
-                      </label>
-                      <input
-                        type="date"
-                        name="convocatoriaStart"
-                        value={formData.convocatoriaStart}
-                        onChange={handleChange}
-                        className="w-full bg-primary-bg border border-secundary-text rounded-lg p-3 text-primary-text focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition duration-200"
-                      />
-                    </div>
-      
-                    <div>
-                      <label className="block text-sm font-medium mb-2 text-primary-text">
-                        Fecha de Fin de Convocatoria
-                      </label>
-                      <input
-                        type="date"
-                        name="convocatoriaEnd"
-                        value={formData.convocatoriaEnd}
-                        onChange={handleChange}
-                        className="w-full bg-primary-bg border border-secundary-text rounded-lg p-3 text-primary-text focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition duration-200"
-                      />
-                    </div>
-                  </div>
-                </div>
-       */}
-
             {/* Notas Adicionales */}
             <div>
               <h2 className="text-2xl font-bold text-primary-text mb-6 flex items-center">
@@ -498,22 +434,42 @@ export default function ModifyProjectForm({ project }) {
             </div>
 
             <div className="flex flex-col sm:flex-row justify-between gap-4 pt-6">
-              <button
-                type="button"
-                onClick={() => router.push("/projects")}
-                className="px-6 py-3 bg-card border border-secundary-text rounded-lg text-primary-text font-medium hover:bg-primary-bg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent transition duration-200"
-              >
-                Cancelar
-              </button>
+              <div className="flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleDelete(false)} // Soft delete
+                  className="px-6 py-3 bg-red-600 text-white rounded-lg font-medium shadow-sm hover:bg-red-700 transition duration-200"
+                >
+                  Eliminar Proyecto
+                </button>
+                {/* <button
+                  type="button"
+                  onClick={() => handleDelete(true)} // Hard delete
+                  className="text-sm text-red-500 underline hover:text-red-700"
+                >
+                  Eliminar Permanentemente
+                </button> */}
+              </div>
 
-              <button
-                type="submit"
-                className="hover:bg-accent/80 px-6 py-3 bg-accent text-white rounded-lg font-medium shadow-sm hover:from-accent hover:to-secundary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent transition duration-200 flex items-center justify-center"
-              >
-                <FaCheckCircle className="mr-2" />
-                Guardar Proyecto
-              </button>
+              <div className="flex flex-col sm:flex-row gap-4 sm:justify-end">
+                <button
+                  type="button"
+                  onClick={() => router.push("/projects")}
+                  className="px-6 py-3 bg-card border border-secundary-text rounded-lg text-primary-text font-medium hover:bg-primary-bg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent transition duration-200"
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  type="submit"
+                  className="hover:bg-accent/80 px-6 py-3 bg-accent text-white rounded-lg font-medium shadow-sm hover:from-accent hover:to-secundary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent transition duration-200 flex items-center justify-center"
+                >
+                  <FaCheckCircle className="mr-2" />
+                  Guardar Proyecto
+                </button>
+              </div>
             </div>
+
           </form>
         </div>
       </div>

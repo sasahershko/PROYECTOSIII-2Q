@@ -1,16 +1,67 @@
 "use client"
 import { useState } from "react"
-import AddNotesModal from "./AddNotesModal"
+import AddNotesModal from "@components/projects/AddNotesModal";
+import EditNoteModal from '@components/projects/EditNoteModal';
+import { updateNote } from '@lib/projects'
 
 export default function NotesSection({ notes = [], projectUsers, projectId }) {
-    const [isNoteModalOpen, setIsNoteModalOpen] = useState(false)
-    const [activeFilter, setActiveFilter] = useState("todas") // todas | prioritarias | baja
-    const closeNoteModal = () => setIsNoteModalOpen(false)
+    const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
+    const [activeFilter, setActiveFilter] = useState("todas");
+    const closeNoteModal = () => setIsNoteModalOpen(false);
+    const [localNotes, setLocalNotes] = useState(notes);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+    const [noteToEdit, setNoteToEdit] = useState(null)
+
+    const openEditModal = (nota, index) => {
+        console.log(index)
+        setNoteToEdit({ ...nota, index })
+        setIsEditModalOpen(true)
+    }
 
     const handleNoteModal = (e) => {
         e.stopPropagation()
         setIsNoteModalOpen(!isNoteModalOpen)
     }
+
+    const handleNoteAdded = (newNote) => {
+        setLocalNotes((prev) => [...prev, newNote]);
+    }
+
+    const handleNoteEdited = (updatedNote, index) => {
+        setLocalNotes(prev => {
+            const updated = [...prev];
+            if (updatedNote === null) {
+                updated.splice(index, 1); // eliminar
+            } else {
+                updated[index] = updatedNote; // actualizar
+            }
+            return updated;
+        });
+    };
+
+
+
+    const handleMarkAsCompleted = async (noteIndex) => {
+        const currentTag = localNotes[noteIndex].tag;
+        const newTag = currentTag === "completada" ? "no completada" : "completada";
+
+        try {
+            const updatedNote = { noteIndex, tag: newTag };
+            await updateNote(updatedNote, projectId);
+
+            setLocalNotes((prev) => {
+                const updated = [...prev];
+                updated[noteIndex] = { ...updated[noteIndex], tag: newTag };
+                return updated;
+            });
+
+            console.log(`Nota actualizada a ${newTag}`, noteIndex);
+        } catch (error) {
+            console.error("Error al actualizar la nota:", error.message);
+        }
+    };
+
+
 
     const getColorFromName = (name) => {
         const colors = [
@@ -47,13 +98,14 @@ export default function NotesSection({ notes = [], projectUsers, projectId }) {
         }
     }
 
-    const filteredNotes = notes.filter((nota) => {
+    const filteredNotes = localNotes.filter((nota) => {
         const { isComplete } = getStatusInfo(nota.tag)
         if (activeFilter === "todas") return true
         if (activeFilter === "no completada") return !isComplete
         if (activeFilter === "completada") return isComplete
         return true
     })
+
 
     return (
         <div className="border rounded-xl shadow-lg overflow-hidden bg-primary-bg">
@@ -96,19 +148,40 @@ export default function NotesSection({ notes = [], projectUsers, projectId }) {
                 </div>
             </div>
 
-            <AddNotesModal isOpen={isNoteModalOpen} onClose={closeNoteModal} projectId={projectId} projectUsers={projectUsers} />
+            <AddNotesModal
+                isOpen={isNoteModalOpen}
+                onClose={closeNoteModal}
+                projectId={projectId}
+                projectUsers={projectUsers}
+                onNoteAdded={handleNoteAdded}
+            />
+
+            <EditNoteModal
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                projectId={projectId}
+                projectUsers={projectUsers}
+                noteToEdit={noteToEdit}
+                onNoteEdited={handleNoteEdited}
+            />
+
 
             {/* Contenido */}
             <div className="p-4 h-[320px] overflow-auto bg-primary-bg">
                 {filteredNotes.length > 0 ? (
                     <div className="space-y-4">
                         {filteredNotes.map((nota, index) => {
-                            const originalIndex = notes.indexOf(nota)
+                            const originalIndex = localNotes.indexOf(nota);
                             const { barColor, label, badgeColor } = getStatusInfo(nota.tag)
                             const assigned = Array.isArray(nota.userWhoRecieves) ? nota.userWhoRecieves : [nota.userWhoRecieves]
 
                             return (
-                                <div key={index} className="relative overflow-hidden rounded-lg border border-slate-200 bg-primary-bg shadow-sm transition-all hover:shadow">
+                                <div
+                                    key={index}
+                                    onClick={() => openEditModal(nota, originalIndex)}
+                                    className="relative overflow-hidden rounded-lg border border-slate-200 bg-primary-bg shadow-sm transition-all hover:shadow cursor-pointer"
+                                >
+
                                     <div className={`absolute left-0 top-0 h-full w-1 ${barColor}`}></div>
                                     <div className="p-4">
                                         <div className="flex items-start justify-between mb-2">
@@ -123,7 +196,10 @@ export default function NotesSection({ notes = [], projectUsers, projectId }) {
 
                                         <div className="flex items-center justify-between">
                                             <button
-                                                onClick={() => console.log("Marcar como completada", nota)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleMarkAsCompleted(originalIndex);
+                                                }}
                                                 className={`text-xs px-3 py-1 rounded-md border transition-all ${nota.tag === "completada"
                                                     ? "bg-accent/10 text-accent border-accent/30"
                                                     : "bg-card hover:bg-card/80 text-secundary-text border border-slate-300"
@@ -131,6 +207,8 @@ export default function NotesSection({ notes = [], projectUsers, projectId }) {
                                             >
                                                 {nota.tag === "completada" ? "✓ Completada" : "Marcar como completada"}
                                             </button>
+
+
 
                                             <div className="flex items-center gap-2 flex-wrap">
                                                 {assigned.map((user, i) => {
