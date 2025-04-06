@@ -103,7 +103,7 @@ export const getProjectById = async (req, res) => {
     const { id } = req.filteredData;
     const project = await Project.findById(id)
       .populate("responsibles", "name")
-      .populate("users", "name")
+      .populate("users", "name", "surname")
       .populate("pendingNotes.userWhoWrites", "name")
       .populate("pendingNotes.userWhoRecieves", "name");
 
@@ -292,14 +292,14 @@ export const restoreProject = async (req, res) => {
 export const addNotes = async (req, res) => {
   try {
     const {
-      projectId,
       note,
-      userWhoWrites,
       userWhoRecieves = [],
       tag = "no completada"
     } = matchedData(req);
 
-    const project = await Project.findById(projectId);
+    const projectId = req.params.id;
+
+    const project = await Project.findById(id);
     if (!project) {
       return res.status(404).json({ message: 'Proyecto no encontrado' });
     }
@@ -308,7 +308,7 @@ export const addNotes = async (req, res) => {
     //crear el objeto de la nota
     const noteObject = {
       note,
-      userWhoWrites,
+      userWhoWrites: req.usuario._id,
       userWhoRecieves,
       tag,
       date: Date.now(),
@@ -337,7 +337,6 @@ export const updateNote = async (req, res) => {
     } = matchedData(req);
 
     const projectId = req.params.id;
-    console.log(projectId);
 
     const project = await Project.findById(projectId);
     if (!project) {

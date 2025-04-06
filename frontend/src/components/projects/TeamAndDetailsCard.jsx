@@ -26,6 +26,7 @@ export default function TeamAndDetailsCard({ project }) {
 
     const handleNoteModal = (e) => {
         e.stopPropagation();
+        console.log(isModalOpen)
         setIsModalOpen(!isModalOpen);
     };
 
@@ -71,7 +72,7 @@ export default function TeamAndDetailsCard({ project }) {
 
                                     <AddUserModal
                                         isOpen={isModalOpen}
-                                        onClose={() => setIsModalOpen(false)}
+                                        onClose={() => {setIsModalOpen(false)}}
                                         // availableUsers={project.users}
                                         // onAddUser={(user) => console.log("Añadido:", user)}
                                     />

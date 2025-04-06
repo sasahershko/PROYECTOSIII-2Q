@@ -39,7 +39,7 @@ export default function ProjectDescription({ project }) {
                     <h1 className="text-4xl font-bold ml-6">{project.name}</h1>
                     <div className="border-[1px] mt-1 border-black h-[30px] w-20 rounded-md flex items-center justify-center gap-1">
                         <Image src={'/icons/organization.svg'} alt='organization' width={15} height={15}></Image>
-                        <p>{project.company}</p>
+                        <p className='text-base sm:text-sm md:text-xs'>{project.company}</p>
                     </div>
                 </div>
 
@@ -74,7 +74,7 @@ export default function ProjectDescription({ project }) {
 
                 {/* NOTAS */}
                 <div className="mt-8 ml-6 w-full">
-                    <NotesSection notes={project.pendingNotes} />
+                    <NotesSection notes={project.pendingNotes} projectUsers={project.users}/>
                 </div>
                 {/* </div> */}
 
