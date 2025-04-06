@@ -393,7 +393,6 @@ projectRouter.put(
  *             type: object
  *             required:
  *               - note
- *               - userWhoWrites
  *             properties:
  *               note:
  *                 type: string

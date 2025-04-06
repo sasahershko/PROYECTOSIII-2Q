@@ -7,11 +7,6 @@ export const createNoteValidator = [
     .withMessage("La nota es obligatoria")
     .isLength({ min: 5 })
     .withMessage("La nota debe tener al menos 5 caracteres"),
-  check("userWhoWrites")
-    .notEmpty()
-    .withMessage("El usuario que escribe es obligatorio")
-    .isMongoId()
-    .withMessage("Debe ser un MongoID válido"),
   check("userWhoRecieves")
     .optional()
     .isArray()
@@ -37,10 +32,6 @@ export const updateNoteValidator = [
     .optional()
     .isLength({ min: 5 })
     .withMessage("La nota debe tener al menos 5 caracteres"),
-  check("userWhoWrites")
-    .optional()
-    .isMongoId()
-    .withMessage("Debe ser un MongoID válido"),
   check("userWhoRecieves")
     .optional()
     .isArray()

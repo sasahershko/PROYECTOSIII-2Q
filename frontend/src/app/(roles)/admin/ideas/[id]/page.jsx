@@ -110,7 +110,7 @@ export default function IdeaDetailPage() {
             <h2 className="text-xl font-semibold text-slate-800">No se pudo cargar la idea</h2>
             <p className="text-slate-600">{error}</p>
             <Link
-              href="/ideas"
+              href="/admin/ideas"
               className="mt-2 px-6 py-3 bg-black text-white rounded-full font-medium hover:bg-slate-800 transition-all flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />

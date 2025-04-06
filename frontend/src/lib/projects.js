@@ -116,3 +116,68 @@ export async function updateProjectBudget(projectId, budgetData) {
     throw new Error(error.message || "No se pudo actualizar el presupuesto.");
   }
 }
+
+
+export async function addNote(noteData, projectId) {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+
+    const res = await fetch(`${process.env.BACK_URL}/api/projects/note/${projectId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: JSON.stringify(noteData),
+    });
+
+    const contentType = res.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      throw new Error(`Error en el servidor: ${await res.text()}`);
+    }
+
+    const responseData = await res.json();
+
+    if (!res.ok) {
+      throw new Error(responseData.message || "Error desconocido.");
+    }
+
+    return responseData.message; // Puedes retornar el mensaje o el objeto completo si lo prefieres
+  } catch (error) {
+    console.error("Error al agregar la nota:", error.message);
+    throw new Error(error.message || "No se pudo agregar la nota.");
+  }
+}
+
+export async function updateNote(noteData, projectId) {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+
+    const res = await fetch(`${process.env.BACK_URL}/api/projects/note/${projectId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: JSON.stringify(noteData),
+    });
+
+    const contentType = res.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      throw new Error(`Error en el servidor: ${await res.text()}`);
+    }
+
+    const responseData = await res.json();
+
+    if (!res.ok) {
+      throw new Error(responseData.message || "Error desconocido.");
+    }
+
+    return responseData.message;
+  } catch (error) {
+    console.error("Error al actualizar la nota:", error.message);
+    throw new Error(error.message || "No se pudo actualizar la nota.");
+  }
+}
