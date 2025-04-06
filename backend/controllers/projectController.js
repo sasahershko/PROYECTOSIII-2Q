@@ -103,7 +103,7 @@ export const getProjectById = async (req, res) => {
     const { id } = req.filteredData;
     const project = await Project.findById(id)
       .populate("responsibles", "name")
-      .populate("users", "name", "surname")
+      .populate("users", "name surname")
       .populate("pendingNotes.userWhoWrites", "name")
       .populate("pendingNotes.userWhoRecieves", "name");
 
