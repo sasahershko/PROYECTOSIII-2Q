@@ -10,6 +10,7 @@ export default function CarruselProyectos() {
   const [proyectos, setProyectos] = useState([]);
   const [proyectoSeleccionado, setProyectoSeleccionado] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
+  const [loading, setLoading] = useState(true);
   const itemsPerPage = 4;
 
   const areaColors = {
@@ -44,9 +45,23 @@ export default function CarruselProyectos() {
   useEffect(() => {
     getProjects().then((data) => {
       setProyectos(data);
-      if (data.length > 0) setProyectoSeleccionado(data[0]); // Selecciona el primero por defecto
+      if (data.length > 0) setProyectoSeleccionado(data[0]);
+      setLoading(false); // ← Cuando termina
     });
   }, []);
+  
+  if (loading) {
+    return (
+      <div className="w-full max-w-7xl mx-auto px-10 mb-10 min-h-[120px]">
+        <h2 className="text-5xl font-[730] inline-block text-primary-text">
+          <span className="bg-gradient-to-b from-white to-50% to-accent text-5xl bg-clip-text text-transparent">
+            Proyectos
+          </span>
+          <span> Destacados</span>
+        </h2>
+      </div>
+    );
+  }
 
   if (proyectos.length === 0) {
     return (
@@ -102,13 +117,13 @@ export default function CarruselProyectos() {
               />
               {/* Info extra */}
               <div className="flex-col left-0 w-full h-[150px] bg-opacity-90 p-4">
-                <span className={`text-sm font-semibold text-white inline-block mb-2 px-2 py-1 rounded-full ${areaColors[proyectoSeleccionado?.area] || 'bg-gray-400'}`}>
+                <span className={`text-xs font-semibold text-white inline-block mb-2 px-2 py-1 rounded-full ${areaColors[proyectoSeleccionado?.area] || 'bg-gray-400'}`}>
                   {proyectoSeleccionado?.area}
                 </span>
                 <h3 className="text-xl font-bold">{proyectoSeleccionado?.name}</h3>
                 <p className="text-sm line-clamp-2">{proyectoSeleccionado?.description}</p>
-                <Link href={`/projects/${proyectoSeleccionado?._id}`}>
-                  <span className="text-blue-600 text-sm font-semibold mt-2 inline-block hover:underline">Ver más →</span>
+                <Link href="/projects">
+                  <span className="text-blue-600 text-sm font-semibold inline-block hover:underline">Ver más →</span>
                 </Link>
               </div>
             </motion.div>

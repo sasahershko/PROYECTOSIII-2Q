@@ -7,7 +7,7 @@ import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, Tooltip, Responsive
 
 const COLORS = ['#2563eb', '#10b981', '#f59e0b'];
 
-export default function PresupuestoDashboard({ data }) {
+export default function PresupuestoDashboard({ data, onEditClick }) {
   const {
     limite = 100000,
     gastado = 75290,
@@ -23,6 +23,7 @@ export default function PresupuestoDashboard({ data }) {
 
   const diferencia = limite - gastado;
   const porcentajeUsado = (gastado / limite) * 100;
+  const { profesores, estudiantes, otros } = data.desglose;
 
   const graficoPieData = [
     { name: 'Profesores', value: desglose.profesores?.reduce((sum, item) => sum + item.subtotal, 0) || 0 },
@@ -30,29 +31,40 @@ export default function PresupuestoDashboard({ data }) {
     { name: 'Otros', value: desglose.otros?.reduce((sum, item) => sum + item.subtotal, 0) || 0 },
   ];
 
+  const generateResumenMensual = (profesores, estudiantes, otros) => {
+    const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'];
+    const total =
+      (profesores?.subtotal || 0) +
+      (estudiantes?.subtotal || 0) +
+      (otros?.reduce((acc, gasto) => acc + (gasto.subtotal || 0), 0) || 0);
+  
+    return months.map((mes) => ({
+      mes,
+      estimado: Math.round(total / months.length),
+      real: Math.round((total / months.length) * (0.9 + Math.random() * 0.2)), // +/-10% real
+    }));
+  };
+  
+  
   const seguimientoData = resumenMensual.length
-    ? resumenMensual
-    : [
-        { mes: 'Ene', estimado: 10000, real: 9500 },
-        { mes: 'Feb', estimado: 20000, real: 18500 },
-        { mes: 'Mar', estimado: 30000, real: 29000 },
-        { mes: 'Abr', estimado: 40000, real: 38500 },
-        { mes: 'May', estimado: 50000, real: 49000 },
-        { mes: 'Jun', estimado: 60000, real: 59800 },
-      ];
+  ? resumenMensual
+  : generateResumenMensual(profesores[0], estudiantes[0], otros);
 
   const exportToPDF = async () => {
     const input = document.getElementById('presupuesto-desglose');
-    const canvas = await html2canvas(input);
+    const canvas = await html2canvas(input, {
+      scale: 2, // mejora resolución
+      useCORS: true,
+    });
     const imgData = canvas.toDataURL('image/png');
     const pdf = new jsPDF('p', 'mm', 'a4');
-    const imgProps = pdf.getImageProperties(imgData);
     const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+  
     pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
     pdf.save('presupuesto.pdf');
   };
-
+      
   const columnasUnificadas = [
     { key: 'descripcion', label: 'Descripción' },
     { key: 'col2', label: '' },
@@ -122,9 +134,18 @@ export default function PresupuestoDashboard({ data }) {
     });
   };
 
+  function ResumenCard({ label, value }) {
+    return (
+      <div className="rounded-xl shadow-md border p-4 text-center">
+        <p className="text-sm">{label}</p>
+        <p className="text-xl font-bold">{value}</p>
+      </div>
+    );
+  }
+
   const renderTabla = (titulo, columnas, filas) => (
     <div className="mb-6">
-      <h3 className="font-semibold mb-2 text-lg text-gray-700">{titulo}</h3>
+      <h3 className="font-semibold mb-2 text-lg">{titulo}</h3>
       <div className="overflow-x-auto">
         <table className="w-full text-sm border border-gray-200 text-left table-fixed">
           <colgroup>
@@ -134,10 +155,10 @@ export default function PresupuestoDashboard({ data }) {
             <col className="w-[17.5%]" />
             <col className="w-[17.5%]" />
           </colgroup>
-          <thead className="bg-gray-100">
+          <thead className="bg-gray-300">
             <tr>
               {columnas.map((col, i) => (
-                <th key={i} className="p-2 border-gray-200 font-semibold text-gray-600">{col.label}</th>
+                <th key={i} className="p-2 border-gray-200 font-semibold text-gray-800">{col.label}</th>
               ))}
             </tr>
           </thead>
@@ -160,8 +181,13 @@ export default function PresupuestoDashboard({ data }) {
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Presupuesto del Proyecto</h1>
         <div className="space-x-2">
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded" onClick={() => alert("Función de edición pendiente")}>Editar Presupuesto</button>
-          <button className="bg-gray-100 border px-4 py-2 rounded hover:bg-gray-200" onClick={exportToPDF}>Exportar Presupuesto</button>
+          <button
+            onClick={onEditClick}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+          >
+            Editar Presupuesto
+          </button>
+          <button className="border px-4 py-2 rounded hover:bg-gray-200" onClick={exportToPDF}>Exportar Presupuesto</button>
         </div>
       </div>
 
@@ -173,7 +199,7 @@ export default function PresupuestoDashboard({ data }) {
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-xl shadow-md border p-4">
+        <div className="rounded-xl shadow-md border p-4">
           <h2 className="text-lg font-bold mb-4">Distribución del Presupuesto</h2>
           <ResponsiveContainer width="100%" height={270}>
             <PieChart>
@@ -191,7 +217,7 @@ export default function PresupuestoDashboard({ data }) {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-md border p-4">
+        <div className="rounded-xl shadow-md border p-4">
           <h2 className="text-lg font-bold mb-8">Seguimiento Mensual</h2>
             <div className="flex justify-center mb-4">
               <ResponsiveContainer width="60%" height={280}>
@@ -207,9 +233,9 @@ export default function PresupuestoDashboard({ data }) {
         </div>
       </div>
 
-      <section id="presupuesto-desglose" className="bg-white p-6 rounded-xl shadow-md border">
+      <section id="presupuesto-desglose" className="p-6 rounded-xl shadow-md border">
         <h2 className="text-xl font-semibold mb-4">Desglose de Presupuesto</h2>
-
+          
         {desglose.profesores?.length > 0 && renderTabla("Profesores y Tutores", getColumnLabels('profesores'), buildFilasConColumnas(desglose.profesores, 'profesores'))}
 
         {desglose.estudiantes?.length > 0 && renderTabla("Estudiantes en Prácticas", getColumnLabels('estudiantes'), buildFilasConColumnas(desglose.estudiantes, 'estudiantes'))}
@@ -225,13 +251,13 @@ export default function PresupuestoDashboard({ data }) {
           value={comentarios}
           disabled
           placeholder="Añada notas o aclaraciones sobre el presupuesto..."
-          className="w-full p-3 border rounded bg-gray-100"
+          className="w-full rounded-xl shadow-md border p-4"
         />
       </section>
 
       <section>
         <h2 className="text-lg font-bold mb-2">Historial de Cambios</h2>
-        <div className="space-y-3 bg-gray-50 p-4 rounded shadow">
+        <div className="rounded-xl shadow-md border p-4">
           {historialCambios.map((cambio, i) => (
             <div key={i} className="flex items-start gap-3">
               <img src={cambio.avatar || '/avatar.png'} className="h-8 w-8 rounded-full" />
@@ -243,15 +269,6 @@ export default function PresupuestoDashboard({ data }) {
           ))}
         </div>
       </section>
-    </div>
-  );
-}
-
-function ResumenCard({ label, value }) {
-  return (
-    <div className="bg-white p-4 rounded shadow text-center">
-      <p className="text-sm text-gray-500">{label}</p>
-      <p className="text-xl font-bold">{value}</p>
     </div>
   );
 }
