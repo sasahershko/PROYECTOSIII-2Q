@@ -1,5 +1,5 @@
 import { check } from "express-validator";
-import validateResults from "../handleValidator.js";
+import validateResults from "../utils/handleValidator.js";
 
 export const validatorCreateReservation = [
     check("table")
