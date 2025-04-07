@@ -1,12 +1,12 @@
 "use client";
 
-import Link from 'next/link';
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createProject } from "@lib/projects";
 import UserSelector from "@components/UserSelector";
 import { FaCheckCircle } from "react-icons/fa";
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from "lucide-react";
 
 export default function AddProjectForm() {
   const router = useRouter();
@@ -100,7 +100,7 @@ export default function AddProjectForm() {
 
       {/* Título */}
       <div className="text-center py-8 font-bold text-primary-text bg-card shadow-sm -mt-10">
-        <span className="text-5xl bg-clip-text text-transparent bg-gradient-to-r from-accent to-secundary-text">
+        <span className="bg-gradient-to-b from-white to-50% to-accent text-5xl bg-clip-text text-transparent">
           Nuevo Proyecto
         </span>
       </div>
@@ -132,7 +132,8 @@ export default function AddProjectForm() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2 text-primary-text">
-                    Descripción del Proyecto <span className="text-accent">*</span>
+                    Descripción del Proyecto{" "}
+                    <span className="text-accent">*</span>
                   </label>
                   <textarea
                     name="description"
@@ -166,8 +167,19 @@ export default function AddProjectForm() {
                       <option value="DIDI">DIDI</option>
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-secundary-text">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 9l6 6 6-6"></path>
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M6 9l6 6 6-6"
+                        ></path>
                       </svg>
                     </div>
                   </div>
@@ -191,8 +203,19 @@ export default function AddProjectForm() {
                       <option value="Cancelado">Cancelado</option>
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-secundary-text">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 9l6 6 6-6"></path>
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M6 9l6 6 6-6"
+                        ></path>
                       </svg>
                     </div>
                   </div>
@@ -265,7 +288,10 @@ export default function AddProjectForm() {
                     label="Responsables"
                     selectedUsers={formData.responsibles}
                     setSelectedUsers={(newResponsibles) =>
-                      setFormData((prev) => ({ ...prev, responsibles: newResponsibles }))
+                      setFormData((prev) => ({
+                        ...prev,
+                        responsibles: newResponsibles,
+                      }))
                     }
                   />
                 </div>
@@ -341,7 +367,8 @@ export default function AddProjectForm() {
               <div className="grid grid-cols-1 gap-6">
                 <div>
                   <label className="block text-sm font-medium mb-2 text-primary-text">
-                    URL de la Carpeta de Documentación <span className="text-accent">*</span>
+                    URL de la Carpeta de Documentación{" "}
+                    <span className="text-accent">*</span>
                   </label>
                   <input
                     type="text"
@@ -354,7 +381,8 @@ export default function AddProjectForm() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2 text-primary-text">
-                    URL de la Carpeta Confidencial <span className="text-accent">*</span>
+                    URL de la Carpeta Confidencial{" "}
+                    <span className="text-accent">*</span>
                   </label>
                   <input
                     type="text"

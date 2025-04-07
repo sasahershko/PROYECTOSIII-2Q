@@ -2,10 +2,15 @@ import { useState } from "react";
 import { deleteUser } from "@/lib/users";
 import DeleteUserModal from "@/components/lists/DeleteUserModal";
 import UserProfileModal from "@/components/lists/UserProfileModal";
+import GradeChip from "@components/ui/chip";
 
 export default function UserCard({ user, reloadUsers }) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const cancelDelete = () => setIsDeleteModalOpen(false);
+
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const openProfile = () => setIsProfileModalOpen(true);
+  const closeProfile = () => setIsProfileModalOpen(false);
 
   const handleDelete = (e) => {
     e.stopPropagation(); // Evita que también abra el modal de perfil
@@ -18,23 +23,20 @@ export default function UserCard({ user, reloadUsers }) {
     setIsDeleteModalOpen(false);
   };
 
-  const cancelDelete = () => setIsDeleteModalOpen(false);
-
-  const openProfile = () => setIsProfileModalOpen(true);
-  const closeProfile = () => setIsProfileModalOpen(false);
-
   return (
     <>
       <div
         onClick={openProfile}
-        className="grid gap-4 items-center px-2 py-2 border-b hover:bg-accent/10 transition-colors cursor-pointer"
+        className="grid gap-4 items-center px-2 py-2 border-b border-primary-bg hover:bg-accent/10 transition-colors cursor-pointer"
         style={{ gridTemplateColumns: "2fr 2fr 3fr 2fr 0.8fr 0.8fr 1fr" }}
       >
         <div className="text-sm text-primary-text">{user.surname}</div>
         <div className="text-sm text-primary-text">{user.name}</div>
         <div className="text-sm text-primary-text">{user.email}</div>
         <div className="text-sm text-primary-text">{user.dni}</div>
-        <div className="text-sm text-primary-text">{user.grade}</div>
+        <div className="text-sm text-primary-text">
+          <GradeChip grado={user.grade} />
+        </div>
         <div className="text-sm text-primary-text">{user.rol}</div>
         <div className="flex items-center">
           <button

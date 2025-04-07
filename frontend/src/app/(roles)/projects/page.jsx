@@ -27,7 +27,8 @@ export default function AdminProjectDashboard() {
 
     if (filtroEstado) {
       filtrados = filtrados.filter((p) => {
-        const estadoNormalizado = p.status === "COMPLETED" ? "Completado" : "No completado";
+        const estadoNormalizado =
+          p.status === "COMPLETED" ? "Completado" : "No completado";
         return estadoNormalizado === filtroEstado;
       });
     }
@@ -68,7 +69,13 @@ export default function AdminProjectDashboard() {
             href="/projects/newProject"
             className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg font-semibold hover:bg-gray-800 transition duration-300"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
               <path d="M12 5v14M5 12h14" />
             </svg>
             Nuevo Proyecto
@@ -86,9 +93,21 @@ export default function AdminProjectDashboard() {
         <div className="flex items-center gap-4 relative">
           {/* Buscador */}
           <div className="relative">
-            <input type="text" placeholder="Buscar proyectos..." value={searchText} onChange={(e) => setSearchText(e.target.value)} className="px-4 py-2 pl-8 border border-gray-300 rounded"/>
+            <input
+              type="text"
+              placeholder="Buscar proyectos..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              className="px-4 py-2 pl-8 border border-gray-300 rounded"
+            />
             <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
                 <path d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z" />
               </svg>
             </span>
@@ -99,7 +118,13 @@ export default function AdminProjectDashboard() {
             onClick={() => setMostrarFiltros(!mostrarFiltros)}
             className="p-2 hover:bg-gray-200 rounded transition"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
               <path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L15 12.414V19a1 1 0 01-1.447.894l-4-2A1 1 0 019 17v-4.586L3.293 6.707A1 1 0 013 6V4z" />
             </svg>
           </button>
@@ -110,10 +135,23 @@ export default function AdminProjectDashboard() {
               setOrdenFecha((prev) => (prev === "asc" ? "desc" : "asc"))
             }
             className="p-2 hover:bg-gray-200 rounded transition"
-            title={`Ordenar por fecha (${ordenFecha === "asc" ? "ascendente" : "descendente"})`}
+            title={`Ordenar por fecha (${
+              ordenFecha === "asc" ? "ascendente" : "descendente"
+            })`}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h8m-8 6h16" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h8m-8 6h16"
+              />
             </svg>
           </button>
 

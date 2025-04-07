@@ -3,9 +3,9 @@
 import { useRouter } from "next/navigation";
 import UserSelector from "@components/UserSelector";
 import { FaCheckCircle } from "react-icons/fa";
-import { useState } from 'react';
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { useState } from "react";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { updateProject, deleteProject } from "@lib/projects";
 
 export default function ModifyProjectForm({ project }) {
@@ -20,7 +20,6 @@ export default function ModifyProjectForm({ project }) {
     }
   };
 
-
   const [formData, setFormData] = useState({
     name: project?.name || "",
     contactPerson: project?.contactPerson || "",
@@ -28,8 +27,10 @@ export default function ModifyProjectForm({ project }) {
     contactPhone: "", //!NO ESTÁ EN EL BACK
     company: project?.company || "",
     area: project?.area || "",
-    responsibles: project?.responsibles ? project.responsibles.map(responsible => responsible._id) : [],
-    users: project?.users ? project.users.map(user => user._id) : [],
+    responsibles: project?.responsibles
+      ? project.responsibles.map((responsible) => responsible._id)
+      : [],
+    users: project?.users ? project.users.map((user) => user._id) : [],
     benefit: project?.benefit || "",
     folder: project?.folder || "",
     confidentialFolder: project?.confidentialFolder || "", //!NO ESTÁ EN EL BACK
@@ -54,9 +55,10 @@ export default function ModifyProjectForm({ project }) {
       ? new Date(project.startDate).toISOString().split("T")[0]
       : "",
 
-    reviewDates: project?.reviewDates && project.reviewDates.length
-      ? [new Date(project.reviewDates[0]).toISOString().split("T")[0]]
-      : [""],
+    reviewDates:
+      project?.reviewDates && project.reviewDates.length
+        ? [new Date(project.reviewDates[0]).toISOString().split("T")[0]]
+        : [""],
 
     endDate: project?.endDate
       ? new Date(project.endDate).toISOString().split("T")[0]
@@ -110,15 +112,13 @@ export default function ModifyProjectForm({ project }) {
   return (
     <div className="bg-gradient-to-b from-primary-bg to-card min-h-screen">
       <div className="bg-card border ml-6 w-20">
-        <Link
-          href={`/projects/${project._id}`}
-        >
+        <Link href={`/projects/${project._id}`}>
           <ArrowLeft className="h-6 w-6" />
         </Link>
       </div>
 
       <div className="text-center py-8 font-bold text-primary-text bg-card shadow-sm -mt-10">
-        <span className="text-5xl  bg-clip-text text-transparent bg-gradient-to-r from-accent to-secundary-text">
+        <span className="bg-gradient-to-b from-white to-50% to-accent text-5xl bg-clip-text text-transparent">
           {project.name || "Nuevo Proyecto"}
         </span>
       </div>
@@ -152,7 +152,8 @@ export default function ModifyProjectForm({ project }) {
 
                 <div>
                   <label className="block text-sm font-medium mb-2 text-primary-text">
-                    Descripción del Proyecto <span className="text-accent">*</span>
+                    Descripción del Proyecto{" "}
+                    <span className="text-accent">*</span>
                   </label>
                   <textarea
                     name="description"
@@ -194,7 +195,12 @@ export default function ModifyProjectForm({ project }) {
                         viewBox="0 0 24 24"
                         xmlns="http://www.w3.org/2000/svg"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M19 9l-7 7-7-7"
+                        ></path>
                       </svg>
                     </div>
                   </div>
@@ -226,7 +232,12 @@ export default function ModifyProjectForm({ project }) {
                         viewBox="0 0 24 24"
                         xmlns="http://www.w3.org/2000/svg"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M19 9l-7 7-7-7"
+                        ></path>
                       </svg>
                     </div>
                   </div>
@@ -387,7 +398,8 @@ export default function ModifyProjectForm({ project }) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium mb-2 text-primary-text">
-                    URL de la Carpeta de Documentación <span className="text-accent">*</span>
+                    URL de la Carpeta de Documentación{" "}
+                    <span className="text-accent">*</span>
                   </label>
                   <input
                     type="text"
@@ -401,7 +413,8 @@ export default function ModifyProjectForm({ project }) {
 
                 <div>
                   <label className="block text-sm font-medium mb-2 text-primary-text">
-                    URL de la Carpeta Confidencial <span className="text-accent">*</span>
+                    URL de la Carpeta Confidencial{" "}
+                    <span className="text-accent">*</span>
                   </label>
                   <input
                     type="text"
@@ -469,12 +482,9 @@ export default function ModifyProjectForm({ project }) {
                 </button>
               </div>
             </div>
-
           </form>
         </div>
       </div>
     </div>
   );
-
-
 }
