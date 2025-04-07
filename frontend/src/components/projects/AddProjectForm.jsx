@@ -6,10 +6,13 @@ import { useRouter } from "next/navigation";
 import { createProject } from "@lib/projects";
 import UserSelector from "@components/UserSelector";
 import { FaCheckCircle } from "react-icons/fa";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft } from 'lucide-react';
+import SuccessToast from "@components/SuccessToast"
 
 export default function AddProjectForm() {
   const router = useRouter();
+  const [showToast, setShowToast] = useState(false)
+
 
   const [formData, setFormData] = useState({
     name: "",
@@ -82,8 +85,11 @@ export default function AddProjectForm() {
     }
     try {
       const newProject = await createProject(formData);
-      alert("Proyecto creado con éxito.");
-      router.push("/projects");
+      setShowToast(true)
+      setTimeout(() => {
+        router.push("/projects")
+      }, 2000)
+
     } catch (error) {
       alert(error.message);
     }
@@ -91,7 +97,9 @@ export default function AddProjectForm() {
 
   return (
     <div className="bg-gradient-to-b from-primary-bg to-card min-h-screen">
-      {/* Header con botón de regresar */}
+      <SuccessToast isOpen={showToast} message="Proyecto creado con éxito" />
+
+
       <div className="bg-card border ml-6 w-20 mt-4">
         <Link href="/projects">
           <ArrowLeft className="h-6 w-6" />

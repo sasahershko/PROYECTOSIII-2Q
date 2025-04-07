@@ -1,7 +1,7 @@
 import Project from "../models/Project.js";
 import User from "../models/User.js";
 import { matchedData } from 'express-validator';
-import {calculateBudget } from '../utils/budget.js'
+import { calculateBudget } from '../utils/budget.js'
 
 // 🔁 Validar IDs de usuarios y devolver lista filtrada (sin duplicados ni inexistentes)
 const filtrarUsuariosExistentes = async (ids = []) => {
@@ -217,7 +217,7 @@ export const deleteProject = async (req, res) => {
   try {
     const { id } = req.filteredData;
     const usuario = req.usuario;
-    const hardDelete = req.query.hard === "true"; 
+    const hardDelete = req.query.hard === "true";
 
     const proyecto = await Project.findById(id);
     if (!proyecto) {
@@ -334,8 +334,13 @@ export const addNotes = async (req, res) => {
     project.pendingNotes.push(noteObject);
     await project.save();
 
-    return res.status(200).send({ message: 'Nota agregada exitosamente' });
+    // obtener la última nota (la recién añadida)
+    const nuevaNota = project.pendingNotes[project.pendingNotes.length - 1];
 
+    // popular el userWhoWrites 
+    await project.populate('pendingNotes.userWhoWrites', 'name surname');
+
+    return res.status(200).json(nuevaNota);
   } catch (error) {
     return res.status(500).send({ message: 'Error al agregar la nota', error: error.message });
   }
@@ -398,9 +403,9 @@ export const deleteNote = async (req, res) => {
     if (noteIndex < 0 || noteIndex >= project.pendingNotes.length) {
       return res.status(400).json({ message: 'Índice de nota no válido' });
     }
-    console.log(' NOTA SELECCIONADA: ',project.pendingNotes[noteIndex].note);
+    console.log(' NOTA SELECCIONADA: ', project.pendingNotes[noteIndex].note);
 
-    project.pendingNotes.splice(noteIndex, 1); 
+    project.pendingNotes.splice(noteIndex, 1);
     await project.save();
 
     return res.status(200).json({ message: 'Nota eliminada correctamente' });
