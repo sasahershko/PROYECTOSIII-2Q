@@ -338,7 +338,7 @@ export default function IdeaDetailPage() {
                 Esta acción no se puede deshacer. La idea será eliminada permanentemente.
               </p>
             </div>
-            <div className="flex gap-3 justify-end">
+            <div className="mt-6 flex justify-center gap-4">
               <button
                 onClick={() => setShowDeleteConfirm(false)}
                 className="px-5 py-2.5 border border-secundary-text text-primary-text rounded-lg font-medium hover:bg-primary-bg transition-colors"

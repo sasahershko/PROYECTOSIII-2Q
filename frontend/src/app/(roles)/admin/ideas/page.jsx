@@ -7,12 +7,12 @@ import { PlusCircle, Loader2, AlertCircle, User } from "lucide-react"
 
 // Paleta de colores moderna para las áreas
 const areaColors = {
-  INSO: { bg: "bg-blue-50", border: "border-blue-400", text: "text-blue-600" },
-  MAIS: { bg: "bg-emerald-50", border: "border-emerald-400", text: "text-emerald-600" },
-  FIIS: { bg: "bg-amber-50", border: "border-amber-400", text: "text-amber-600" },
-  DIPI: { bg: "bg-rose-50", border: "border-rose-400", text: "text-rose-600" },
-  ANIV: { bg: "bg-violet-50", border: "border-violet-400", text: "text-violet-600" },
-  DIDI: { bg: "bg-fuchsia-50", border: "border-fuchsia-400", text: "text-fuchsia-600" },
+  INSO: { bg: "bg-blue-50", border: "border-blue-400", text: "text-blue-600", ring: "ring-blue-300" },
+  MAIS: { bg: "bg-emerald-50", border: "border-emerald-400", text: "text-emerald-600", ring: "ring-emerald-300" },
+  FIIS: { bg: "bg-amber-50", border: "border-amber-400", text: "text-amber-600", ring: "ring-amber-300" },
+  DIPI: { bg: "bg-rose-50", border: "border-rose-400", text: "text-rose-600", ring: "ring-rose-300" },
+  ANIV: { bg: "bg-violet-50", border: "border-violet-400", text: "text-violet-600", ring: "ring-violet-300" },
+  DIDI: { bg: "bg-fuchsia-50", border: "border-fuchsia-400", text: "text-fuchsia-600", ring: "ring-fuchsia-300" },
 }
 
 // Colores por defecto para áreas no definidas
@@ -98,9 +98,10 @@ export default function IdeasPage() {
               <Link
                 href={`/admin/ideas/${idea._id}`}
                 key={idea._id}
-                className="group bg-white rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full border border-slate-100 hover:border-transparent"
+                className="group transition-all duration-300 ease-in-out transform hover:scale-[1.05] hover:shadow-lg rounded-xl"
               >
-                <div className={`${areaStyle.bg} p-6 flex flex-col h-full`}>
+                <div className={`${areaStyle.bg} p-6 flex flex-col h-full border ${areaStyle.border} rounded-xl`}>
+
                   <div className="mb-2">
                     <span
                       className={`text-xs font-medium px-2.5 py-1 rounded-full ${areaStyle.bg} ${areaStyle.text} border ${areaStyle.border}`}
