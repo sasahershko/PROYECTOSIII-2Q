@@ -50,12 +50,12 @@ export default function Register() {
       return;
     }
 
-    // if (!validarPassword(formData.password)) {
-    //   setError(
-    //     "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número."
-    //   );
-    //   return;
-    // }
+    if (!validarPassword(formData.password)) {
+      setError(
+        "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número."
+      );
+      return;
+    }
 
     if (
       !validarConfirmacionPassword(formData.password, formData.confirmPassword)
