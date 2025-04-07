@@ -7,16 +7,25 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { updateProject, deleteProject } from "@lib/projects";
+import DeleteConfirmModal from "@components/DeleteConfirmModal";
+
 
 export default function ModifyProjectForm({ project }) {
   const router = useRouter();
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
 
   const handleDelete = async (isHardDelete = false) => {
+    setIsDeleting(true);
     try {
       await deleteProject(project._id, isHardDelete);
       router.push("/projects");
     } catch (err) {
       console.error("Error al eliminar el proyecto:", err.message);
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -109,16 +118,20 @@ export default function ModifyProjectForm({ project }) {
 
   return (
     <div className="bg-gradient-to-b from-primary-bg to-card min-h-screen">
-      <div className="bg-card border ml-6 w-20">
+      <div className="bg-card mx-auto px-4 pt-6">
         <Link
           href={`/projects/${project._id}`}
+          className="inline-flex items-center text-sm text-primary-text transition duration-400 rounded-full hover:bg-gray-200 p-2"
+        // aria-label="Volver al proyecto"
         >
-          <ArrowLeft className="h-6 w-6" />
+          <ArrowLeft className="h-6 w-6 mr-1" />
+
         </Link>
       </div>
 
+
       <div className="text-center py-8 font-bold text-primary-text bg-card shadow-sm -mt-10">
-        <span className="text-5xl  bg-clip-text text-transparent bg-gradient-to-r from-accent to-secundary-text">
+        <span className="text-5xl  bg-clip-text text-transparent bg-accent">
           {project.name || "Nuevo Proyecto"}
         </span>
       </div>
@@ -437,11 +450,21 @@ export default function ModifyProjectForm({ project }) {
               <div className="flex flex-col gap-2">
                 <button
                   type="button"
-                  onClick={() => handleDelete(false)} // Soft delete
+                  onClick={() => setShowDeleteConfirm(true)}
                   className="px-6 py-3 bg-red-600 text-white rounded-lg font-medium shadow-sm hover:bg-red-700 transition duration-200"
                 >
                   Eliminar Proyecto
                 </button>
+                <DeleteConfirmModal
+                  isOpen={showDeleteConfirm}
+                  onClose={() => setShowDeleteConfirm(false)}
+                  onConfirm={() => handleDelete(false)} // false = soft delete
+                  isLoading={isDeleting}
+                  title="¿Eliminar este proyecto?"
+                  description="Esta acción no se puede deshacer. El proyecto será eliminado del listado."
+                />
+
+
                 {/* <button
                   type="button"
                   onClick={() => handleDelete(true)} // Hard delete
@@ -474,6 +497,7 @@ export default function ModifyProjectForm({ project }) {
         </div>
       </div>
     </div>
+
   );
 
 

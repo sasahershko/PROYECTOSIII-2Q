@@ -185,13 +185,14 @@ export default function NotesSection({ notes = [], projectUsers, projectId }) {
                                     <div className={`absolute left-0 top-0 h-full w-1 ${barColor}`}></div>
                                     <div className="p-4">
                                         <div className="flex items-start justify-between mb-2">
-                                            <h4 className="font-medium text-primary-text">{nota.note || "Nota sin título"}</h4>
+                                            <h4 className="inline-block bg-blue-100 text-blue-700 text-sm font-semibold px-2 py-1 rounded-md mb-1">
+                                                {nota.userWhoWrites?.name || "Usuario desconocido"} {nota.userWhoWrites?.surname || ""}
+                                            </h4>
                                             <span className={`text-xs px-3 py-1 rounded-full border ${badgeColor}`}>{label}</span>
                                         </div>
 
                                         <p className="text-sm text-primary-text mb-4">
-                                            {nota.userWhoWrites?.name ? `${nota.userWhoWrites.name}: ` : ""}
-                                            Verificar cumplimiento con estándares de seguridad actuales
+                                            <span className="font-semibold">{nota.note || "Nota sin título"}</span>
                                         </p>
 
                                         <div className="flex items-center justify-between">
