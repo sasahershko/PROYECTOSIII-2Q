@@ -35,25 +35,27 @@ export default function ProjectCard({ project, role }) {
   const dates = getProjectDates(project);
 
   return (
-    <div className="rounded-xl overflow-hidden shadow-lg bg-card hover-grow relative">
+    <div className="h-full flex flex-col rounded-xl overflow-hidden shadow-lg bg-card hover-grow relative">
       {/* Imagen (Visible para todos) */}
       <div className="h-48 bg-primary text-primary-text flex items-center justify-center rounded-t-xl">
         Imagen
       </div>
 
       {/* Contenido */}
-      <div className={`relative p-4 ${project.categoryColor}`}>
+      <div className={`relative p-4 pt-10 flex flex-col justify-between flex-grow ${project.categoryColor}`}>
         <div className="absolute -top-4 left-4">
           <div className={`relative inline-block px-5 py-1 ${project.categoryColor} rounded-tl-lg rounded-lg`}>
             <span className="relative z-20 text-sm font-semibold text-white">{project.area}</span>
           </div>
         </div>
 
-        <h3 className="mt-6 text-primary-text font-bold text-lg">{project.name}</h3>
-        <p className="text-sm text-gray-700 mt-2">{project.description}</p>
+        <h3 className="text-primary-text font-bold text-lg">{project.name}</h3>
+        <p className="text-sm text-gray-700 mt-2 overflow-hidden text-ellipsis whitespace-nowrap">
+          {project.description}
+        </p>
 
 
-        {(role === "admin" || role==="user") && (
+        {(role === "admin" || role === "user") && (
           <>
             {/* Avatares PROVISIONALES HASTA QUE TENGAMOS FOTOS DE PERFIL */}
             <div className="absolute top-1 right-5 flex -space-x-5">

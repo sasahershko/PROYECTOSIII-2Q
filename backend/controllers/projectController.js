@@ -216,7 +216,7 @@ export const deleteProject = async (req, res) => {
   try {
     const { id } = req.filteredData;
     const usuario = req.usuario;
-    const hardDelete = req.query.hard === "true";
+    const hardDelete = req.query.hard === "true"; 
 
     const proyecto = await Project.findById(id);
     if (!proyecto) {
@@ -329,7 +329,13 @@ export const addNotes = async (req, res) => {
     project.pendingNotes.push(noteObject);
     await project.save();
 
-    return res.status(200).send({ message: "Nota agregada exitosamente" });
+    // obtener la última nota (la recién añadida)
+    const nuevaNota = project.pendingNotes[project.pendingNotes.length - 1];
+
+    // popular el userWhoWrites 
+    await project.populate('pendingNotes.userWhoWrites', 'name surname');
+
+    return res.status(200).json(nuevaNota);
   } catch (error) {
     return res
       .status(500)

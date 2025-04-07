@@ -274,7 +274,7 @@ export default function Register() {
         </motion.div>
       )}
       <motion.div
-        className="bg-white p-12 rounded-lg shadow-lg w-full max-w-lg"
+        className="bg-white p-12 rounded-lg shadow-lg w-full max-w-lg text-black"
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.3, ease: "easeOut" }}

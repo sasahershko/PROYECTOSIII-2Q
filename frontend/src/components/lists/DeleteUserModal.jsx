@@ -21,7 +21,7 @@ export default function DeleteUserModal({ isOpen, onCancel, onConfirm }) {
           onClick={handleBackdropClick}
         >
           <motion.div
-            className="bg-white p-6 rounded-2xl shadow-xl w-[90%] max-w-md border border-gray-200"
+            className="bg-primary-bg p-6 rounded-2xl shadow-xl w-[90%] max-w-md border border-card"
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
@@ -33,12 +33,12 @@ export default function DeleteUserModal({ isOpen, onCancel, onConfirm }) {
               <div className="text-red-500 text-3xl">⚠️</div>
 
               {/* Título */}
-              <h2 className="text-xl font-semibold text-gray-800">
+              <h2 className="text-xl font-semibold text-primary-text">
                 ¿Eliminar usuario?
               </h2>
 
               {/* Descripción opcional */}
-              <p className="text-sm text-gray-500 -mt-2">
+              <p className="text-sm text-secundary-text -mt-2">
                 <span>¿Estas seguro de que quieres eliminarlo?</span>
                 <br />
                 <span>Esta acción no se puede deshacer.</span>
@@ -48,7 +48,7 @@ export default function DeleteUserModal({ isOpen, onCancel, onConfirm }) {
               <div className="flex justify-center gap-3 mt-4 w-full">
                 <button
                   onClick={onCancel}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition duration-150"
+                  className="w-full px-4 py-2 rounded-lg bg-card text-secundary-text hover:bg-card/50 transition duration-150"
                 >
                   Cancelar
                 </button>

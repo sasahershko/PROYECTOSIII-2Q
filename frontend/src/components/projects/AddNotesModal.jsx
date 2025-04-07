@@ -36,19 +36,20 @@ export default function AddNotesModal({ projectId, projectUsers, isOpen, onClose
         userWhoRecieves,
       };
 
+      const createdNote = await addNote(noteData, projectId);
+      
+      console.log(createdNote);
 
-      await addNote(noteData, projectId);
       if (onNoteAdded) {
         const fullUsers = projectUsers.filter(user =>
           userWhoRecieves.includes(user._id)
         );
 
         onNoteAdded({
-          ...noteData,
-          tag,
-          note,
-          userWhoRecieves: fullUsers,
+          ...createdNote,
+          userWhoRecieves: fullUsers, 
         });
+        
       }
 
 

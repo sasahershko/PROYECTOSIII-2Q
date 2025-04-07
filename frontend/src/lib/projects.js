@@ -213,8 +213,8 @@ export async function addNote(noteData, projectId) {
     if (!res.ok) {
       throw new Error(responseData.error);
     }
-
-    return responseData.message;
+    console.log(responseData.message)
+    return responseData;
   } catch (error) {
     console.error("Error al agregar la nota:", error.message);
     throw new Error(error.message || "No se pudo agregar la nota.");
