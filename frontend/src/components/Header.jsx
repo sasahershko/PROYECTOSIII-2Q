@@ -41,13 +41,6 @@ export default function Header() {
             </Link>
 
             <Link
-              href={"/ideas"}
-              className="transition duration-300 hover:text-gray-500"
-            >
-              Ideas
-            </Link>
-
-            <Link
               href={userRole === "admin" ? "/admin/reservations" : "/user/reservations"}
               className="transition duration-300 hover:text-gray-500"
             >
@@ -60,6 +53,10 @@ export default function Header() {
                 </Link>
                 <Link href="/admin/calendar" className="transition duration-300 hover:text-gray-500">
                   Calendario
+                </Link>
+
+                <Link href="/admin/ideas" className="transition duration-300 hover:text-gray-500" >
+                  Ideas
                 </Link>
               </>
             )}

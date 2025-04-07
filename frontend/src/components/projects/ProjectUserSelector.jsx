@@ -1,56 +1,43 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import { getUsers } from "@lib/users";
+import { useState, useEffect } from "react"
 
-export default function UserSelector({ selectedUsers, setSelectedUsers, label }) {
-  const [users, setUsers] = useState([]);
-  const [search, setSearch] = useState("");
-  const [filteredUsers, setFilteredUsers] = useState([]);
-
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const fetchedUsers = await getUsers();
-        setUsers(fetchedUsers);
-      } catch (error) {
-        console.error("Error al obtener usuarios:", error);
-      }
-    };
-
-    fetchUsers();
-  }, []);
+export default function ProjectUserSelector({ availableUsers = [], selectedUsers, setSelectedUsers, label }) {
+  const [search, setSearch] = useState("")
+  const [filteredUsers, setFilteredUsers] = useState([])
+  const [error, setError] = useState("")
+  const [submitAttempt, setSubmitAttempt] = useState(false)
 
   useEffect(() => {
     if (search.trim() === "") {
-      setFilteredUsers([]);
+      setFilteredUsers([])
     } else {
-      const filtered = users.filter((user) =>
-        `${user.name} ${user.surname} ${user.email} ${user.dni}`
-          .toLowerCase()
-          .includes(search.toLowerCase())
-      );
-      setFilteredUsers(filtered);
+      const filtered = availableUsers.filter((user) =>
+        `${user.name} ${user.surname}`.toLowerCase().includes(search.toLowerCase())
+      )
+      setFilteredUsers(filtered)
     }
-  }, [search, users]);
+  }, [search, availableUsers])
 
   const handleAddUser = (user) => {
     if (!selectedUsers.includes(user._id)) {
-      setSelectedUsers([...selectedUsers, user._id]);
+      setSelectedUsers([...selectedUsers, user._id])
+      if (error) setError("")
     }
-    setSearch("");
-    setFilteredUsers([]);
-  };
+    setSearch("")
+    setFilteredUsers([])
+  }
 
   const handleRemoveUser = (userId) => {
-    setSelectedUsers(selectedUsers.filter((id) => id !== userId));
-  };
+    const newSelected = selectedUsers.filter((id) => id !== userId)
+    setSelectedUsers(newSelected)
+  }
 
   return (
-    <div className="mb-4 relative">
+    <div  className="mb-4 relative">
       <label className="block font-semibold mb-2 text-primary-text">{label}</label>
-
-      {/* Input con icono */}
+      
+      {/* Input de búsqueda con ícono */}
       <div className="relative">
         <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
           <svg
@@ -74,10 +61,11 @@ export default function UserSelector({ selectedUsers, setSelectedUsers, label })
           placeholder="Buscar usuario por nombre, email o DNI"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          aria-label="Buscar usuario"
         />
       </div>
 
-      {/* Dropdown estilizado */}
+      {/* Dropdown con usuarios filtrados */}
       {filteredUsers.length > 0 && (
         <ul className="absolute z-20 w-full bg-card border border-secundary-text rounded-lg shadow-lg mt-1 max-h-64 overflow-y-auto">
           {filteredUsers.map((user) => (
@@ -95,11 +83,7 @@ export default function UserSelector({ selectedUsers, setSelectedUsers, label })
                   <div className="text-sm font-medium text-primary-text">
                     {user.name} {user.surname}
                   </div>
-                  {user.email && (
-                    <div className="text-xs text-secundary-text">
-                      {user.email}
-                    </div>
-                  )}
+                  {user.email && <div className="text-xs text-secundary-text">{user.email}</div>}
                 </div>
               </div>
             </li>
@@ -107,16 +91,16 @@ export default function UserSelector({ selectedUsers, setSelectedUsers, label })
         </ul>
       )}
 
-      {/* Usuarios seleccionados con mismo estilo que ProjectUserSelector */}
+      {/* Sección de usuarios seleccionados */}
       <div className="mt-5">
-        {selectedUsers.length > 0 && (
+        {selectedUsers.length > 0 ? (
           <>
             <h3 className="text-sm font-medium text-secundary-text mb-3">
               Usuarios seleccionados ({selectedUsers.length})
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {selectedUsers.map((userId) => {
-                const user = users.find((u) => u._id === userId);
+                const user = availableUsers.find((u) => u._id === userId)
                 return user ? (
                   <div
                     key={user._id}
@@ -131,11 +115,7 @@ export default function UserSelector({ selectedUsers, setSelectedUsers, label })
                         <div className="font-medium text-primary-text">
                           {user.name} {user.surname}
                         </div>
-                        {user.email && (
-                          <div className="text-sm text-secundary-text">
-                            {user.email}
-                          </div>
-                        )}
+                        {user.email && <div className="text-sm text-secundary-text">{user.email}</div>}
                       </div>
                     </div>
                     <button
@@ -151,21 +131,19 @@ export default function UserSelector({ selectedUsers, setSelectedUsers, label })
                         viewBox="0 0 24 24"
                         stroke="currentColor"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M6 18L18 6M6 6l12 12"
-                        />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     </button>
                   </div>
-                ) : null;
+                ) : null
               })}
             </div>
           </>
+        ) : (
+          // Si no hay usuarios seleccionados, solo mostramos el error si se ha intentado enviar
+          submitAttempt && <p className="text-red-500 text-sm">No has seleccionado ninguna persona. Debes seleccionar al menos una.</p>
         )}
       </div>
     </div>
-  );
+  )
 }
