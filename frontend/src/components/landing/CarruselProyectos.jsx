@@ -100,7 +100,7 @@ export default function CarruselProyectos() {
       <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-6">
 
         {/* Proyecto destacado */}
-        <div className="relative rounded-lg overflow-hidden shadow-md flex flex-col h-[560px]">
+        <div className="relative rounded-lg overflow-hidden shadow-md flex flex-col h-[545px]">
           <AnimatePresence mode="wait">
             <motion.div
               key={proyectoSeleccionado?._id}
@@ -111,10 +111,11 @@ export default function CarruselProyectos() {
               className="flex flex-col h-full"
             >
               <img
-                src={areaImages[proyectoSeleccionado?.area] || areaImages["Otros"]}
+                src={proyectoSeleccionado?.image || areaImages[proyectoSeleccionado?.area] || areaImages["OTROS"]}
                 alt={proyectoSeleccionado?.name}
-                className="w-full h-full overflow-hidden"
+                className="w-full h-full object-cover"
               />
+
               {/* Info extra */}
               <div className="flex-col left-0 w-full h-[150px] bg-opacity-90 p-4">
                 <span className={`text-xs font-semibold text-white inline-block mb-2 px-2 py-1 rounded-full ${areaColors[proyectoSeleccionado?.area] || 'bg-gray-400'}`}>
@@ -148,13 +149,13 @@ export default function CarruselProyectos() {
                 onClick={() => setProyectoSeleccionado(proyecto)}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.98 }}
-                className={`relative group rounded-lg overflow-hidden shadow hover:shadow-md transition-all text-left 
+                className={`relative group rounded-lg overflow-hidden shadow hover:shadow-md transition-all text-left h-full min-h-[265px]
                   ${proyectoSeleccionado?._id === proyecto._id ? 'shadow-lg shadow-gray-400/50' : ''}`}
               >
                 {/* Imagen */}
                 <div className="h-32 w-full overflow-hidden">
                   <img
-                    src={areaImages[proyecto.area] || areaImages["Otros"]}
+                    src={proyecto.image || areaImages[proyecto.area] || areaImages["OTROS"]}
                     alt={proyecto.name}
                     className="w-full h-full object-cover"
                   />
@@ -165,7 +166,9 @@ export default function CarruselProyectos() {
                   <span className={`text-xs font-semibold px-2 py-1 rounded-full text-white ${areaColors[proyecto.area] || 'bg-gray-400'}`}>
                     {proyecto.area}
                   </span>
-                  <h4 className="mt-2 font-bold text-md">{proyecto.name}</h4>
+                  <h4 className="mt-2 font-bold text-md line-clamp-2 leading-tight">
+                    {proyecto.name}
+                  </h4>
                   <p className="text-xs dark:text-gray-400 line-clamp-2 mt-2">{proyecto.description}</p>
                 </div>
               </motion.button>
