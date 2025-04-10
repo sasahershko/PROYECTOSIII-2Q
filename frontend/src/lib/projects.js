@@ -49,7 +49,7 @@ export async function createProject(formData) {
     const responseData = await res.json();
 
     if (!res.ok) {
-      throw new Error(responseData.mensaje || "Error desconocido.");
+      throw new Error(responseData.message || "Error desconocido.");
     }
 
     return responseData.project;
@@ -82,7 +82,7 @@ export async function updateProject(projectId, updatedData) {
     const responseData = await res.json();
 
     if (!res.ok) {
-      throw new Error(responseData.mensaje || "Error al actualizar el proyecto.");
+      throw new Error(responseData.message || "Error al actualizar el proyecto.");
     }
 
     return responseData.project;
@@ -140,10 +140,10 @@ export async function deleteProject(projectId) {
 
     const data = await res.json();
     if (!res.ok) {
-      throw new Error(data.mensaje || "Error al eliminar el proyecto");
+      throw new Error(data.message || "Error al eliminar el proyecto");
     }
 
-    return data.mensaje;
+    return data.message;
   } catch (error) {
     console.error("Error al eliminar proyecto:", error.message);
     throw error;
