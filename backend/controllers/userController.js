@@ -245,9 +245,10 @@ export const getUserProfile = async (req, res) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const usuario = await User.findOne({
-      _id: decoded.id,
-    }).select("name email role");
+
+    const usuario = await User.findById(decoded.id)
+      .select("name surname email dni rol grade profileImage projects")
+      .populate("projects", "title status deadline");
 
     if (!usuario) {
       return res.status(404).json({ mensaje: "Usuario no encontrado." });
@@ -256,8 +257,13 @@ export const getUserProfile = async (req, res) => {
     res.status(200).json({
       id: usuario._id,
       name: usuario.name,
+      surname: usuario.surname,
       email: usuario.email,
+      dni: usuario.dni,
       rol: usuario.rol,
+      grade: usuario.grade,
+      profileImage: usuario.profileImage,
+      projects: usuario.projects,
     });
   } catch (error) {
     console.error("❌ Error en el servidor:", error);
@@ -275,13 +281,25 @@ export const getUserProfileById = async (req, res) => {
     const user = await User.findOne({
       _id: req.params.id,
       deleted: false,
-    }).select("-password -email");
+    })
+      .select("name surname email dni rol grade profileImage projects")
+      .populate("projects", "title status deadline");
 
     if (!user) {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
-    res.status(200).json(user);
+    res.status(200).json({
+      id: user._id,
+      name: user.name,
+      surname: user.surname,
+      email: user.email,
+      dni: user.dni,
+      rol: user.rol,
+      grade: user.grade,
+      profileImage: user.profileImage,
+      projects: user.projects,
+    });
   } catch (error) {
     console.error("❌ Error en el servidor:", error);
     res.status(500).json({ message: "Error en el servidor" });
@@ -379,17 +397,19 @@ export const deleteUser = async (req, res) => {
 
 export const getDeletedUsers = async (req, res) => {
   try {
-    if (req.usuario.rol !== "admin") {
+    if (!req.usuario || req.usuario.rol !== "admin") {
       return res.status(403).json({
         mensaje: "Solo los administradores pueden ver usuarios eliminados.",
       });
     }
 
-    const deletedUsers = await User.findDeleted().select(
+    const deletedUsers = await User.findDeleted({ deleted: true }).select(
       "name surname email rol grade deletedAt"
     );
+
     res.status(200).json(deletedUsers);
   } catch (error) {
+    console.error("❌ Error al obtener usuarios eliminados:", error);
     res.status(500).json({
       mensaje: "Error al obtener usuarios eliminados",
       error: error.message,

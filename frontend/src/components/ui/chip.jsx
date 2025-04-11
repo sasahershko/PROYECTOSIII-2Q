@@ -9,8 +9,19 @@ export default function GradeChip({ grado }) {
 
   const styles = colorMap[grado] || "bg-gray-100 text-gray-800";
 
-  const capitalize = (text) =>
-    text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+  function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  if (grado === "null") {
+    return (
+      <span
+        className={`px-[12px] py-[4px] rounded-full text-sm font-medium bg-transparent`}
+      >
+        <span className="text-gray-500">&nbsp;</span>
+      </span>
+    );
+  }
 
   return (
     <span
