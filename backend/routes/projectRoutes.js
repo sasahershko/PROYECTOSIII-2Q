@@ -9,8 +9,11 @@ import {
   restoreProject,
   addNotes,
   updateNote,
+  deleteNote,
   hardDeleteProject,
-  updateProjectBudget
+  updateProjectBudget,
+  addUsersToProject,
+  removeUsersFromProject,
 } from "../controllers/projectController.js";
 import {
   authMiddleware,
@@ -21,9 +24,14 @@ import {
   createProjectValidator,
   updateProjectValidator,
   projectIdValidator,
-  budgetValidator
+  budgetValidator,
+  validateProjectUsersUpdate,
 } from "../validators/projectValidator.js";
-import { createNoteValidator, updateNoteValidator } from "../validators/noteValidator.js";
+import {
+  createNoteValidator,
+  updateNoteValidator,
+  deleteNoteValidator,
+} from "../validators/noteValidator.js";
 import { validateRequest } from "../middlewares/validateRequest.js";
 
 const projectRouter = express.Router();
@@ -134,11 +142,20 @@ projectRouter.post(
 
 /**
  * @swagger
- * tags:
- *   name: Proyectos
- *   description: Endpoints para gestionar proyectos (solo proyectos no eliminados)
+ * /api/projects:
+ *   get:
+ *     summary: Obtener todos los proyectos
+ *     tags: [Proyectos]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de proyectos
+ *       403:
+ *         description: Solo los administradores pueden ver proyectos eliminados.
+ *       500:
+ *         description: Error al obtener los proyectos eliminados.
  */
-
 projectRouter.get("/", authMiddlewareOptional, getAllProjects);
 
 /**
@@ -267,7 +284,7 @@ projectRouter.get(
  *       500:
  *         description: Error interno del servidor.
  */
-projectRouter.put(
+projectRouter.patch(
   "/:id",
   authMiddleware,
   projectIdValidator,
@@ -280,7 +297,8 @@ projectRouter.put(
  * @swagger
  * /api/projects/{id}:
  *   delete:
- *     summary: Eliminar un proyecto (soft delete)
+ *     summary: Eliminar un proyecto (soft o hard delete)
+ *     description: Elimina un proyecto. Por defecto realiza un soft delete. Para eliminar permanentemente (hard delete), añadir el parámetro de consulta `?hard=true`.
  *     tags: [Proyectos]
  *     security:
  *       - bearerAuth: []
@@ -288,11 +306,18 @@ projectRouter.put(
  *       - in: path
  *         name: id
  *         required: true
+ *         description: ID del proyecto a eliminar.
  *         schema:
  *           type: string
+ *       - in: query
+ *         name: hard
+ *         required: false
+ *         description: Si se establece como `true`, se realiza un hard delete.
+ *         schema:
+ *           type: boolean
  *     responses:
  *       200:
- *         description: Proyecto marcado como eliminado.
+ *         description: Proyecto eliminado correctamente.
  *       403:
  *         description: No autorizado.
  *       404:
@@ -300,6 +325,7 @@ projectRouter.put(
  *       500:
  *         description: Error interno del servidor.
  */
+
 projectRouter.delete(
   "/:id",
   authMiddleware,
@@ -375,7 +401,6 @@ projectRouter.put(
   restoreProject
 );
 
-
 /**
  * @swagger
  * /api/projects/note/{id}:
@@ -429,7 +454,7 @@ projectRouter.put(
  *       500:
  *         description: Error interno del servidor.
  */
-projectRouter.post('/note/:id', authMiddleware, createNoteValidator, addNotes);
+projectRouter.post("/note/:id", authMiddleware, createNoteValidator, addNotes);
 
 /**
  * @swagger
@@ -497,7 +522,19 @@ projectRouter.post('/note/:id', authMiddleware, createNoteValidator, addNotes);
  *       500:
  *         description: Error interno del servidor.
  */
-projectRouter.patch('/note/:id', authMiddleware, updateNoteValidator, updateNote);
+projectRouter.patch(
+  "/note/:id",
+  authMiddleware,
+  updateNoteValidator,
+  updateNote
+);
+
+projectRouter.delete(
+  "/note/:id",
+  authMiddleware,
+  deleteNoteValidator,
+  deleteNote
+);
 
 /**
  * @swagger
@@ -591,5 +628,117 @@ projectRouter.patch('/note/:id', authMiddleware, updateNoteValidator, updateNote
  *       500:
  *         description: Error interno del servidor.
  */
-projectRouter.patch('/budget/:id', authMiddleware, budgetValidator, updateProjectBudget);
+projectRouter.patch(
+  "/budget/:id",
+  authMiddleware,
+  budgetValidator,
+  updateProjectBudget
+);
+
+/**
+ * @swagger
+ * /api/proyectos/{id}/add-users:
+ *   patch:
+ *     summary: Añadir participantes y/o responsables a un proyecto
+ *     tags: [Proyectos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del proyecto al que añadir usuarios
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               users:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: IDs de usuarios a añadir como participantes
+ *               responsibles:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: IDs de usuarios a añadir como responsables
+ *     responses:
+ *       200:
+ *         description: Usuarios añadidos correctamente
+ *       400:
+ *         description: Datos inválidos
+ *       403:
+ *         description: No tienes permiso para modificar este proyecto
+ *       404:
+ *         description: Proyecto no encontrado
+ *       500:
+ *         description: Error del servidor
+ */
+projectRouter.patch(
+  "/:id/add-users",
+  authMiddleware,
+  verificarPermisoProyecto,
+  validateProjectUsersUpdate,
+  validateRequest,
+  addUsersToProject
+);
+
+/**
+ * @swagger
+ * /api/proyectos/{id}/remove-users:
+ *   patch:
+ *     summary: Eliminar participantes y/o responsables de un proyecto
+ *     tags: [Proyectos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del proyecto al que eliminar usuarios
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               users:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: IDs de usuarios a eliminar como participantes
+ *               responsibles:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: IDs de usuarios a eliminar como responsables
+ *     responses:
+ *       200:
+ *         description: Usuarios eliminados correctamente
+ *       400:
+ *         description: Datos inválidos
+ *       403:
+ *         description: No tienes permiso para modificar este proyecto
+ *       404:
+ *         description: Proyecto no encontrado
+ *       500:
+ *         description: Error del servidor
+ */
+projectRouter.patch(
+  "/:id/remove-users",
+  authMiddleware,
+  verificarPermisoProyecto,
+  validateProjectUsersUpdate,
+  validateRequest,
+  removeUsersFromProject
+);
+
 export default projectRouter;

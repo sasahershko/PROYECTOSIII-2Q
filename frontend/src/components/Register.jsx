@@ -50,12 +50,12 @@ export default function Register() {
       return;
     }
 
-    // if (!validarPassword(formData.password)) {
-    //   setError(
-    //     "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número."
-    //   );
-    //   return;
-    // }
+    if (!validarPassword(formData.password)) {
+      setError(
+        "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número."
+      );
+      return;
+    }
 
     if (
       !validarConfirmacionPassword(formData.password, formData.confirmPassword)
@@ -159,6 +159,14 @@ export default function Register() {
         setError("Por favor, completa todos los campos de esta sección.");
         return;
       }
+
+      if (!validarPassword(formData.password)) {
+        setError(
+          "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número."
+        );
+        return;
+      }
+
       if (
         !validarConfirmacionPassword(
           formData.password,
@@ -266,7 +274,7 @@ export default function Register() {
         </motion.div>
       )}
       <motion.div
-        className="bg-white p-12 rounded-lg shadow-lg w-full max-w-lg"
+        className="bg-white p-12 rounded-lg shadow-lg w-full max-w-lg text-black"
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.3, ease: "easeOut" }}

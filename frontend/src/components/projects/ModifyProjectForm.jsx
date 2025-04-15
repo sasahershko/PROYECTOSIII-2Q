@@ -1,15 +1,33 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { createProject } from "@lib/projects";
 import UserSelector from "@components/UserSelector";
 import { FaCheckCircle } from "react-icons/fa";
-import { useState } from 'react';
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { useState } from "react";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { updateProject, deleteProject } from "@lib/projects";
+import DeleteConfirmModal from "@components/DeleteConfirmModal";
+
 
 export default function ModifyProjectForm({ project }) {
   const router = useRouter();
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+
+  const handleDelete = async (isHardDelete = false) => {
+    setIsDeleting(true);
+    try {
+      await deleteProject(project._id, isHardDelete);
+      router.push("/projects");
+    } catch (err) {
+      console.error("Error al eliminar el proyecto:", err.message);
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  };
 
   const [formData, setFormData] = useState({
     name: project?.name || "",
@@ -18,8 +36,10 @@ export default function ModifyProjectForm({ project }) {
     contactPhone: "", //!NO ESTÁ EN EL BACK
     company: project?.company || "",
     area: project?.area || "",
-    responsibles: project?.responsibles ? project.responsibles.map(responsible => responsible._id) : [],
-    users: project?.users ? project.users.map(user => user._id) : [],
+    responsibles: project?.responsibles
+      ? project.responsibles.map((responsible) => responsible._id)
+      : [],
+    users: project?.users ? project.users.map((user) => user._id) : [],
     benefit: project?.benefit || "",
     folder: project?.folder || "",
     confidentialFolder: project?.confidentialFolder || "", //!NO ESTÁ EN EL BACK
@@ -44,9 +64,10 @@ export default function ModifyProjectForm({ project }) {
       ? new Date(project.startDate).toISOString().split("T")[0]
       : "",
 
-    reviewDates: project?.reviewDates && project.reviewDates.length
-      ? [new Date(project.reviewDates[0]).toISOString().split("T")[0]]
-      : [""],
+    reviewDates:
+      project?.reviewDates && project.reviewDates.length
+        ? [new Date(project.reviewDates[0]).toISOString().split("T")[0]]
+        : [""],
 
     endDate: project?.endDate
       ? new Date(project.endDate).toISOString().split("T")[0]
@@ -88,31 +109,31 @@ export default function ModifyProjectForm({ project }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Convertir responsables a un array si es un string
-    if (!Array.isArray(formData.responsibles)) {
-      formData.responsibles = [formData.responsibles];
-    }
-
     try {
-      console.log('Editando...')
-      // router.push('/projects');
+      await updateProject(project._id, formData);
+
+      router.push(`/projects/${project._id}`);
     } catch (error) {
-      console.log('Error')
+      console.error("Error al guardar el proyecto:", error.message);
     }
   };
 
   return (
     <div className="bg-gradient-to-b from-primary-bg to-card min-h-screen">
-      <div className="bg-card border ml-6 w-20">
+      <div className="bg-card mx-auto px-4 pt-6">
         <Link
           href={`/projects/${project._id}`}
+          className="inline-flex items-center text-sm text-primary-text transition duration-400 rounded-full hover:bg-gray-200 p-2"
+        // aria-label="Volver al proyecto"
         >
-          <ArrowLeft className="h-6 w-6" />
+          <ArrowLeft className="h-6 w-6 mr-1" />
+
         </Link>
       </div>
 
+
       <div className="text-center py-8 font-bold text-primary-text bg-card shadow-sm -mt-10">
-        <span className="text-5xl  bg-clip-text text-transparent bg-gradient-to-r from-accent to-secundary-text">
+        <span className="bg-gradient-to-b from-white to-50% to-accent text-5xl bg-clip-text text-transparent">
           {project.name || "Nuevo Proyecto"}
         </span>
       </div>
@@ -146,7 +167,8 @@ export default function ModifyProjectForm({ project }) {
 
                 <div>
                   <label className="block text-sm font-medium mb-2 text-primary-text">
-                    Descripción del Proyecto <span className="text-accent">*</span>
+                    Descripción del Proyecto{" "}
+                    <span className="text-accent">*</span>
                   </label>
                   <textarea
                     name="description"
@@ -188,7 +210,12 @@ export default function ModifyProjectForm({ project }) {
                         viewBox="0 0 24 24"
                         xmlns="http://www.w3.org/2000/svg"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M19 9l-7 7-7-7"
+                        ></path>
                       </svg>
                     </div>
                   </div>
@@ -220,7 +247,12 @@ export default function ModifyProjectForm({ project }) {
                         viewBox="0 0 24 24"
                         xmlns="http://www.w3.org/2000/svg"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M19 9l-7 7-7-7"
+                        ></path>
                       </svg>
                     </div>
                   </div>
@@ -381,7 +413,8 @@ export default function ModifyProjectForm({ project }) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium mb-2 text-primary-text">
-                    URL de la Carpeta de Documentación <span className="text-accent">*</span>
+                    URL de la Carpeta de Documentación{" "}
+                    <span className="text-accent">*</span>
                   </label>
                   <input
                     type="text"
@@ -395,7 +428,8 @@ export default function ModifyProjectForm({ project }) {
 
                 <div>
                   <label className="block text-sm font-medium mb-2 text-primary-text">
-                    URL de la Carpeta Confidencial <span className="text-accent">*</span>
+                    URL de la Carpeta Confidencial{" "}
+                    <span className="text-accent">*</span>
                   </label>
                   <input
                     type="text"
@@ -407,76 +441,6 @@ export default function ModifyProjectForm({ project }) {
                 </div>
               </div>
             </div>
-
-
-            {/* Configuración de Convocatoria */}
-            {/* <div className="border-b border-secundary-text pb-6">
-                  <h2 className="text-2xl font-bold text-primary-text mb-6 flex items-center">
-                    <span className="w-8 h-8 bg-accent rounded-full flex items-center justify-center text-white mr-3 text-sm">
-                      7
-                    </span>
-                    Configuración de Convocatoria
-                  </h2>
-      
-                  <div className="bg-primary-bg p-4 rounded-lg mb-6">
-                    <label className="inline-flex items-center">
-                      <input
-                        type="checkbox"
-                        name="practicesAgreement"
-                        checked={formData.practicesAgreement}
-                        onChange={handleChange}
-                        className="w-5 h-5 text-accent border-secundary-text rounded focus:ring-accent"
-                      />
-                      <span className="ml-2 text-primary-text font-medium">
-                        ¿Es un Proyecto de Convocatoria?
-                      </span>
-                    </label>
-                  </div>
-      
-                  <div className="grid grid-cols-1 gap-6 mb-6">
-                    <div>
-                      <label className="block text-sm font-medium mb-2 text-primary-text">
-                        Nombre de Convocatoria
-                      </label>
-                      <input
-                        type="text"
-                        name="convocatoriaName"
-                        value={formData.convocatoriaName}
-                        onChange={handleChange}
-                        className="w-full bg-primary-bg border border-secundary-text rounded-lg p-3 text-primary-text focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition duration-200"
-                      />
-                    </div>
-                  </div>
-      
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium mb-2 text-primary-text">
-                        Fecha de Inicio de Convocatoria
-                      </label>
-                      <input
-                        type="date"
-                        name="convocatoriaStart"
-                        value={formData.convocatoriaStart}
-                        onChange={handleChange}
-                        className="w-full bg-primary-bg border border-secundary-text rounded-lg p-3 text-primary-text focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition duration-200"
-                      />
-                    </div>
-      
-                    <div>
-                      <label className="block text-sm font-medium mb-2 text-primary-text">
-                        Fecha de Fin de Convocatoria
-                      </label>
-                      <input
-                        type="date"
-                        name="convocatoriaEnd"
-                        value={formData.convocatoriaEnd}
-                        onChange={handleChange}
-                        className="w-full bg-primary-bg border border-secundary-text rounded-lg p-3 text-primary-text focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition duration-200"
-                      />
-                    </div>
-                  </div>
-                </div>
-       */}
 
             {/* Notas Adicionales */}
             <div>
@@ -498,27 +462,55 @@ export default function ModifyProjectForm({ project }) {
             </div>
 
             <div className="flex flex-col sm:flex-row justify-between gap-4 pt-6">
-              <button
-                type="button"
-                onClick={() => router.push("/projects")}
-                className="px-6 py-3 bg-card border border-secundary-text rounded-lg text-primary-text font-medium hover:bg-primary-bg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent transition duration-200"
-              >
-                Cancelar
-              </button>
+              <div className="flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="px-6 py-3 bg-red-600 text-white rounded-lg font-medium shadow-sm hover:bg-red-700 transition duration-200"
+                >
+                  Eliminar Proyecto
+                </button>
+                <DeleteConfirmModal
+                  isOpen={showDeleteConfirm}
+                  onClose={() => setShowDeleteConfirm(false)}
+                  onConfirm={() => handleDelete(false)} // false = soft delete
+                  isLoading={isDeleting}
+                  title="¿Eliminar este proyecto?"
+                  description="Esta acción no se puede deshacer. El proyecto será eliminado del listado."
+                />
 
-              <button
-                type="submit"
-                className="hover:bg-accent/80 px-6 py-3 bg-accent text-white rounded-lg font-medium shadow-sm hover:from-accent hover:to-secundary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent transition duration-200 flex items-center justify-center"
-              >
-                <FaCheckCircle className="mr-2" />
-                Guardar Proyecto
-              </button>
+
+                {/* <button
+                  type="button"
+                  onClick={() => handleDelete(true)} // Hard delete
+                  className="text-sm text-red-500 underline hover:text-red-700"
+                >
+                  Eliminar Permanentemente
+                </button> */}
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4 sm:justify-end">
+                <button
+                  type="button"
+                  onClick={() => router.push("/projects")}
+                  className="px-6 py-3 bg-card border border-secundary-text rounded-lg text-primary-text font-medium hover:bg-primary-bg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent transition duration-200"
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  type="submit"
+                  className="hover:bg-accent/80 px-6 py-3 bg-accent text-white rounded-lg font-medium shadow-sm hover:from-accent hover:to-secundary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent transition duration-200 flex items-center justify-center"
+                >
+                  <FaCheckCircle className="mr-2" />
+                  Guardar Proyecto
+                </button>
+              </div>
             </div>
           </form>
         </div>
       </div>
     </div>
+
   );
-
-
 }

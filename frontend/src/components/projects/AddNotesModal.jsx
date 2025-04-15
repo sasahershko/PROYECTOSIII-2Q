@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { addNote } from "@/lib/projects";
 import ProjectUserSelector from "@/components/projects/ProjectUserSelector";
 
-export default function AddNotesModal({ projectId, projectUsers, isOpen, onClose }) {
+export default function AddNotesModal({ projectId, projectUsers, isOpen, onClose, onNoteAdded }) {
   if (typeof window === "undefined") return null;
 
   const [note, setNote] = useState("");
@@ -26,13 +26,32 @@ export default function AddNotesModal({ projectId, projectUsers, isOpen, onClose
     setIsLoading(true);
     setError(null);
     try {
+      if (userWhoRecieves.length < 1) {
+        setError('Debes seleccionar al menos un usuario');
+        return;
+      }
       const noteData = {
         note,
         tag,
         userWhoRecieves,
       };
 
-      await addNote(noteData, projectId);
+      const createdNote = await addNote(noteData, projectId);
+      
+      console.log(createdNote);
+
+      if (onNoteAdded) {
+        const fullUsers = projectUsers.filter(user =>
+          userWhoRecieves.includes(user._id)
+        );
+
+        onNoteAdded({
+          ...createdNote,
+          userWhoRecieves: fullUsers, 
+        });
+        
+      }
+
 
       // Reiniciar estados y cerrar modal tras el éxito
       setNote("");
@@ -89,7 +108,7 @@ export default function AddNotesModal({ projectId, projectUsers, isOpen, onClose
                     <option value="completada">Completada</option>
                   </select>
                 </div>
- 
+
                 <ProjectUserSelector
                   label="Usuarios que reciben"
                   availableUsers={projectUsers || []} // Garantiza que sea un arreglo

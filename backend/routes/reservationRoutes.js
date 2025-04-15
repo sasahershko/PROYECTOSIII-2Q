@@ -15,8 +15,8 @@ import {
 
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 //import { verificarPermisoProyecto } from "../middlewares/projectAuthMiddleware.js";
-import { validatorCreateReservation } from "../utils/validators/reservationValidator.js";
-import { validatorCreateTable } from "../utils/validators/tablesValidator.js";
+import { validatorCreateReservation } from "../validators/reservationValidator.js";
+import { validatorCreateTable } from "../validators/tablesValidator.js";
 import { adminOrSelfMiddleware } from "../middlewares/adminOrSelfMiddleware.js";
 
 const reservationRouter = express.Router();

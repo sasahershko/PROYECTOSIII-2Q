@@ -24,7 +24,7 @@ export default function KeyDatesCard({ project }) {
                         {dates.map((date, i) => {
                             if (!date) return null;
 
-                            const label = i === 0 ? "Inicio" : i === 1 ? "Fin" : "Próxima revisión";
+                            const label = i === 0 ? "Inicio" : i === 1 ? "Próxima revisión" : "Fin";
 
                             return (
                                 <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-primary-bg ">
