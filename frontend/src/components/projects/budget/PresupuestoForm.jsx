@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { updateProjectBudget } from '@/lib/projects';
-import { FaCheckCircle } from 'react-icons/fa';
+import { FaCheckCircle, FaTrash } from 'react-icons/fa';
 
 export default function PresupuestoForm({ projectId, presupuestoInicial = null, onSuccess }) {
   const [titulo, setTitulo] = useState(presupuestoInicial?.title || '');
@@ -42,6 +42,10 @@ export default function PresupuestoForm({ projectId, presupuestoInicial = null, 
     setOtrosGastos([...otrosGastos, nuevoGasto]);
     setNuevoGasto({ descripcion: '', cantidad: 0, precio: 0 });
   };
+
+  const eliminarGasto = (index) => {
+    setOtrosGastos(prev => prev.filter((_, i) => i !== index));
+  };  
 
   const handleGuardar = async () => {
     const presupuesto = {
@@ -155,29 +159,45 @@ export default function PresupuestoForm({ projectId, presupuestoInicial = null, 
           </h2>
 
           <div className="p-4 rounded-lg shadow-sm">
-            <div className="grid grid-cols-4 gap-4 text-sm font-medium text-gray-500 mb-2">
+            <div className="grid gap-4 text-sm font-medium text-gray-500 mb-2"
+              style={{ gridTemplateColumns: '2fr 1fr 1fr 1fr 0.5fr' }}>
               <span>Descripción</span>
               <span>Cantidad</span>
               <span>€/unidad</span>
               <span>Total</span>
+              <span>Acción</span>
             </div>
 
             {/* Gastos existentes */}
             {otrosGastos.map((gasto, idx) => (
-              <div key={idx} className="grid grid-cols-4 gap-4 mb-3">
+              <div
+                key={idx}
+                className="grid gap-4 mb-3 items-center"
+                style={{ gridTemplateColumns: '2fr 1fr 1fr 1fr 0.5fr' }}
+              >
                 <span>{gasto.descripcion}</span>
                 <span>{gasto.cantidad}</span>
                 <span>€{Number(gasto.precio).toFixed(2)}</span>
                 <span>€{(gasto.cantidad * gasto.precio).toFixed(2)}</span>
+                <button
+                  onClick={() => eliminarGasto(idx)}
+                  className="mx-1 w-8 h-8 bg-red-600 hover:bg-red-700 text-white rounded flex justify-center items-center"
+                  title="Eliminar gasto"
+                >
+                  <FaTrash className="w-4 h-4" />
+                </button>
               </div>
             ))}
 
             {/* Nuevo gasto */}
-            <div className="grid grid-cols-4 gap-4 items-center">
+            <div
+              className="grid gap-6 items-center"
+              style={{ gridTemplateColumns: '1.8fr 1fr 1fr 1.5fr' }}
+            >
               <input value={nuevoGasto.descripcion} onChange={e => setNuevoGasto({ ...nuevoGasto, descripcion: e.target.value })} className="input" placeholder="Descripción" />
               <input type="number" value={nuevoGasto.cantidad} onChange={e => setNuevoGasto({ ...nuevoGasto, cantidad: +e.target.value })} className="input" />
               <input type="number" value={nuevoGasto.precio} onChange={e => setNuevoGasto({ ...nuevoGasto, precio: +e.target.value })} className="input" />
-              <button onClick={agregarGasto} className="bg-accent text-white px-16 py-1 rounded hover:bg-accent/80 w-fit">
+              <button onClick={agregarGasto} className="bg-accent text-white px-20 py-2 rounded hover:bg-accent/80 w-fit">
                 + Añadir Gasto
               </button>
             </div>
