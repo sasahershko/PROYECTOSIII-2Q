@@ -83,17 +83,23 @@ export const budgetValidator = [
   check("budget.interns.numInterns")
     .optional()
     .isInt({ min: 0 })
-    .withMessage("El número de estudiantes en prácticas debe ser un entero positivo."),
+    .withMessage(
+      "El número de estudiantes en prácticas debe ser un entero positivo."
+    ),
 
   check("budget.interns.estimatedHours")
     .optional()
     .isFloat({ min: 0 })
-    .withMessage("Las horas estimadas para prácticas deben ser un número positivo."),
+    .withMessage(
+      "Las horas estimadas para prácticas deben ser un número positivo."
+    ),
 
   check("budget.interns.pricePerHour")
     .optional()
     .isFloat({ min: 0 })
-    .withMessage("El precio por hora en prácticas debe ser un número positivo."),
+    .withMessage(
+      "El precio por hora en prácticas debe ser un número positivo."
+    ),
 
   check("budget.interns.subtotal")
     .optional()
@@ -118,7 +124,9 @@ export const budgetValidator = [
   check("budget.extraExpenses.*.unitPrice")
     .optional()
     .isFloat({ min: 0 })
-    .withMessage("El precio unitario del gasto extra debe ser un número positivo."),
+    .withMessage(
+      "El precio unitario del gasto extra debe ser un número positivo."
+    ),
 
   check("budget.extraExpenses.*.subtotal")
     .optional()
@@ -129,4 +137,28 @@ export const budgetValidator = [
     .optional()
     .isFloat({ min: 0 })
     .withMessage("El total general debe ser un número positivo."),
+];
+
+export const validateProjectUsersUpdate = [
+  param("id").isMongoId().withMessage("ID de proyecto no válido"),
+
+  check("users")
+    .optional()
+    .isArray()
+    .withMessage("users debe ser un array de IDs"),
+
+  check("users.*")
+    .optional()
+    .isMongoId()
+    .withMessage("Cada ID en users debe ser un ObjectId válido"),
+
+  check("responsibles")
+    .optional()
+    .isArray()
+    .withMessage("responsibles debe ser un array de IDs"),
+
+  check("responsibles.*")
+    .optional()
+    .isMongoId()
+    .withMessage("Cada ID en responsibles debe ser un ObjectId válido"),
 ];

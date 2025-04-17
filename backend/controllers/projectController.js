@@ -1,7 +1,7 @@
 import Project from "../models/Project.js";
 import User from "../models/User.js";
-import { matchedData } from 'express-validator';
-import { calculateBudget } from '../utils/budget.js'
+import { matchedData } from "express-validator";
+import { calculateBudget } from "../utils/budget.js";
 
 // 🔁 Validar IDs de usuarios y devolver lista filtrada (sin duplicados ni inexistentes)
 const filtrarUsuariosExistentes = async (ids = []) => {
@@ -73,7 +73,6 @@ export const createProject = async (req, res) => {
     });
   }
 };
-
 
 // Obtener todos los proyectos (no eliminados)
 export const getAllProjects = async (req, res) => {
@@ -217,7 +216,7 @@ export const deleteProject = async (req, res) => {
   try {
     const { id } = req.filteredData;
     const usuario = req.usuario;
-    const hardDelete = req.query.hard === "true";
+    const hardDelete = req.query.hard === "true"; 
 
     const proyecto = await Project.findById(id);
     if (!proyecto) {
@@ -255,7 +254,6 @@ export const deleteProject = async (req, res) => {
     });
   }
 };
-
 
 export const getDeletedProjects = async (req, res) => {
   try {
@@ -302,13 +300,12 @@ export const restoreProject = async (req, res) => {
   }
 };
 
-
 export const addNotes = async (req, res) => {
   try {
     const {
       note,
       userWhoRecieves = [],
-      tag = "no completada"
+      tag = "no completada",
     } = matchedData(req);
 
     const projectId = req.params.id;
@@ -316,9 +313,8 @@ export const addNotes = async (req, res) => {
 
     const project = await Project.findById(projectId);
     if (!project) {
-      return res.status(404).json({ message: 'Proyecto no encontrado' });
+      return res.status(404).json({ message: "Proyecto no encontrado" });
     }
-
 
     //crear el objeto de la nota
     const noteObject = {
@@ -328,7 +324,6 @@ export const addNotes = async (req, res) => {
       tag,
       date: Date.now(),
     };
-
 
     //agregar la nota
     project.pendingNotes.push(noteObject);
@@ -342,29 +337,26 @@ export const addNotes = async (req, res) => {
 
     return res.status(200).json(nuevaNota);
   } catch (error) {
-    return res.status(500).send({ message: 'Error al agregar la nota', error: error.message });
+    return res
+      .status(500)
+      .send({ message: "Error al agregar la nota", error: error.message });
   }
-}
+};
 
 export const updateNote = async (req, res) => {
   try {
-    const {
-      noteIndex,
-      note,
-      userWhoWrites,
-      userWhoRecieves,
-      tag
-    } = matchedData(req);
+    const { noteIndex, note, userWhoWrites, userWhoRecieves, tag } =
+      matchedData(req);
 
     const projectId = req.params.id;
 
     const project = await Project.findById(projectId);
     if (!project) {
-      return res.status(404).send({ message: 'Proyecto no encontrado' });
+      return res.status(404).send({ message: "Proyecto no encontrado" });
     }
 
     if (noteIndex < 0 || noteIndex >= project.pendingNotes.length) {
-      return res.status(404).send({ message: 'Índice no válido.' });
+      return res.status(404).send({ message: "Índice no válido." });
     }
 
     const existingNote = project.pendingNotes[noteIndex];
@@ -375,45 +367,46 @@ export const updateNote = async (req, res) => {
       ...(userWhoWrites && { userWhoWrites }),
       ...(userWhoRecieves && { userWhoRecieves }),
       ...(tag && { tag }),
-      date: Date.now()
+      date: Date.now(),
     };
 
     project.pendingNotes[noteIndex] = updatedNote;
     await project.save();
 
-    return res.status(200).send({ message: 'Nota actualizada correctamente.' });
-
+    return res.status(200).send({ message: "Nota actualizada correctamente." });
   } catch (error) {
-    return res.status(500).send({ message: 'Error de servidor', error: error.message });
+    return res
+      .status(500)
+      .send({ message: "Error de servidor", error: error.message });
   }
 };
-
 
 export const deleteNote = async (req, res) => {
   try {
     const { noteIndex } = matchedData(req);
-    console.log(noteIndex)
+    console.log(noteIndex);
     const projectId = req.params.id;
 
     const project = await Project.findById(projectId);
     if (!project) {
-      return res.status(404).json({ message: 'Proyecto no encontrado' });
+      return res.status(404).json({ message: "Proyecto no encontrado" });
     }
 
     if (noteIndex < 0 || noteIndex >= project.pendingNotes.length) {
-      return res.status(400).json({ message: 'Índice de nota no válido' });
+      return res.status(400).json({ message: "Índice de nota no válido" });
     }
-    console.log(' NOTA SELECCIONADA: ', project.pendingNotes[noteIndex].note);
+    console.log(" NOTA SELECCIONADA: ", project.pendingNotes[noteIndex].note);
 
     project.pendingNotes.splice(noteIndex, 1);
     await project.save();
 
-    return res.status(200).json({ message: 'Nota eliminada correctamente' });
+    return res.status(200).json({ message: "Nota eliminada correctamente" });
   } catch (error) {
-    return res.status(500).json({ message: 'Error al eliminar la nota', error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Error al eliminar la nota", error: error.message });
   }
 };
-
 
 export const hardDeleteProject = async (req, res) => {
   try {
@@ -468,12 +461,12 @@ export const updateProjectBudget = async (req, res) => {
       ...updates,
       tutors: {
         ...project.budget.tutors,
-        ...(updates.tutors || {})
+        ...(updates.tutors || {}),
       },
       interns: {
         ...project.budget.interns,
-        ...(updates.interns || {})
-      }
+        ...(updates.interns || {}),
+      },
     };
 
     // eliminar cálculos anteriores
@@ -491,14 +484,79 @@ export const updateProjectBudget = async (req, res) => {
 
     return res.status(200).json({
       message: "Presupuesto actualizado correctamente",
-      budget: project.budget
+      budget: project.budget,
     });
-
   } catch (error) {
     console.error("Error al actualizar el presupuesto:", error);
     return res.status(500).json({
       message: "Error del servidor",
-      error: error.message
+      error: error.message,
     });
+  }
+};
+
+export const addUsersToProject = async (req, res) => {
+  const { id } = req.params;
+  const { users = [], responsibles = [] } = req.filteredData;
+
+  try {
+    const proyecto = await Project.findById(id);
+    if (!proyecto) {
+      return res.status(404).json({ mensaje: "Proyecto no encontrado" });
+    }
+
+    // Añadir responsables sin duplicados
+    responsibles.forEach((userId) => {
+      if (!proyecto.responsibles.includes(userId)) {
+        proyecto.responsibles.push(userId);
+      }
+    });
+
+    // Añadir participantes sin duplicados
+    users.forEach((userId) => {
+      if (!proyecto.users.includes(userId)) {
+        proyecto.users.push(userId);
+      }
+    });
+
+    await proyecto.save();
+
+    res
+      .status(200)
+      .json({ mensaje: "Usuarios añadidos correctamente", proyecto });
+  } catch (error) {
+    console.error("❌ Error al añadir usuarios:", error);
+    res.status(500).json({ mensaje: "Error del servidor" });
+  }
+};
+
+export const removeUsersFromProject = async (req, res) => {
+  const { id } = req.params;
+  const { users = [], responsibles = [] } = req.filteredData;
+
+  try {
+    const proyecto = await Project.findById(id);
+    if (!proyecto) {
+      return res.status(404).json({ mensaje: "Proyecto no encontrado" });
+    }
+
+    // Filtrar responsables a eliminar
+    proyecto.responsibles = proyecto.responsibles.filter(
+      (idResponsable) => !responsibles.includes(idResponsable.toString())
+    );
+
+    // Filtrar usuarios a eliminar
+    proyecto.users = proyecto.users.filter(
+      (idUser) => !users.includes(idUser.toString())
+    );
+
+    await proyecto.save();
+
+    res
+      .status(200)
+      .json({ mensaje: "Usuarios eliminados correctamente", proyecto });
+  } catch (error) {
+    console.error("❌ Error al eliminar usuarios:", error);
+    res.status(500).json({ mensaje: "Error del servidor" });
   }
 };

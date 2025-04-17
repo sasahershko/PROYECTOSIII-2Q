@@ -45,10 +45,17 @@ export const sendVerificationEmail = async (email, verificationCode) => {
   try {
     const transporter = await createTransporter();
     await transporter.sendMail({
-      from: `"Verificación U-TAD" <${process.env.EMAIL}>`,
+      from: `"Project Center U-TAD" <${process.env.EMAIL}>`,
       to: email,
-      subject: "Código de verificación",
+      subject: "Tu código para registrarte en Project Center",
       text: `Tu código de verificación es: ${verificationCode}`,
+      html: `<p>Tu código de verificación es: <strong>${verificationCode}</strong></p>`,
+      headers: {
+        "X-Priority": "1 (Highest)",
+        "X-MSMail-Priority": "High",
+        Importance: "High",
+      },
+      replyTo: "noreply@u-tad.com",
     });
     console.log(`📧 Código enviado a ${email}`);
   } catch (error) {
