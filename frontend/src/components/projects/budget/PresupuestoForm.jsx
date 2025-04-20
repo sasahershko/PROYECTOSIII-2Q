@@ -3,11 +3,15 @@
 import { useState } from 'react';
 import { updateProjectBudget } from '@/lib/projects';
 import { FaCheckCircle, FaTrash } from 'react-icons/fa';
+import DeleteConfirmModal from '@/components/DeleteConfirmModal';
 
 export default function PresupuestoForm({ projectId, presupuestoInicial = null, onSuccess }) {
   const [titulo, setTitulo] = useState(presupuestoInicial?.title || '');
   const [motivo, setMotivo] = useState(presupuestoInicial?.reason || '');
   const [comentarios, setComentarios] = useState(presupuestoInicial?.generalComments || '');
+  const [modalAbierto, setModalAbierto] = useState(false);
+  const [indiceAEliminar, setIndiceAEliminar] = useState(null);
+  const [eliminando, setEliminando] = useState(false);
 
   const [tutores, setTutores] = useState({
     cantidad: presupuestoInicial?.tutors?.numTutors || 0,
@@ -43,9 +47,46 @@ export default function PresupuestoForm({ projectId, presupuestoInicial = null, 
     setNuevoGasto({ descripcion: '', cantidad: 0, precio: 0 });
   };
 
-  const eliminarGasto = (index) => {
-    setOtrosGastos(prev => prev.filter((_, i) => i !== index));
-  };  
+  const eliminarGasto = async () => {
+    if (indiceAEliminar === null) return;
+  
+    const nuevosGastos = otrosGastos.filter((_, i) => i !== indiceAEliminar);
+  
+    const presupuesto = {
+      title: titulo,
+      reason: motivo,
+      generalComments: comentarios,
+      tutors: {
+        numTutors: tutores.cantidad,
+        estimatedHours: tutores.horas,
+        pricePerHour: tutores.precio,
+      },
+      interns: {
+        numInterns: estudiantes.cantidad,
+        estimatedHours: estudiantes.horas,
+        pricePerHour: estudiantes.precio,
+      },
+      extraExpenses: nuevosGastos
+        .filter(g => g.descripcion && g.cantidad > 0 && g.precio > 0)
+        .map(g => ({
+          description: g.descripcion,
+          quantity: g.cantidad,
+          unitPrice: g.precio,
+        })),
+    };
+  
+    try {
+      setEliminando(true);
+      await updateProjectBudget(projectId, { budget: presupuesto });
+      setOtrosGastos(nuevosGastos);
+      setModalAbierto(false);
+      setIndiceAEliminar(null);
+    } catch (err) {
+      alert("Error al eliminar el gasto: " + err.message);
+    } finally {
+      setEliminando(false);
+    }
+  };      
 
   const handleGuardar = async () => {
     const presupuesto = {
@@ -180,7 +221,10 @@ export default function PresupuestoForm({ projectId, presupuestoInicial = null, 
                 <span>€{Number(gasto.precio).toFixed(2)}</span>
                 <span>€{(gasto.cantidad * gasto.precio).toFixed(2)}</span>
                 <button
-                  onClick={() => eliminarGasto(idx)}
+                  onClick={() => {
+                    setIndiceAEliminar(idx);
+                    setModalAbierto(true);
+                  }}
                   className="mx-1 w-8 h-8 bg-red-600 hover:bg-red-700 text-white rounded flex justify-center items-center"
                   title="Eliminar gasto"
                 >
@@ -229,6 +273,17 @@ export default function PresupuestoForm({ projectId, presupuestoInicial = null, 
           </button>
         </div>
       </div>
+      <DeleteConfirmModal
+        isOpen={modalAbierto}
+        onClose={() => {
+          setModalAbierto(false);
+          setIndiceAEliminar(null);
+        }}
+        onConfirm={eliminarGasto}
+        isLoading={eliminando}
+        title="¿Eliminar este gasto?"
+        description="Esta acción eliminará permanentemente el gasto del presupuesto."
+      />
     </div>
   );
 }
