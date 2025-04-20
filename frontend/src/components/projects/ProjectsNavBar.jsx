@@ -13,7 +13,8 @@ export default function ProjectsNavBar({ role }) {
         { name: "Vista general", href: `/projects/${projectId}`, match: `/projects/${projectId}` },
         { name: "Participantes", href: `/projects/${projectId}/participants`, match: `/projects/${projectId}/participants` },
         { name: "Presupuesto", href: `/projects/${projectId}/budget`, match: `/projects/${projectId}/budget` },
-        { name: "Calendario", href: `/projects/${projectId}/calendar`, match: `/projects/${projectId}/calendar` }
+        { name: "Calendario", href: `/projects/${projectId}/calendar`, match: `/projects/${projectId}/calendar` },
+        { name: "Resumen", href: `/projects/${projectId}/resume`, match: `/projects/${projectId}/resume` }
     ];
 
     return (
