@@ -272,18 +272,18 @@ export default function PresupuestoForm({ projectId, presupuestoInicial = null, 
             Guardar Presupuesto
           </button>
         </div>
+        <DeleteConfirmModal
+          isOpen={modalAbierto}
+          onClose={() => {
+            setModalAbierto(false);
+            setIndiceAEliminar(null);
+          }}
+          onConfirm={eliminarGasto}
+          isLoading={eliminando}
+          title="¿Eliminar este gasto?"
+          description="Esta acción eliminará permanentemente el gasto del presupuesto."
+        />
       </div>
-      <DeleteConfirmModal
-        isOpen={modalAbierto}
-        onClose={() => {
-          setModalAbierto(false);
-          setIndiceAEliminar(null);
-        }}
-        onConfirm={eliminarGasto}
-        isLoading={eliminando}
-        title="¿Eliminar este gasto?"
-        description="Esta acción eliminará permanentemente el gasto del presupuesto."
-      />
     </div>
   );
 }
