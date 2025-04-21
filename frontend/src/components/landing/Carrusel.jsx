@@ -43,7 +43,7 @@ const Carrusel = () => {
 
       {/* Contenido del carrusel con fondo difuminado */}
       <div className="absolute bottom-16 left-16 flex justify-start items-end">
-        <div className="w-[650px] max-w-full p-8 bg-gray-900/50 backdrop-blur-lg rounded-lg text-white flex flex-col justify-center items-start gap-3 mx-16 mb-16">
+        <div className="w-[650px] max-w-full p-8 bg-gray-900/50 backdrop-blur-lg rounded-lg text-white flex flex-col justify-center items-start gap-3 mx-20 mb-16">
 
           <h1 className="text-[40px] font-bold leading-tight">
             Bienvenido al <br /> Project Center de la U-Tad
