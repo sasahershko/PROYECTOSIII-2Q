@@ -17,12 +17,12 @@ export const registerUser = async (req, res) => {
     // Comprobar si el usuario ya existe por email o DNI
     const usuarioExistente = await User.findOne({ email });
     if (usuarioExistente) {
-      return res.status(400).json({ mensaje: "El correo ya está en uso." });
+      return res.status(400).json({ message: "El correo ya está en uso." });
     }
 
     const dniExistente = await User.findOneWithDeleted({ dni });
     if (dniExistente) {
-      return res.status(400).json({ mensaje: "El DNI ya está registrado." });
+      return res.status(400).json({ message: "El DNI ya está registrado." });
     }
 
     // Hashear contraseña y generar código
@@ -53,11 +53,11 @@ export const registerUser = async (req, res) => {
     await sendVerificationEmail(email, verificationCode);
 
     res.status(201).json({
-      mensaje: "Usuario registrado. Verifica tu correo en 10 minutos.",
+      message: "Usuario registrado. Verifica tu correo en 10 minutos.",
     });
   } catch (error) {
     console.error("❌ Error en el servidor:", error);
-    res.status(500).json({ mensaje: "Error en el servidor." });
+    res.status(500).json({ message: "Error en el servidor." });
   }
 };
 
@@ -73,13 +73,13 @@ export const verifyCode = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(404).json({ mensaje: "Usuario no encontrado." });
+      return res.status(404).json({ message: "Usuario no encontrado." });
     }
 
     if (user.isVerified) {
       return res
         .status(400)
-        .json({ mensaje: "Este usuario ya está verificado." });
+        .json({ message: "Este usuario ya está verificado." });
     }
 
     const now = new Date();
@@ -87,7 +87,7 @@ export const verifyCode = async (req, res) => {
       await User.deleteOne({ email });
       return res
         .status(400)
-        .json({ mensaje: "Código expirado. Regístrate de nuevo." });
+        .json({ message: "Código expirado. Regístrate de nuevo." });
     }
 
     if (user.verificationCode === code) {
@@ -95,25 +95,25 @@ export const verifyCode = async (req, res) => {
       user.verificationCode = null;
       user.verificationAttempts = null;
       await user.save();
-      return res.json({ mensaje: "Código correcto, usuario verificado." });
+      return res.json({ message: "Código correcto, usuario verificado." });
     } else {
       user.verificationAttempts -= 1;
 
       if (user.verificationAttempts <= 0) {
         await User.deleteOne({ email });
         return res.status(400).json({
-          mensaje: "Demasiados intentos fallidos. Regístrate de nuevo.",
+          message: "Demasiados intentos fallidos. Regístrate de nuevo.",
         });
       }
 
       await user.save();
       return res.status(400).json({
-        mensaje: `Código incorrecto. Intentos restantes: ${user.verificationAttempts}`,
+        message: `Código incorrecto. Intentos restantes: ${user.verificationAttempts}`,
       });
     }
   } catch (error) {
     console.error("❌ Error en verifyCode:", error);
-    res.status(500).json({ mensaje: "Error en el servidor." });
+    res.status(500).json({ message: "Error en el servidor." });
   }
 };
 
@@ -129,13 +129,13 @@ export const resendVerificationCode = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(404).json({ mensaje: "Usuario no encontrado." });
+      return res.status(404).json({ message: "Usuario no encontrado." });
     }
 
     if (user.isVerified) {
       return res
         .status(400)
-        .json({ mensaje: "El usuario ya está verificado." });
+        .json({ message: "El usuario ya está verificado." });
     }
 
     const now = new Date();
@@ -145,7 +145,7 @@ export const resendVerificationCode = async (req, res) => {
     ) {
       return res
         .status(400)
-        .json({ mensaje: "Espera antes de solicitar un nuevo código." });
+        .json({ message: "Espera antes de solicitar un nuevo código." });
     }
 
     const newVerificationCode = generateVerificationCode();
@@ -161,10 +161,10 @@ export const resendVerificationCode = async (req, res) => {
     await user.save();
     await sendVerificationEmail(email, newVerificationCode);
 
-    res.json({ mensaje: "Código reenviado. Revisa tu correo." });
+    res.json({ message: "Código reenviado. Revisa tu correo." });
   } catch (error) {
     console.error("❌ Error en resendVerificationCode:", error);
-    res.status(500).json({ mensaje: "Error en el servidor." });
+    res.status(500).json({ message: "Error en el servidor." });
   }
 };
 
@@ -180,12 +180,12 @@ export const loginUser = async (req, res) => {
     if (!usuario) {
       return res
         .status(401)
-        .json({ mensaje: "Correo o contraseña incorrectos" });
+        .json({ message: "Correo o contraseña incorrectos" });
     }
 
     if (!usuario.isVerified) {
       return res.status(403).json({
-        mensaje: "Debes verificar tu cuenta antes de iniciar sesión.",
+        message: "Debes verificar tu cuenta antes de iniciar sesión.",
       });
     }
 
@@ -193,7 +193,7 @@ export const loginUser = async (req, res) => {
     if (!passwordValida) {
       return res
         .status(401)
-        .json({ mensaje: "Correo o contraseña incorrectos" });
+        .json({ message: "Correo o contraseña incorrectos" });
     }
 
     const token = jwt.sign(
@@ -213,7 +213,7 @@ export const loginUser = async (req, res) => {
     );
 
     return res.json({
-      mensaje: "Login exitoso",
+      message: "Login exitoso",
       usuario: {
         id: usuario._id,
         name: usuario.name,
@@ -226,7 +226,7 @@ export const loginUser = async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Error en loginUser:", error);
-    res.status(500).json({ mensaje: "Error en el servidor." });
+    res.status(500).json({ message: "Error en el servidor." });
   }
 };
 
@@ -241,7 +241,7 @@ export const getUserProfile = async (req, res) => {
       req.cookies?.token || req.headers.authorization?.split(" ")[1];
 
     if (!token) {
-      return res.status(401).json({ mensaje: "No autorizado" });
+      return res.status(401).json({ message: "No autorizado" });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -251,7 +251,7 @@ export const getUserProfile = async (req, res) => {
       .populate("projects", "title status deadline");
 
     if (!usuario) {
-      return res.status(404).json({ mensaje: "Usuario no encontrado." });
+      return res.status(404).json({ message: "Usuario no encontrado." });
     }
 
     res.status(200).json({
@@ -267,7 +267,7 @@ export const getUserProfile = async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Error en el servidor:", error);
-    res.status(401).json({ mensaje: "Token inválido o expirado" });
+    res.status(401).json({ message: "Token inválido o expirado" });
   }
 };
 
@@ -317,7 +317,7 @@ export const getAllUsers = async (req, res) => {
     res.status(200).json(usuarios);
   } catch (error) {
     console.error("❌ Error en getAllUsers:", error);
-    res.status(500).json({ mensaje: "Error en el servidor." });
+    res.status(500).json({ message: "Error en el servidor." });
   }
 };
 
@@ -383,15 +383,15 @@ export const deleteUser = async (req, res) => {
 
     const user = await User.findById(id);
     if (!user) {
-      return res.status(404).json({ mensaje: "Usuario no encontrado" });
+      return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
     await user.delete(); // Soft delete con mongoose-delete
-    res.status(200).json({ mensaje: "Usuario eliminado (soft delete)" });
+    res.status(200).json({ message: "Usuario eliminado (soft delete)" });
   } catch (error) {
     res
       .status(500)
-      .json({ mensaje: "Error al eliminar usuario", error: error.message });
+      .json({ message: "Error al eliminar usuario", error: error.message });
   }
 };
 
@@ -399,7 +399,7 @@ export const getDeletedUsers = async (req, res) => {
   try {
     if (!req.usuario || req.usuario.rol !== "admin") {
       return res.status(403).json({
-        mensaje: "Solo los administradores pueden ver usuarios eliminados.",
+        message: "Solo los administradores pueden ver usuarios eliminados.",
       });
     }
 
@@ -411,7 +411,7 @@ export const getDeletedUsers = async (req, res) => {
   } catch (error) {
     console.error("❌ Error al obtener usuarios eliminados:", error);
     res.status(500).json({
-      mensaje: "Error al obtener usuarios eliminados",
+      message: "Error al obtener usuarios eliminados",
       error: error.message,
     });
   }
@@ -421,7 +421,7 @@ export const restoreUser = async (req, res) => {
   try {
     if (req.usuario.rol !== "admin") {
       return res.status(403).json({
-        mensaje: "Solo los administradores pueden restaurar usuarios.",
+        message: "Solo los administradores pueden restaurar usuarios.",
       });
     }
 
@@ -430,11 +430,11 @@ export const restoreUser = async (req, res) => {
     await User.restore({ _id: id }); // Restaurar soft delete
 
     res.status(200).json({
-      mensaje: "Usuario restaurado correctamente.",
+      message: "Usuario restaurado correctamente.",
     });
   } catch (error) {
     res.status(500).json({
-      mensaje: "Error al restaurar usuario",
+      message: "Error al restaurar usuario",
       error: error.message,
     });
   }
@@ -444,7 +444,7 @@ export const hardDeleteUser = async (req, res) => {
   try {
     if (req.usuario.rol !== "admin") {
       return res.status(403).json({
-        mensaje:
+        message:
           "Solo los administradores pueden eliminar usuarios permanentemente.",
       });
     }
@@ -453,7 +453,7 @@ export const hardDeleteUser = async (req, res) => {
 
     const user = await User.findOneWithDeleted({ _id: id });
     if (!user) {
-      return res.status(404).json({ mensaje: "Usuario no encontrado." });
+      return res.status(404).json({ message: "Usuario no encontrado." });
     }
 
     // Eliminar referencias del usuario en los proyectos
@@ -472,10 +472,10 @@ export const hardDeleteUser = async (req, res) => {
 
     res
       .status(200)
-      .json({ mensaje: "Usuario eliminado permanentemente (hard delete)." });
+      .json({ message: "Usuario eliminado permanentemente (hard delete)." });
   } catch (error) {
     res.status(500).json({
-      mensaje: "Error al eliminar usuario permanentemente",
+      message: "Error al eliminar usuario permanentemente",
       error: error.message,
     });
   }

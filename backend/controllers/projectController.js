@@ -63,12 +63,12 @@ export const createProject = async (req, res) => {
     );
 
     res.status(201).json({
-      mensaje: "Proyecto creado con éxito.",
+      message: "Proyecto creado con éxito.",
       project: nuevoProyecto,
     });
   } catch (error) {
     res.status(500).json({
-      mensaje: "Error al crear proyecto",
+      message: "Error al crear proyecto",
       error: error.message,
     });
   }
@@ -90,7 +90,7 @@ export const getAllProjects = async (req, res) => {
     res.status(200).json(projects);
   } catch (error) {
     res.status(500).json({
-      mensaje: "Error al obtener los proyectos",
+      message: "Error al obtener los proyectos",
       error: error.message,
     });
   }
@@ -107,12 +107,12 @@ export const getProjectById = async (req, res) => {
       .populate("pendingNotes.userWhoRecieves", "name");
 
     if (!project)
-      return res.status(404).json({ mensaje: "Proyecto no encontrado" });
+      return res.status(404).json({ message: "Proyecto no encontrado" });
     res.json(project);
   } catch (error) {
     res
       .status(500)
-      .json({ mensaje: "Error al obtener el proyecto", error: error.message });
+      .json({ message: "Error al obtener el proyecto", error: error.message });
   }
 };
 
@@ -125,31 +125,32 @@ export const updateProject = async (req, res) => {
 
     const existingProject = await Project.findById(id);
     if (!existingProject) {
-      return res.status(404).json({ mensaje: "Proyecto no encontrado." });
+      return res.status(404).json({ message: "Proyecto no encontrado." });
     }
 
+    // Validación de permisos
     if (
       usuario.rol !== "admin" &&
       !existingProject.responsibles.includes(usuario._id)
     ) {
       return res
         .status(403)
-        .json({ mensaje: "No tienes permisos para actualizar este proyecto." });
+        .json({ message: "No tienes permisos para actualizar este proyecto." });
     }
 
-    // Validación: fechas coherentes
+    // Validación de fechas coherentes
     if (
       data.startDate &&
       data.endDate &&
       new Date(data.startDate) > new Date(data.endDate)
     ) {
       return res.status(400).json({
-        mensaje:
+        message:
           "La fecha de inicio no puede ser mayor que la de finalización.",
       });
     }
 
-    // Validación de usuarios y responsables
+    // Validación de responsables
     if (data.responsibles) {
       const validResponsibles = await User.find({
         _id: { $in: data.responsibles },
@@ -157,20 +158,33 @@ export const updateProject = async (req, res) => {
       if (validResponsibles.length !== data.responsibles.length) {
         return res
           .status(400)
-          .json({ mensaje: "Alguno de los responsables no existen." });
+          .json({ message: "Alguno de los responsables no existen." });
       }
     }
 
+    // Validación de usuarios
     if (data.users) {
       const validUsers = await User.find({ _id: { $in: data.users } });
       if (validUsers.length !== data.users.length) {
         return res
           .status(400)
-          .json({ mensaje: "Alguno de los usuarios no existen." });
+          .json({ message: "Alguno de los usuarios no existen." });
       }
     }
 
-    // Fusionar usuarios y responsables si están presentes
+    // Validación de datos de contacto
+    if (data.contactPerson) {
+      const { name, email, phone } = data.contactPerson;
+      if (!name || !email || !phone) {
+        return res.status(400).json({
+          mensaje: "La persona de contacto debe incluir nombre, correo y teléfono.",
+        });
+      }
+
+      data.contactPerson = { name, email, phone };
+    }
+
+    // Fusionar usuarios y responsables
     if (data.responsibles || data.users) {
       const uniqueUsers = [
         ...new Set([
@@ -181,12 +195,50 @@ export const updateProject = async (req, res) => {
       data.users = uniqueUsers;
     }
 
-    const updatedProject = await Project.findByIdAndUpdate(
-      id,
-      { $set: data },
-      { new: true }
-    );
+    // Validación básica de presupuestos
+    if (data.budget) {
+      const budget = data.budget;
 
+      // Calcular subtotales
+      if (budget.tutors) {
+        budget.tutors.subtotal =
+          (budget.tutors.numTutors || 0) *
+          (budget.tutors.estimatedHours || 0) *
+          (budget.tutors.pricePerHour || 0);
+      }
+
+      if (budget.interns) {
+        budget.interns.subtotal =
+          (budget.interns.numInterns || 0) *
+          (budget.interns.estimatedHours || 0) *
+          (budget.interns.pricePerHour || 0);
+      }
+
+      //Gastos extras
+      if (Array.isArray(budget.extraExpenses)) {
+        budget.extraExpenses = budget.extraExpenses.map((item) => ({
+          ...item,
+          subtotal: item.quantity * item.unitPrice,
+        }));
+      }
+
+      // Calcular total general
+      const totalExtra = (budget.extraExpenses || []).reduce(
+        (sum, item) => sum + item.subtotal,
+        0
+      );
+
+      budget.totalGeneral =
+        (budget.tutors?.subtotal || 0) +
+        (budget.interns?.subtotal || 0) +
+        totalExtra;
+
+      data.budget = budget;
+    }
+
+    const updatedProject = await Project.findByIdAndUpdate(id, { $set: data }, { new: true });
+
+   
     if (data.users) {
       await User.updateMany({ projects: id }, { $pull: { projects: id } });
       await User.updateMany(
@@ -196,16 +248,19 @@ export const updateProject = async (req, res) => {
     }
 
     return res.status(200).json({
-      mensaje: "Proyecto actualizado con éxito.",
+      message: "Proyecto actualizado con éxito.",
       project: updatedProject,
     });
   } catch (error) {
     return res.status(500).json({
-      mensaje: "Error al actualizar el proyecto.",
+      message: "Error al actualizar el proyecto.",
       error: error.message,
     });
   }
 };
+
+
+
 
 /**
  * @desc Eliminar un proyecto y limpiar referencias en usuarios (soft delete)
@@ -220,7 +275,7 @@ export const deleteProject = async (req, res) => {
 
     const proyecto = await Project.findById(id);
     if (!proyecto) {
-      return res.status(404).json({ mensaje: "Proyecto no encontrado" });
+      return res.status(404).json({ message: "Proyecto no encontrado" });
     }
 
     if (
@@ -229,7 +284,7 @@ export const deleteProject = async (req, res) => {
     ) {
       return res
         .status(403)
-        .json({ mensaje: "No tienes permisos para eliminar este proyecto." });
+        .json({ message: "No tienes permisos para eliminar este proyecto." });
     }
 
     if (hardDelete) {
@@ -238,18 +293,18 @@ export const deleteProject = async (req, res) => {
       await User.updateMany({ projects: id }, { $pull: { projects: id } });
 
       return res.status(200).json({
-        mensaje: "Proyecto eliminado completamente (hard delete)",
+        message: "Proyecto eliminado completamente (hard delete)",
       });
     } else {
       // 🗑️ Soft delete
       await proyecto.delete();
       return res.status(200).json({
-        mensaje: "Proyecto eliminado correctamente (soft delete)",
+        message: "Proyecto eliminado correctamente (soft delete)",
       });
     }
   } catch (error) {
     res.status(500).json({
-      mensaje: "Error al eliminar proyecto",
+      message: "Error al eliminar proyecto",
       error: error.message,
     });
   }
@@ -259,7 +314,7 @@ export const getDeletedProjects = async (req, res) => {
   try {
     if (req.usuario.rol !== "admin") {
       return res.status(403).json({
-        mensaje: "Solo los administradores pueden ver proyectos eliminados.",
+        message: "Solo los administradores pueden ver proyectos eliminados.",
       });
     }
 
@@ -269,7 +324,7 @@ export const getDeletedProjects = async (req, res) => {
     res.status(200).json(deleted);
   } catch (error) {
     res.status(500).json({
-      mensaje: "Error al obtener proyectos eliminados",
+      message: "Error al obtener proyectos eliminados",
       error: error.message,
     });
   }
@@ -279,7 +334,7 @@ export const restoreProject = async (req, res) => {
   try {
     if (req.usuario.rol !== "admin") {
       return res.status(403).json({
-        mensaje: "Solo los administradores pueden restaurar proyectos.",
+        message: "Solo los administradores pueden restaurar proyectos.",
       });
     }
 
@@ -289,12 +344,12 @@ export const restoreProject = async (req, res) => {
     const restoredProject = await Project.findById(id);
 
     res.status(200).json({
-      mensaje: "Proyecto restaurado correctamente.",
+      message: "Proyecto restaurado correctamente.",
       restored: restoredProject,
     });
   } catch (error) {
     res.status(500).json({
-      mensaje: "Error al restaurar proyecto",
+      message: "Error al restaurar proyecto",
       error: error.message,
     });
   }
@@ -412,7 +467,7 @@ export const hardDeleteProject = async (req, res) => {
   try {
     if (req.usuario.rol !== "admin") {
       return res.status(403).json({
-        mensaje:
+        message:
           "Solo los administradores pueden eliminar proyectos permanentemente.",
       });
     }
@@ -421,7 +476,7 @@ export const hardDeleteProject = async (req, res) => {
 
     const proyecto = await Project.findOneWithDeleted({ _id: id });
     if (!proyecto) {
-      return res.status(404).json({ mensaje: "Proyecto no encontrado." });
+      return res.status(404).json({ message: "Proyecto no encontrado." });
     }
 
     // Eliminar referencia del proyecto en todos los usuarios
@@ -432,10 +487,10 @@ export const hardDeleteProject = async (req, res) => {
 
     res
       .status(200)
-      .json({ mensaje: "Proyecto eliminado permanentemente (hard delete)." });
+      .json({ message: "Proyecto eliminado permanentemente (hard delete)." });
   } catch (error) {
     res.status(500).json({
-      mensaje: "Error al eliminar proyecto permanentemente",
+      message: "Error al eliminar proyecto permanentemente",
       error: error.message,
     });
   }
@@ -502,7 +557,7 @@ export const addUsersToProject = async (req, res) => {
   try {
     const proyecto = await Project.findById(id);
     if (!proyecto) {
-      return res.status(404).json({ mensaje: "Proyecto no encontrado" });
+      return res.status(404).json({ message: "Proyecto no encontrado" });
     }
 
     // Añadir responsables sin duplicados
@@ -523,10 +578,10 @@ export const addUsersToProject = async (req, res) => {
 
     res
       .status(200)
-      .json({ mensaje: "Usuarios añadidos correctamente", proyecto });
+      .json({ message: "Usuarios añadidos correctamente", proyecto });
   } catch (error) {
     console.error("❌ Error al añadir usuarios:", error);
-    res.status(500).json({ mensaje: "Error del servidor" });
+    res.status(500).json({ message: "Error del servidor" });
   }
 };
 
@@ -537,7 +592,7 @@ export const removeUsersFromProject = async (req, res) => {
   try {
     const proyecto = await Project.findById(id);
     if (!proyecto) {
-      return res.status(404).json({ mensaje: "Proyecto no encontrado" });
+      return res.status(404).json({ message: "Proyecto no encontrado" });
     }
 
     // Filtrar responsables a eliminar
@@ -554,9 +609,9 @@ export const removeUsersFromProject = async (req, res) => {
 
     res
       .status(200)
-      .json({ mensaje: "Usuarios eliminados correctamente", proyecto });
+      .json({ message: "Usuarios eliminados correctamente", proyecto });
   } catch (error) {
     console.error("❌ Error al eliminar usuarios:", error);
-    res.status(500).json({ mensaje: "Error del servidor" });
+    res.status(500).json({ message: "Error del servidor" });
   }
 };
