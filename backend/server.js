@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import "./config/env.js";
 import connectDB from "./config/db.js";
-import setupSwagger from "./config/swagger.js";
+import setupSwagger from "./docs/swagger.js";
 import cookieParser from "cookie-parser";
 import cron from "node-cron";
 import deleteExpiredUnverifiedUsers from "./utils/deleteExpiredUnverifiedUsers.js";
