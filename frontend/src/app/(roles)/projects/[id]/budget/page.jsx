@@ -1,17 +1,16 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getProjectById } from "@/lib/projects";
 import PresupuestoDashboard from "@/components/projects/budget/PresupuestoDashboard";
-import PresupuestoForm from "@/components/projects/budget/PresupuestoForm";
 import SpinLoader from "@/components/SpinLoader";
 
-export default function BudgetPage() {
+export default function BudgetDashboardPage() {
   const { id } = useParams();
+  const router = useRouter();
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [modoEdicion, setModoEdicion] = useState(false);
 
   const recargarProyecto = async () => {
     try {
@@ -45,19 +44,10 @@ export default function BudgetPage() {
 
   const presupuesto = project.budget;
 
-  if (!presupuesto || modoEdicion) {
-    return (
-      <div className="px-6 py-10">
-        <PresupuestoForm
-          projectId={id}
-          presupuestoInicial={modoEdicion ? presupuesto : null}
-          onSuccess={() => {
-            setModoEdicion(false);
-            recargarProyecto();
-          }}
-        />
-      </div>
-    );
+  if (!presupuesto) {
+    // Si no hay presupuesto aún, redirigir a crear uno
+    router.push(`/projects/${id}/budget/edit`);
+    return null;
   }
 
   const { tutors, interns, extraExpenses = [], totalGeneral, generalComments } = presupuesto;
@@ -96,7 +86,7 @@ export default function BudgetPage() {
     <div className="px-6 py-10">
       <PresupuestoDashboard
         data={adaptedData}
-        onEditClick={() => setModoEdicion(true)}
+        onEditClick={() => router.push(`/projects/${id}/budget/edit`)}
       />
     </div>
   );

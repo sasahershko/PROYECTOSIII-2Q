@@ -242,7 +242,7 @@ export default function PresupuestoDashboard({ data, onEditClick }) {
 
         {desglose.otros?.length > 0 && renderTabla("Otros", getColumnLabels('otros'), buildFilasConColumnas(desglose.otros, 'otros'))}
 
-        <p className="text-right font-bold text-lg mt-4 mx-2">TOTAL: €{gastado.toLocaleString()}</p>
+        <p className="text-right font-bold text-2xl mt-4 mx-2">TOTAL: {gastado.toLocaleString()}€</p>
       </section>
 
       <section>
