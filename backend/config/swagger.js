@@ -15,7 +15,11 @@ const swaggerOptions = {
     servers: [
       {
         url: process.env.BACKEND_URL || "http://localhost:5000",
-        description: "Servidor de desarrollo",
+        description: "Testing Local",
+      },
+      {
+        url: "https://surviving-poppy-sasahershko-72589d6b.koyeb.app",
+        description: "Develop",
       },
     ],
   },
