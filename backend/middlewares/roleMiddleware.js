@@ -4,7 +4,7 @@
 export const adminMiddleware = (req, res, next) => {
     if (!req.usuario || req.usuario.rol !== "admin") {
       return res.status(403).json({
-        mensaje: "Acceso denegado. Se requieren permisos de administrador.",
+        message: "Acceso denegado. Se requieren permisos de administrador.",
       });
     }
     next();
@@ -19,7 +19,7 @@ export const adminMiddleware = (req, res, next) => {
       (req.usuario.rol !== "admin" && req.usuario.rol !== "moderator")
     ) {
       return res.status(403).json({
-        mensaje: "Acceso denegado. Se requieren permisos de moderador o admin.",
+        message: "Acceso denegado. Se requieren permisos de moderador o admin.",
       });
     }
     next();

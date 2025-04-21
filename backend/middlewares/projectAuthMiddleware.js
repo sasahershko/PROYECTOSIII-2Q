@@ -10,7 +10,7 @@ export const verificarPermisoProyecto = async (req, res, next) => {
 
     const proyecto = await Project.findById(id);
     if (!proyecto) {
-      return res.status(404).json({ mensaje: "Proyecto no encontrado." });
+      return res.status(404).json({ message: "Proyecto no encontrado." });
     }
 
     // Verificar si es admin o responsable del proyecto
@@ -20,13 +20,13 @@ export const verificarPermisoProyecto = async (req, res, next) => {
     ) {
       return res
         .status(403)
-        .json({ mensaje: "No tienes permisos para modificar este proyecto." });
+        .json({ message: "No tienes permisos para modificar este proyecto." });
     }
 
     // Si tiene permisos, continuar con la siguiente función
     next();
   } catch (error) {
     console.error("❌ Error en permisos de proyecto:", error);
-    res.status(500).json({ mensaje: "Error en el servidor." });
+    res.status(500).json({ message: "Error en el servidor." });
   }
 };

@@ -3,7 +3,7 @@ export const adminOrSelfMiddleware = (req, res, next) => {
   const usuario = req.usuario;
 
   if (!usuario) {
-    return res.status(401).json({ mensaje: "No autenticado." });
+    return res.status(401).json({ message: "No autenticado." });
   }
 
   const esAdmin = usuario.rol === "admin";
@@ -11,7 +11,7 @@ export const adminOrSelfMiddleware = (req, res, next) => {
 
   if (!esAdmin && !esElMismo) {
     return res.status(403).json({
-      mensaje: "No tienes permiso para realizar esta acción.",
+      message: "No tienes permiso para realizar esta acción.",
     });
   }
 

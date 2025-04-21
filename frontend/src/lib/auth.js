@@ -28,14 +28,14 @@ export const loginUser = async (formData) => {
 
     if (!res.ok) {
       if (res.status === 400) {
-        throw new Error(responseData.mensaje || "Faltan datos obligatorios.");
+        throw new Error(responseData.message || "Faltan datos obligatorios.");
       }
       if (res.status === 401) {
         throw new Error(
-          responseData.mensaje || "Correo o contraseña incorrectos."
+          responseData.message || "Correo o contraseña incorrectos."
         );
       }
-      throw new Error(responseData.mensaje || "Error desconocido.");
+      throw new Error(responseData.message || "Error desconocido.");
     }
 
     // Guardar token en cookie segura
@@ -73,14 +73,14 @@ export const registerUser = async (formData) => {
 
     if (!res.ok) {
       if (res.status === 400) {
-        throw new Error(responseData.mensaje || "Faltan datos obligatorios.");
+        throw new Error(responseData.message || "Faltan datos obligatorios.");
       }
       if (res.status === 401) {
         throw new Error(
-          responseData.mensaje || "Correo o contraseña incorrectos."
+          responseData.message || "Correo o contraseña incorrectos."
         );
       }
-      throw new Error(responseData.mensaje || "Error desconocido.");
+      throw new Error(responseData.message || "Error desconocido.");
     }
 
     return responseData;
@@ -106,7 +106,7 @@ export const verifyUserCode = async ({ email, code }) => {
 
     const responseData = await res.json();
     if (!res.ok) {
-      throw new Error(responseData.mensaje || "Código incorrecto.");
+      throw new Error(responseData.message || "Código incorrecto.");
     }
 
     return responseData;
@@ -135,7 +135,7 @@ export const resendVerificationCode = async ({ email }) => {
 
     const responseData = await res.json();
     if (!res.ok) {
-      throw new Error(responseData.mensaje || "No se pudo reenviar el código.");
+      throw new Error(responseData.message || "No se pudo reenviar el código.");
     }
 
     return responseData;
