@@ -262,8 +262,8 @@ export default function PresupuestoForm({ presupuestoInicial = null, onSuccess }
 
               {/* Nuevo gasto */}
               <div
-                className="grid gap-6 items-center"
-                style={{ gridTemplateColumns: '2fr 1.5fr 1.5fr 0.5fr' }}
+                className="grid gap-4 items-center"
+                style={{ gridTemplateColumns: '2fr 1.5fr 1.6fr 0.5fr' }}
               >
                 <input value={nuevoGasto.descripcion} onChange={e => setNuevoGasto({ ...nuevoGasto, descripcion: e.target.value })} className="input" placeholder="Descripción" />
                 <input type="number" value={nuevoGasto.cantidad} onChange={e => setNuevoGasto({ ...nuevoGasto, cantidad: +e.target.value })} className="input" />

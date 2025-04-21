@@ -192,9 +192,9 @@ export default function PresupuestoDashboard({ data, onEditClick }) {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        <ResumenCard label="Presupuesto Total Límite" value={`€${limite.toLocaleString()}`} />
-        <ResumenCard label="Presupuesto Total Gastado" value={`€${gastado.toLocaleString()}`} />
-        <ResumenCard label="Diferencia" value={`€${diferencia.toLocaleString()}`} />
+        <ResumenCard label="Presupuesto Total Límite" value={`${limite.toLocaleString()}€`} />
+        <ResumenCard label="Presupuesto Total Gastado" value={`${gastado.toLocaleString()}€`} />
+        <ResumenCard label="Diferencia" value={`${diferencia.toLocaleString()}€`} />
         <ResumenCard label="Porcentaje Utilizado" value={`${porcentajeUsado.toFixed(0)}%`} />
       </div>
 
