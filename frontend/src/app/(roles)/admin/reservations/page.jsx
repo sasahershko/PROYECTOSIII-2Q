@@ -13,8 +13,9 @@ export default function ReservasPage() {
     endTime: '',
     table: null,
     reason: '',
-    materials: []
-  });
+    materials: [],
+    project: ''
+  });  
 
   const nextStep = () => setStep((prev) => Math.min(prev + 1, 3));
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
