@@ -196,9 +196,9 @@ export default function TeamAndDetailsCard({ project }) {
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium">{project.contactPerson}</p>
+                    <p className="font-medium">{project.contactPerson.name}</p>
                     <p className="text-xs text-gray-500">
-                      Sin información de contacto
+                      {project.contactPerson.email} <br></br>{project.contactPerson.phone}
                     </p>
                   </div>
                 </div>

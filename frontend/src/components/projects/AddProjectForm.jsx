@@ -16,9 +16,11 @@ export default function AddProjectForm() {
 
   const [formData, setFormData] = useState({
     name: "",
-    contactPerson: "",
-    contactEmail: "",
-    contactPhone: "",
+    contactPerson: {
+      name: "",
+      email: "",
+      phone: ""
+    },
     company: "U-TAD",
     area: "",
     responsibles: [],
@@ -50,24 +52,38 @@ export default function AddProjectForm() {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData((prev) => {
-      if (name === "pStatus[0].status") {
-        return {
-          ...prev,
-          pStatus: [{ ...prev.pStatus[0], status: value }],
-        };
-      }
-      if (name === "reviewDates[0]") {
-        return {
-          ...prev,
-          reviewDates: [value],
-        };
-      }
-      return {
+
+    if (name.includes(".")) {
+      const [parent, child] = name.split(".");
+      setFormData((prev) => ({
         ...prev,
-        [name]: type === "checkbox" ? checked : value,
-      };
-    });
+        [parent]: {
+          ...prev[parent],
+          [child]: value,
+        },
+      }));
+      return;
+    }
+
+    if (name === "pStatus[0].status") {
+      return setFormData((prev) => ({
+        ...prev,
+        pStatus: [{ ...prev.pStatus[0], status: value }],
+      }));
+    }
+
+    if (name === "reviewDates[0]") {
+      return setFormData((prev) => ({
+        ...prev,
+        reviewDates: [value],
+      }));
+    }
+
+    // Por defecto
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
   };
 
   const handleArrayChange = (e, field) => {
@@ -83,6 +99,7 @@ export default function AddProjectForm() {
     if (!Array.isArray(formData.responsibles)) {
       formData.responsibles = [formData.responsibles];
     }
+
     try {
       const newProject = await createProject(formData);
       setShowToast(true)
@@ -330,8 +347,8 @@ export default function AddProjectForm() {
                   </label>
                   <input
                     type="text"
-                    name="contactPerson"
-                    value={formData.contactPerson}
+                    name="contactPerson.name"
+                    value={formData.contactPerson.name}
                     onChange={handleChange}
                     required
                     className="w-full bg-primary-bg border border-secundary-text rounded-lg p-3 text-primary-text focus:outline-none focus:ring-2 focus:ring-accent transition duration-200"
@@ -343,8 +360,8 @@ export default function AddProjectForm() {
                   </label>
                   <input
                     type="email"
-                    name="contactEmail"
-                    value={formData.contactEmail}
+                    name="contactPerson.email"
+                    value={formData.contactPerson.email}
                     onChange={handleChange}
                     className="w-full bg-primary-bg border border-secundary-text rounded-lg p-3 text-primary-text focus:outline-none focus:ring-2 focus:ring-accent transition duration-200"
                   />
@@ -355,8 +372,8 @@ export default function AddProjectForm() {
                   </label>
                   <input
                     type="tel"
-                    name="contactPhone"
-                    value={formData.contactPhone}
+                    name="contactPerson.phone"
+                    value={formData.contactPerson.phone}
                     onChange={handleChange}
                     className="w-full bg-primary-bg border border-secundary-text rounded-lg p-3 text-primary-text focus:outline-none focus:ring-2 focus:ring-accent transition duration-200"
                   />
