@@ -5,6 +5,7 @@ import Project from "../models/Project.js";
 import { generateVerificationCode } from "../utils/verification.js";
 import { sendVerificationEmail } from "../utils/emailService.js";
 import { handleHttpError } from "../utils/handleHttpError.js";
+import { logEvent } from "../utils/handleLogger.js";
 
 //(estos son solo informativos, no salen en Swagger)
 /**
@@ -50,6 +51,8 @@ export const registerUser = async (req, res) => {
 
     await nuevoUsuario.save();
     await sendVerificationEmail(email, verificationCode);
+    await logEvent(`🆕 Usuario registrado: ${email}`);
+    await logEvent(`📧 Código de verificación enviado a ${email}`);
 
     res.status(201).json({
       message: "Usuario registrado. Verifica tu correo en 10 minutos.",
@@ -84,12 +87,14 @@ export const verifyCode = async (req, res) => {
       user.verificationCode = null;
       user.verificationAttempts = null;
       await user.save();
+      await logEvent(`🔓 Usuario verificado: ${email}`);
       return res.json({ message: "Código correcto, usuario verificado." });
     } else {
       user.verificationAttempts -= 1;
 
       if (user.verificationAttempts <= 0) {
         await User.deleteOne({ email });
+        await logEvent(`❌ Usuario eliminado por intentos fallidos: ${email}`);
         return handleHttpError(
           res,
           "Demasiados intentos fallidos. Regístrate de nuevo.",
@@ -147,6 +152,7 @@ export const resendVerificationCode = async (req, res) => {
 
     await user.save();
     await sendVerificationEmail(email, newVerificationCode);
+    await logEvent(`🔁 Código reenviado a ${email}`);
 
     res.json({ message: "Código reenviado. Revisa tu correo." });
   } catch (error) {
@@ -191,6 +197,8 @@ export const loginUser = async (req, res) => {
       "Set-Cookie",
       `token=${token}; Path=/; HttpOnly; SameSite=Lax`
     );
+
+    await logEvent(`✅ Login exitoso para ${email}`);
 
     return res.json({
       message: "Login exitoso",
@@ -331,6 +339,8 @@ export const updateUser = async (req, res) => {
     if (!updatedUser)
       return handleHttpError(res, "Usuario no encontrado.", 404);
 
+    await logEvent(`✏️ Usuario actualizado: ${updatedUser.email}`);
+
     res.status(200).json({
       message: "Usuario actualizado correctamente.",
       user: updatedUser,
@@ -352,6 +362,7 @@ export const deleteUser = async (req, res) => {
     if (!user) return handleHttpError(res, "Usuario no encontrado", 404);
 
     await user.delete(); // Soft delete con mongoose-delete
+    await logEvent(`🗑️ Usuario eliminado (soft): ${user.email}`);
     res.status(200).json({ message: "Usuario eliminado (soft delete)" });
   } catch (error) {
     handleHttpError(res, error);
@@ -387,10 +398,12 @@ export const restoreUser = async (req, res) => {
       );
 
     const { id } = req.filteredData;
-    await User.restore({ _id: id }); // Restaurar soft delete
-    res.status(200).json({
-      message: "Usuario restaurado correctamente.",
-    });
+    await User.restore({ _id: id });
+
+    const restoredUser = await User.findById(id);
+    await logEvent(`♻️ Usuario restaurado: ${restoredUser?.email || id}`);
+
+    res.status(200).json({ message: "Usuario restaurado correctamente." });
   } catch (error) {
     handleHttpError(res, error);
   }
@@ -422,6 +435,7 @@ export const hardDeleteUser = async (req, res) => {
 
     // Eliminar definitivamente el usuario
     await User.deleteOne({ _id: id });
+    await logEvent(`❌ Usuario eliminado permanentemente: ${user.email}`);
 
     res
       .status(200)
