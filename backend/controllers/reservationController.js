@@ -2,6 +2,7 @@ import Reservation from "../models/Reservation.js";
 import Table from "../models/Tables.js";
 import Project from "../models/Project.js";
 import { handleHttpError } from "../utils/handleHttpError.js";
+import { logEvent } from "../utils/handleLogger.js";
 
 //CREAR UNA RESERVA
 export const createReservation = async (req, res) => {
@@ -50,8 +51,12 @@ export const createReservation = async (req, res) => {
       endTime,
       status: "pending",
     });
-
     await newReservation.save();
+
+    await logEvent(
+      `📅 Nueva reserva creada por ${req.usuario.email} para la mesa ${table} el ${date}`
+    );
+
     res.status(201).json({
       message: "Reserva creada con éxito.",
       reservation: newReservation,
@@ -103,6 +108,10 @@ export const approveReservation = async (req, res) => {
     reservation.status = "approved";
     await reservation.save();
 
+    await logEvent(
+      `✅ Reserva aprobada: ${reservation._id} para el usuario ${reservation.user}`
+    );
+
     res
       .status(200)
       .json({ message: "Reserva aprobada con éxito.", reservation });
@@ -122,6 +131,9 @@ export const rejectReservation = async (req, res) => {
 
     reservation.status = "rejected";
     await reservation.save();
+
+    await logEvent(`❌ Reserva rechazada: ${reservation._id}`);
+
     res
       .status(200)
       .json({ message: "Reserva rechazada con éxito.", reservation });
@@ -153,6 +165,7 @@ export const deleteReservation = async (req, res) => {
 
     if (type === "hard") {
       await reservation.deleteOne();
+      await logEvent(`🗑️ Reserva eliminada permanentemente: ${id}`);
       return res
         .status(200)
         .json({ message: "Reserva eliminada permanentemente." });
@@ -160,6 +173,7 @@ export const deleteReservation = async (req, res) => {
 
     // Soft delete por defecto
     await reservation.delete();
+    await logEvent(`📉 Reserva marcada como eliminada (soft): ${id}`);
     res
       .status(200)
       .json({ message: "Reserva marcada como eliminada (soft delete)." });
