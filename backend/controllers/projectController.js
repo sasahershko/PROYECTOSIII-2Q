@@ -3,6 +3,7 @@ import User from "../models/User.js";
 import { matchedData } from "express-validator";
 import { calculateBudget } from "../utils/budget.js";
 import { handleHttpError } from "../utils/handleHttpError.js";
+import { logEvent } from "../utils/handleLogger.js";
 
 // 🔁 Validar IDs de usuarios y devolver lista filtrada (sin duplicados ni inexistentes)
 const filtrarUsuariosExistentes = async (ids = []) => {
@@ -62,6 +63,8 @@ export const createProject = async (req, res) => {
       { _id: { $in: todosUsuarios } },
       { $addToSet: { projects: nuevoProyecto._id } }
     );
+
+    await logEvent(`📁 Proyecto creado: ${nuevoProyecto.name}`);
 
     res.status(201).json({
       message: "Proyecto creado con éxito.",
@@ -245,6 +248,8 @@ export const updateProject = async (req, res) => {
       );
     }
 
+    await logEvent(`✏️ Proyecto actualizado: ${updatedProject?.name || id}`);
+
     return res.status(200).json({
       message: "Proyecto actualizado con éxito.",
       project: updatedProject,
@@ -283,6 +288,7 @@ export const deleteProject = async (req, res) => {
       // 🔥 Hard delete
       await Project.findByIdAndDelete(id);
       await User.updateMany({ projects: id }, { $pull: { projects: id } });
+      await logEvent(`❌ Proyecto eliminado permanentemente: ${proyecto.name}`);
 
       return res.status(200).json({
         message: "Proyecto eliminado completamente (hard delete)",
@@ -290,6 +296,7 @@ export const deleteProject = async (req, res) => {
     } else {
       // 🗑️ Soft delete
       await proyecto.delete();
+      await logEvent(`🗑️ Proyecto eliminado (soft delete): ${proyecto.name}`);
       return res.status(200).json({
         message: "Proyecto eliminado correctamente (soft delete)",
       });
@@ -329,6 +336,8 @@ export const restoreProject = async (req, res) => {
     const { id } = req.filteredData;
     await Project.restore({ _id: id });
     const restoredProject = await Project.findById(id);
+
+    await logEvent(`♻️ Proyecto restaurado: ${restoredProject?.name || id}`);
 
     res.status(200).json({
       message: "Proyecto restaurado correctamente.",
@@ -497,6 +506,8 @@ export const updateProjectBudget = async (req, res) => {
 
     await project.save();
 
+    await logEvent(`💰 Presupuesto actualizado para: ${project.name}`);
+
     return res.status(200).json({
       message: "Presupuesto actualizado correctamente",
       budget: project.budget,
@@ -530,6 +541,8 @@ export const addUsersToProject = async (req, res) => {
 
     await proyecto.save();
 
+    await logEvent(`➕ Usuarios añadidos al proyecto: ${proyecto.name}`);
+
     res
       .status(200)
       .json({ message: "Usuarios añadidos correctamente", proyecto });
@@ -557,6 +570,9 @@ export const removeUsersFromProject = async (req, res) => {
     );
 
     await proyecto.save();
+
+    await logEvent(`➖ Usuarios eliminados del proyecto: ${proyecto.name}`);
+
     res
       .status(200)
       .json({ message: "Usuarios eliminados correctamente", proyecto });
