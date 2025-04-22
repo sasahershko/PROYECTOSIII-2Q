@@ -27,6 +27,7 @@ export default function DateSelector({ date, setDate }) {
 
   const isBusy = (day) => busyDates.includes(format(day, 'yyyy-MM-dd'));
   const isSelected = (day) => selectedDate && format(day, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd');
+  const isToday = (day) => format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
 
   return (
     <div>
@@ -35,15 +36,23 @@ export default function DateSelector({ date, setDate }) {
       </h2>
 
       {/* Header de mes */}
-      <div className="flex items-center justify-between mb-2 px-2">
-        <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
-          <ChevronLeft className="w-5 h-5 text-gray-500 hover:text-black" />
+      <div className="flex items-center justify-center gap-3 mb-4">
+        <button
+          onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+          className="p-1 rounded hover:bg-gray-100 transition"
+        >
+          <ChevronLeft className="w-5 h-5 text-gray-600" />
         </button>
-        <span className="font-medium text-lg">
+
+        <span className="font-medium text-lg min-w-[140px] text-center">
           {format(currentMonth, 'MMMM yyyy', { locale: es })}
         </span>
-        <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>
-          <ChevronRight className="w-5 h-5 text-gray-500 hover:text-black" />
+
+        <button
+          onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+          className="p-1 rounded hover:bg-gray-100 transition"
+        >
+          <ChevronRight className="w-5 h-5 text-gray-600" />
         </button>
       </div>
 
@@ -63,11 +72,14 @@ export default function DateSelector({ date, setDate }) {
             <div
               key={formatted}
               className={`
-                rounded-md p-2 cursor-pointer transition-all
+                box-border rounded-md p-2 cursor-pointer transition-all
                 ${isBusy(day) ? 'bg-red-200 text-gray-500 cursor-not-allowed' : ''}
-                ${isSelected(day) ? 'bg-green-400 text-white font-bold' : ''}
+                ${isSelected(day) ? 'bg-green-500 text-white font-bold' : ''}
                 ${!isBusy(day) && !isSelected(day) ? 'hover:bg-blue-100' : ''}
-              `}
+                ${isToday(day) && !isSelected(day) && !isBusy(day)
+                  ? 'border-2 border-blue-600 text-blue-600 font-semibold bg-blue-50 shadow-sm py-1.5'
+                  : ''}
+              `}                                         
               onClick={() => !isBusy(day) && setDate(formatted)}
             >
               {day.getDate()}
