@@ -1,5 +1,5 @@
 import Idea from "../models/Idea.js";
-import { handleHttpError } from "../utils/handleHttpError.js";
+import { handleHttpError } from "../utils/handleError.js";
 import { logEvent } from "../utils/handleLogger.js";
 
 // Obtener todas las ideas

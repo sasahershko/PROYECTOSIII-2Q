@@ -2,7 +2,7 @@ import Project from "../models/Project.js";
 import User from "../models/User.js";
 import { matchedData } from "express-validator";
 import { calculateBudget } from "../utils/budget.js";
-import { handleHttpError } from "../utils/handleHttpError.js";
+import { handleHttpError } from "../utils/handleError.js";
 import { logEvent } from "../utils/handleLogger.js";
 
 // 🔁 Validar IDs de usuarios y devolver lista filtrada (sin duplicados ni inexistentes)

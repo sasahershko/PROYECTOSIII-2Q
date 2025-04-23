@@ -1,7 +1,7 @@
 import Reservation from "../models/Reservation.js";
 import Table from "../models/Tables.js";
 import Project from "../models/Project.js";
-import { handleHttpError } from "../utils/handleHttpError.js";
+import { handleHttpError } from "../utils/handleError.js";
 import { logEvent } from "../utils/handleLogger.js";
 
 //CREAR UNA RESERVA

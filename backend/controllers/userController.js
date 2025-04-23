@@ -4,7 +4,7 @@ import User from "../models/User.js";
 import Project from "../models/Project.js";
 import { generateVerificationCode } from "../utils/verification.js";
 import { sendVerificationEmail } from "../utils/emailService.js";
-import { handleHttpError } from "../utils/handleHttpError.js";
+import { handleHttpError } from "../utils/handleError.js";
 import { logEvent } from "../utils/handleLogger.js";
 
 //(estos son solo informativos, no salen en Swagger)
