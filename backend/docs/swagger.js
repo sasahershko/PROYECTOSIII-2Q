@@ -1,5 +1,6 @@
 import swaggerJSDoc from "swagger-jsdoc";
 import swaggerUI from "swagger-ui-express";
+import schemas from "./schemas.js";
 
 const localServer = {
   url: "http://localhost:5000",
@@ -23,10 +24,12 @@ const swaggerOptions = {
     info: {
       title: "Proyect Center - Express API",
       version: "1.0.0",
-      description:
-        "Documentación de la API usando Express y Swagger",
+      description: "Documentación de la API usando Express y Swagger",
     },
     servers,
+    components: {
+      schemas, // 👈 importado desde schemas.js
+    },
   },
   apis: ["./routes/*.js"],
 };

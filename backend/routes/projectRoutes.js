@@ -39,7 +39,7 @@ const projectRouter = express.Router();
 /**
  * @swagger
  * tags:
- *   name: Proyectos
+ *   name: Projects
  *   description: Endpoints para gestionar proyectos (solo proyectos no eliminados)
  */
 
@@ -48,7 +48,7 @@ const projectRouter = express.Router();
  * /api/projects/create:
  *   post:
  *     summary: Crear un nuevo proyecto
- *     tags: [Proyectos]
+ *     tags: [Projects]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -145,7 +145,7 @@ projectRouter.post(
  * /api/projects:
  *   get:
  *     summary: Obtener todos los proyectos
- *     tags: [Proyectos]
+ *     tags: [Projects]
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -163,7 +163,7 @@ projectRouter.get("/", authMiddlewareOptional, getAllProjects);
  * /api/projects/deleted:
  *   get:
  *     summary: Obtener todos los proyectos eliminados (soft delete)
- *     tags: [Proyectos]
+ *     tags: [Projects]
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -187,7 +187,7 @@ projectRouter.get("/deleted", authMiddleware, getDeletedProjects);
  * /api/projects/{id}:
  *   get:
  *     summary: Obtener un proyecto por ID
- *     tags: [Proyectos]
+ *     tags: [Projects]
  *     parameters:
  *       - in: path
  *         name: id
@@ -215,7 +215,7 @@ projectRouter.get(
  * /api/projects/{id}:
  *   put:
  *     summary: Actualizar un proyecto existente
- *     tags: [Proyectos]
+ *     tags: [Projects]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -299,7 +299,7 @@ projectRouter.patch(
  *   delete:
  *     summary: Eliminar un proyecto (soft o hard delete)
  *     description: Elimina un proyecto. Por defecto realiza un soft delete. Para eliminar permanentemente (hard delete), añadir el parámetro de consulta `?hard=true`.
- *     tags: [Proyectos]
+ *     tags: [Projects]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -340,7 +340,7 @@ projectRouter.delete(
  * /api/projects/hard/{id}:
  *   delete:
  *     summary: Eliminar un proyecto permanentemente (hard delete)
- *     tags: [Proyectos]
+ *     tags: [Projects]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -373,7 +373,7 @@ projectRouter.delete(
  * /api/projects/{id}/restore:
  *   put:
  *     summary: Restaurar un proyecto eliminado (soft delete)
- *     tags: [Proyectos]
+ *     tags: [Projects]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -407,7 +407,7 @@ projectRouter.put(
  *   post:
  *     summary: Agregar una nueva nota a un proyecto.
  *     tags:
- *       - Notas
+ *       - Notes
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -462,7 +462,7 @@ projectRouter.post("/note/:id", authMiddleware, createNoteValidator, addNotes);
  *   patch:
  *     summary: Actualizar una nota existente en un proyecto.
  *     tags:
- *       - Notas
+ *       - Notes
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -541,7 +541,7 @@ projectRouter.delete(
  * /api/projects/budget/{id}:
  *   patch:
  *     summary: Actualizar el presupuesto de un proyecto
- *     tags: [Proyectos]
+ *     tags: [Projects]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -640,7 +640,7 @@ projectRouter.patch(
  * /api/proyectos/{id}/add-users:
  *   patch:
  *     summary: Añadir participantes y/o responsables a un proyecto
- *     tags: [Proyectos]
+ *     tags: [Projects]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -693,7 +693,7 @@ projectRouter.patch(
  * /api/proyectos/{id}/remove-users:
  *   patch:
  *     summary: Eliminar participantes y/o responsables de un proyecto
- *     tags: [Proyectos]
+ *     tags: [Projects]
  *     security:
  *       - bearerAuth: []
  *     parameters:
