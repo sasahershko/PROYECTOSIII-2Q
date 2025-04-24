@@ -2,10 +2,12 @@ import express from "express";
 import cors from "cors";
 import "./config/env.js";
 import connectDB from "./config/db.js";
-import setupSwagger from "./config/swagger.js";
+import setupSwagger from "./docs/swagger.js";
 import cookieParser from "cookie-parser";
 import cron from "node-cron";
 import deleteExpiredUnverifiedUsers from "./utils/deleteExpiredUnverifiedUsers.js";
+import morganBody from "morgan-body";
+import loggerStream from "./utils/handleLogger.js";
 
 // Importamos las rutas
 import routes from "./routes/index.js";
@@ -23,6 +25,14 @@ app.use(cookieParser());
 setupSwagger(app);
 app.use("/api", routes);
 app.get("/", (req, res) => res.send("🚀 API funcionando correctamente"));
+
+morganBody(app, {
+  noColors: true,
+  skip: function (req, res) {
+    return res.statusCode < 400; // Solo errores 4xx y 5xx
+  },
+  stream: loggerStream,
+});
 
 // ✅ Conectar DB y lanzar servidor cuando esté lista
 const PORT = process.env.PORT || 5000;

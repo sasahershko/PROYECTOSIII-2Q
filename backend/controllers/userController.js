@@ -4,6 +4,8 @@ import User from "../models/User.js";
 import Project from "../models/Project.js";
 import { generateVerificationCode } from "../utils/verification.js";
 import { sendVerificationEmail } from "../utils/emailService.js";
+import { handleHttpError } from "../utils/handleError.js";
+import { logEvent } from "../utils/handleLogger.js";
 
 //(estos son solo informativos, no salen en Swagger)
 /**
@@ -16,14 +18,12 @@ export const registerUser = async (req, res) => {
 
     // Comprobar si el usuario ya existe por email o DNI
     const usuarioExistente = await User.findOne({ email });
-    if (usuarioExistente) {
-      return res.status(400).json({ message: "El correo ya está en uso." });
-    }
+    if (usuarioExistente)
+      return handleHttpError(res, "El correo ya está en uso.", 400);
 
     const dniExistente = await User.findOneWithDeleted({ dni });
-    if (dniExistente) {
-      return res.status(400).json({ message: "El DNI ya está registrado." });
-    }
+    if (dniExistente)
+      return handleHttpError(res, "El DNI ya está registrado.", 400);
 
     // Hashear contraseña y generar código
     const verificationCode = generateVerificationCode();
@@ -51,13 +51,14 @@ export const registerUser = async (req, res) => {
 
     await nuevoUsuario.save();
     await sendVerificationEmail(email, verificationCode);
+    await logEvent(`🆕 Usuario registrado: ${email}`);
+    await logEvent(`📧 Código de verificación enviado a ${email}`);
 
     res.status(201).json({
       message: "Usuario registrado. Verifica tu correo en 10 minutos.",
     });
   } catch (error) {
-    console.error("❌ Error en el servidor:", error);
-    res.status(500).json({ message: "Error en el servidor." });
+    handleHttpError(res, error);
   }
 };
 
@@ -69,25 +70,16 @@ export const registerUser = async (req, res) => {
 export const verifyCode = async (req, res) => {
   try {
     const { email, code } = req.filteredData;
-
     const user = await User.findOne({ email });
 
-    if (!user) {
-      return res.status(404).json({ message: "Usuario no encontrado." });
-    }
-
-    if (user.isVerified) {
-      return res
-        .status(400)
-        .json({ message: "Este usuario ya está verificado." });
-    }
+    if (!user) return handleHttpError(res, "Usuario no encontrado.", 404);
+    if (user.isVerified)
+      return handleHttpError(res, "Este usuario ya está verificado.", 400);
 
     const now = new Date();
     if (now > new Date(user.verificationCodeExpires)) {
       await User.deleteOne({ email });
-      return res
-        .status(400)
-        .json({ message: "Código expirado. Regístrate de nuevo." });
+      return handleHttpError(res, "Código expirado. Regístrate de nuevo.", 400);
     }
 
     if (user.verificationCode === code) {
@@ -95,25 +87,30 @@ export const verifyCode = async (req, res) => {
       user.verificationCode = null;
       user.verificationAttempts = null;
       await user.save();
+      await logEvent(`🔓 Usuario verificado: ${email}`);
       return res.json({ message: "Código correcto, usuario verificado." });
     } else {
       user.verificationAttempts -= 1;
 
       if (user.verificationAttempts <= 0) {
         await User.deleteOne({ email });
-        return res.status(400).json({
-          message: "Demasiados intentos fallidos. Regístrate de nuevo.",
-        });
+        await logEvent(`❌ Usuario eliminado por intentos fallidos: ${email}`);
+        return handleHttpError(
+          res,
+          "Demasiados intentos fallidos. Regístrate de nuevo.",
+          400
+        );
       }
 
       await user.save();
-      return res.status(400).json({
-        message: `Código incorrecto. Intentos restantes: ${user.verificationAttempts}`,
-      });
+      return handleHttpError(
+        res,
+        `Código incorrecto. Intentos restantes: ${user.verificationAttempts}`,
+        400
+      );
     }
   } catch (error) {
-    console.error("❌ Error en verifyCode:", error);
-    res.status(500).json({ message: "Error en el servidor." });
+    handleHttpError(res, error);
   }
 };
 
@@ -125,27 +122,22 @@ export const verifyCode = async (req, res) => {
 export const resendVerificationCode = async (req, res) => {
   try {
     const { email } = req.filteredData;
-
     const user = await User.findOne({ email });
 
-    if (!user) {
-      return res.status(404).json({ message: "Usuario no encontrado." });
-    }
-
-    if (user.isVerified) {
-      return res
-        .status(400)
-        .json({ message: "El usuario ya está verificado." });
-    }
+    if (!user) return handleHttpError(res, "Usuario no encontrado.", 404);
+    if (user.isVerified)
+      return handleHttpError(res, "El usuario ya está verificado.", 400);
 
     const now = new Date();
     if (
       user.lastResendRequest &&
       now - new Date(user.lastResendRequest) < 50000
     ) {
-      return res
-        .status(400)
-        .json({ message: "Espera antes de solicitar un nuevo código." });
+      return handleHttpError(
+        res,
+        "Espera antes de solicitar un nuevo código.",
+        400
+      );
     }
 
     const newVerificationCode = generateVerificationCode();
@@ -160,11 +152,11 @@ export const resendVerificationCode = async (req, res) => {
 
     await user.save();
     await sendVerificationEmail(email, newVerificationCode);
+    await logEvent(`🔁 Código reenviado a ${email}`);
 
     res.json({ message: "Código reenviado. Revisa tu correo." });
   } catch (error) {
-    console.error("❌ Error en resendVerificationCode:", error);
-    res.status(500).json({ message: "Error en el servidor." });
+    handleHttpError(res, error);
   }
 };
 
@@ -175,26 +167,20 @@ export const resendVerificationCode = async (req, res) => {
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.filteredData;
-
     const usuario = await User.findOne({ email });
-    if (!usuario) {
-      return res
-        .status(401)
-        .json({ message: "Correo o contraseña incorrectos" });
-    }
 
-    if (!usuario.isVerified) {
-      return res.status(403).json({
-        message: "Debes verificar tu cuenta antes de iniciar sesión.",
-      });
-    }
+    if (!usuario)
+      return handleHttpError(res, "Correo o contraseña incorrectos", 401);
+    if (!usuario.isVerified)
+      return handleHttpError(
+        res,
+        "Debes verificar tu cuenta antes de iniciar sesión.",
+        403
+      );
 
     const passwordValida = await bcrypt.compare(password, usuario.password);
-    if (!passwordValida) {
-      return res
-        .status(401)
-        .json({ message: "Correo o contraseña incorrectos" });
-    }
+    if (!passwordValida)
+      return handleHttpError(res, "Correo o contraseña incorrectos", 401);
 
     const token = jwt.sign(
       {
@@ -212,6 +198,8 @@ export const loginUser = async (req, res) => {
       `token=${token}; Path=/; HttpOnly; SameSite=Lax`
     );
 
+    await logEvent(`✅ Login exitoso para ${email}`);
+
     return res.json({
       message: "Login exitoso",
       usuario: {
@@ -225,8 +213,7 @@ export const loginUser = async (req, res) => {
       token,
     });
   } catch (error) {
-    console.error("❌ Error en loginUser:", error);
-    res.status(500).json({ message: "Error en el servidor." });
+    handleHttpError(res, error);
   }
 };
 
@@ -240,9 +227,7 @@ export const getUserProfile = async (req, res) => {
     const token =
       req.cookies?.token || req.headers.authorization?.split(" ")[1];
 
-    if (!token) {
-      return res.status(401).json({ message: "No autorizado" });
-    }
+    if (!token) return handleHttpError(res, "No autorizado", 401);
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
@@ -250,9 +235,7 @@ export const getUserProfile = async (req, res) => {
       .select("name surname email dni rol grade profileImage projects")
       .populate("projects", "title status deadline");
 
-    if (!usuario) {
-      return res.status(404).json({ message: "Usuario no encontrado." });
-    }
+    if (!usuario) return handleHttpError(res, "Usuario no encontrado.", 404);
 
     res.status(200).json({
       id: usuario._id,
@@ -266,8 +249,7 @@ export const getUserProfile = async (req, res) => {
       projects: usuario.projects,
     });
   } catch (error) {
-    console.error("❌ Error en el servidor:", error);
-    res.status(401).json({ message: "Token inválido o expirado" });
+    handleHttpError(res, "Token inválido o expirado", 401);
   }
 };
 
@@ -285,9 +267,7 @@ export const getUserProfileById = async (req, res) => {
       .select("name surname email dni rol grade profileImage projects")
       .populate("projects", "title status deadline");
 
-    if (!user) {
-      return res.status(404).json({ message: "Usuario no encontrado" });
-    }
+    if (!user) return handleHttpError(res, "Usuario no encontrado", 404);
 
     res.status(200).json({
       id: user._id,
@@ -301,8 +281,7 @@ export const getUserProfileById = async (req, res) => {
       projects: user.projects,
     });
   } catch (error) {
-    console.error("❌ Error en el servidor:", error);
-    res.status(500).json({ message: "Error en el servidor" });
+    handleHttpError(res, error);
   }
 };
 
@@ -316,8 +295,7 @@ export const getAllUsers = async (req, res) => {
     const usuarios = await User.find().select("-password");
     res.status(200).json(usuarios);
   } catch (error) {
-    console.error("❌ Error en getAllUsers:", error);
-    res.status(500).json({ message: "Error en el servidor." });
+    handleHttpError(res, error);
   }
 };
 
@@ -328,24 +306,24 @@ export const getAllUsers = async (req, res) => {
  */
 export const updateUser = async (req, res) => {
   try {
-    const { id } = req.filteredData;
-    const { name, surname, rol, grade, profileImage } = req.filteredData;
-
+    const { id, name, surname, rol, grade, profileImage } = req.filteredData;
     const usuarioAutenticado = req.usuario;
     const isAdmin = usuarioAutenticado.rol === "admin";
     const isSameUser = usuarioAutenticado.id === id;
 
-    if (!isSameUser && !isAdmin) {
-      return res
-        .status(403)
-        .json({ message: "No tienes permiso para editar este usuario." });
-    }
+    if (!isSameUser && !isAdmin)
+      return handleHttpError(
+        res,
+        "No tienes permiso para editar este usuario.",
+        403
+      );
 
-    if (req.body.email || req.body.password) {
-      return res
-        .status(400)
-        .json({ message: "No puedes modificar el correo ni la contraseña." });
-    }
+    if (req.body.email || req.body.password)
+      return handleHttpError(
+        res,
+        "No puedes modificar el correo ni la contraseña.",
+        400
+      );
 
     const updatedData = {};
     if (name) updatedData.name = name;
@@ -358,17 +336,17 @@ export const updateUser = async (req, res) => {
       new: true,
     });
 
-    if (!updatedUser) {
-      return res.status(404).json({ message: "Usuario no encontrado." });
-    }
+    if (!updatedUser)
+      return handleHttpError(res, "Usuario no encontrado.", 404);
+
+    await logEvent(`✏️ Usuario actualizado: ${updatedUser.email}`);
 
     res.status(200).json({
       message: "Usuario actualizado correctamente.",
       user: updatedUser,
     });
   } catch (error) {
-    console.error("🚨 Error en updateUser:", error);
-    res.status(500).json({ message: "Error al actualizar el usuario.", error });
+    handleHttpError(res, error);
   }
 };
 
@@ -380,28 +358,25 @@ export const updateUser = async (req, res) => {
 export const deleteUser = async (req, res) => {
   try {
     const { id } = req.filteredData;
-
     const user = await User.findById(id);
-    if (!user) {
-      return res.status(404).json({ message: "Usuario no encontrado" });
-    }
+    if (!user) return handleHttpError(res, "Usuario no encontrado", 404);
 
     await user.delete(); // Soft delete con mongoose-delete
+    await logEvent(`🗑️ Usuario eliminado (soft): ${user.email}`);
     res.status(200).json({ message: "Usuario eliminado (soft delete)" });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error al eliminar usuario", error: error.message });
+    handleHttpError(res, error);
   }
 };
 
 export const getDeletedUsers = async (req, res) => {
   try {
-    if (!req.usuario || req.usuario.rol !== "admin") {
-      return res.status(403).json({
-        message: "Solo los administradores pueden ver usuarios eliminados.",
-      });
-    }
+    if (!req.usuario || req.usuario.rol !== "admin")
+      return handleHttpError(
+        res,
+        "Solo los administradores pueden ver usuarios eliminados.",
+        403
+      );
 
     const deletedUsers = await User.findDeleted({ deleted: true }).select(
       "name surname email rol grade deletedAt"
@@ -409,52 +384,43 @@ export const getDeletedUsers = async (req, res) => {
 
     res.status(200).json(deletedUsers);
   } catch (error) {
-    console.error("❌ Error al obtener usuarios eliminados:", error);
-    res.status(500).json({
-      message: "Error al obtener usuarios eliminados",
-      error: error.message,
-    });
+    handleHttpError(res, error);
   }
 };
 
 export const restoreUser = async (req, res) => {
   try {
-    if (req.usuario.rol !== "admin") {
-      return res.status(403).json({
-        message: "Solo los administradores pueden restaurar usuarios.",
-      });
-    }
+    if (req.usuario.rol !== "admin")
+      return handleHttpError(
+        res,
+        "Solo los administradores pueden restaurar usuarios.",
+        403
+      );
 
     const { id } = req.filteredData;
+    await User.restore({ _id: id });
 
-    await User.restore({ _id: id }); // Restaurar soft delete
+    const restoredUser = await User.findById(id);
+    await logEvent(`♻️ Usuario restaurado: ${restoredUser?.email || id}`);
 
-    res.status(200).json({
-      message: "Usuario restaurado correctamente.",
-    });
+    res.status(200).json({ message: "Usuario restaurado correctamente." });
   } catch (error) {
-    res.status(500).json({
-      message: "Error al restaurar usuario",
-      error: error.message,
-    });
+    handleHttpError(res, error);
   }
 };
 
 export const hardDeleteUser = async (req, res) => {
   try {
-    if (req.usuario.rol !== "admin") {
-      return res.status(403).json({
-        message:
-          "Solo los administradores pueden eliminar usuarios permanentemente.",
-      });
-    }
+    if (req.usuario.rol !== "admin")
+      return handleHttpError(
+        res,
+        "Solo los administradores pueden eliminar usuarios permanentemente.",
+        403
+      );
 
     const { id } = req.filteredData;
-
     const user = await User.findOneWithDeleted({ _id: id });
-    if (!user) {
-      return res.status(404).json({ message: "Usuario no encontrado." });
-    }
+    if (!user) return handleHttpError(res, "Usuario no encontrado.", 404);
 
     // Eliminar referencias del usuario en los proyectos
     await Project.updateMany(
@@ -469,14 +435,12 @@ export const hardDeleteUser = async (req, res) => {
 
     // Eliminar definitivamente el usuario
     await User.deleteOne({ _id: id });
+    await logEvent(`❌ Usuario eliminado permanentemente: ${user.email}`);
 
     res
       .status(200)
       .json({ message: "Usuario eliminado permanentemente (hard delete)." });
   } catch (error) {
-    res.status(500).json({
-      message: "Error al eliminar usuario permanentemente",
-      error: error.message,
-    });
+    handleHttpError(res, error);
   }
 };
