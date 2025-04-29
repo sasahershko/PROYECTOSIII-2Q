@@ -147,7 +147,7 @@ export default function PresupuestoDashboard({ data, onEditClick }) {
     <div className="mb-6">
       <h3 className="font-semibold mb-2 text-lg">{titulo}</h3>
       <div className="overflow-x-auto">
-        <table className="w-full text-sm border border-gray-200 text-left table-fixed">
+        <table className="w-full text-sm border border-gray-200 table-fixed">
           <colgroup>
             <col className="w-[30%]" />
             <col className="w-[17.5%]" />
@@ -158,7 +158,14 @@ export default function PresupuestoDashboard({ data, onEditClick }) {
           <thead className="bg-gray-300">
             <tr>
               {columnas.map((col, i) => (
-                <th key={i} className="p-2 border-gray-200 font-semibold text-gray-800">{col.label}</th>
+                <th
+                  key={i}
+                  className={`p-2 border-gray-200 font-semibold text-gray-800 ${
+                    i === 0 ? "text-left" : "text-right pr-6"
+                  }`}
+                >
+                  {col.label}
+                </th>
               ))}
             </tr>
           </thead>
@@ -166,7 +173,14 @@ export default function PresupuestoDashboard({ data, onEditClick }) {
             {filas.map((fila, i) => (
               <tr key={i} className="border-t">
                 {columnas.map((col, j) => (
-                  <td key={j} className="p-2">{fila[col.key]}</td>
+                  <td
+                    key={j}
+                    className={`p-2 ${
+                      j === 0 ? "text-left" : "text-right pr-8"
+                    }`}
+                  >
+                    {fila[col.key]}
+                  </td>
                 ))}
               </tr>
             ))}
@@ -174,7 +188,7 @@ export default function PresupuestoDashboard({ data, onEditClick }) {
         </table>
       </div>
     </div>
-  );
+  );  
 
   return (
     <div className="max-w-8xl mx-auto px-6 py-8 space-y-10">
@@ -192,9 +206,9 @@ export default function PresupuestoDashboard({ data, onEditClick }) {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        <ResumenCard label="Presupuesto Total Límite" value={`€${limite.toLocaleString()}`} />
-        <ResumenCard label="Presupuesto Total Gastado" value={`€${gastado.toLocaleString()}`} />
-        <ResumenCard label="Diferencia" value={`€${diferencia.toLocaleString()}`} />
+        <ResumenCard label="Presupuesto Total Límite" value={`${limite.toLocaleString()}€`} />
+        <ResumenCard label="Presupuesto Total Gastado" value={`${gastado.toLocaleString()}€`} />
+        <ResumenCard label="Diferencia" value={`${diferencia.toLocaleString()}€`} />
         <ResumenCard label="Porcentaje Utilizado" value={`${porcentajeUsado.toFixed(0)}%`} />
       </div>
 
@@ -242,7 +256,7 @@ export default function PresupuestoDashboard({ data, onEditClick }) {
 
         {desglose.otros?.length > 0 && renderTabla("Otros", getColumnLabels('otros'), buildFilasConColumnas(desglose.otros, 'otros'))}
 
-        <p className="text-right font-bold text-lg mt-4 mx-2">TOTAL: €{gastado.toLocaleString()}</p>
+        <p className="text-right font-bold text-2xl mt-4 mx-2">TOTAL: {gastado.toLocaleString()}€</p>
       </section>
 
       <section>
