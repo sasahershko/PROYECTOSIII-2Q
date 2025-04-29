@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { createReservation } from "@/lib/reservationsClient";
+//import { createReservation } from "@lib/reservationsClient";
 import Step1Reserva from '@/components/reservations/Step1Reserva';
 import Step2Reserva from '@/components/reservations/Step2Reserva';
 import Step3Reserva from '@/components/reservations/Step3Reserva';
@@ -26,30 +26,31 @@ export default function ReservasPage() {
   };
 
   const handleReservaSubmit = async () => {
-    try {
-      await createReservation({
-        date: formData.date,
-        startTime: formData.startTime,
-        endTime: formData.endTime,
-        table: formData.table
-      });
+    console.log('Crea reserva');
+    // try {
+    //   await createReservation({
+    //     date: formData.date,
+    //     startTime: formData.startTime,
+    //     endTime: formData.endTime,
+    //     table: formData.table
+    //   });
   
-      alert("✅ Reserva creada con éxito");
+    //   alert("✅ Reserva creada con éxito");
   
-      // Reiniciar pasos y formulario
-      setStep(1);
-      setFormData({
-        date: '',
-        startTime: '',
-        endTime: '',
-        table: null,
-        reason: '',
-        materials: [],
-        project: ''
-      });
-    } catch (err) {
-      alert(`❌ Error: ${err.message}`);
-    }
+    //   // Reiniciar pasos y formulario
+    //   setStep(1);
+    //   setFormData({
+    //     date: '',
+    //     startTime: '',
+    //     endTime: '',
+    //     table: null,
+    //     reason: '',
+    //     materials: [],
+    //     project: ''
+    //   });
+    // } catch (err) {
+    //   alert(`❌ Error: ${err.message}`);
+    // }
   };
 
   return (
