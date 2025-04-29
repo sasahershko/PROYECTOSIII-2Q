@@ -231,6 +231,8 @@ userRouter.get("/deleted", authMiddleware, getDeletedUsers);
  *         description: Usuario restaurado correctamente.
  *       403:
  *         description: Solo los administradores pueden restaurar usuarios.
+ *       401:
+ *         description: No autorizado (falta token de autenticación).
  *       500:
  *         description: Error al restaurar el usuario.
  */
@@ -273,6 +275,8 @@ userRouter.get("/profile", authMiddleware, getUserProfile);
  *     responses:
  *       200:
  *         description: Perfil público del usuario.
+ *       401:
+ *         description: Token no válido o no proporcionado.
  *       404:
  *         description: Usuario no encontrado.
  */
@@ -296,6 +300,8 @@ userRouter.get("/profile/:id", getUserProfileById);
  *     responses:
  *       200:
  *         description: Usuario restaurado correctamente.
+*       401:
+ *         description: Token no válido o no proporcionado.
  *       403:
  *         description: Solo los administradores pueden realizar esta acción.
  *       404:
@@ -331,6 +337,8 @@ userRouter.patch(
  *     responses:
  *       200:
  *         description: Usuario marcado como eliminado (soft delete).
+ *       401:
+ *         description: Token no válido o no proporcionado.
  *       403:
  *         description: No autorizado para eliminar este usuario.
  *       404:
@@ -365,6 +373,8 @@ userRouter.delete(
  *     responses:
  *       200:
  *         description: Usuario eliminado permanentemente y referencias limpiadas.
+ *       401:
+ *         description: Token no válido o no proporcionado.
  *       403:
  *         description: Solo los administradores pueden realizar esta acción.
  *       404:

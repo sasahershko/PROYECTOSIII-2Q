@@ -39,6 +39,10 @@ const reservationRouter = express.Router();
  *         description: Reserva creada correctamente
  *       400:
  *         description: Error en los datos enviados
+ *       401:
+ *         description: No autorizado (falta token de autenticación).
+ *       500:
+ *          description: Error en el servidor
  */
 reservationRouter.post(
   "/",
@@ -67,6 +71,12 @@ reservationRouter.post(
  *         description: Mesa creada correctamente
  *       400:
  *         description: Error en los datos enviados
+ *       401:
+ *         description: No autorizado (falta token de autenticación).
+ *       403:
+ *         description: No tienes los permisos necesarios
+ *       500:
+ *          description: Error en el servidor
  */
 reservationRouter.post(
   "/table",
@@ -89,10 +99,12 @@ reservationRouter.post(
  *     responses:
  *       200:
  *         description: Lista de reservas
+ *       401:
+ *         description: No autorizado (falta token de autenticación).
+ *       500:
+ *          description: Error en el servidor
  */
 reservationRouter.get("/", authMiddleware, getUserReservations);
-
-//PENDIENTE DE TEST ⬇️⬇️⬇️ (con admin)
 
 // Obtener todas las reservas (solo admin)
 /**
@@ -107,8 +119,14 @@ reservationRouter.get("/", authMiddleware, getUserReservations);
  *     responses:
  *       200:
  *         description: Lista de todas las reservas
+ *       401:
+ *         description: No autorizado (falta token de autenticación).
  *       403:
- *         description: No autorizado
+ *         description: No tienes los permisos necesarios
+ *       404:
+ *         description: Reservas no encontrada
+ *       500:
+ *          description: Error en el servidor
  */
 reservationRouter.get(
   "/all",
@@ -136,8 +154,14 @@ reservationRouter.get(
  *     responses:
  *       200:
  *         description: Reserva aprobada
+ *       401:
+ *         description: No autorizado (falta token de autenticación).
  *       403:
- *         description: No autorizado
+ *         description: No tienes los permisos necesarios
+*       404:
+ *         description: Reserva no encontrada
+ *       500:
+ *          description: Error en el servidor
  */
 reservationRouter.put(
   "/:id/approve",
@@ -165,8 +189,14 @@ reservationRouter.put(
  *     responses:
  *       200:
  *         description: Reserva rechazada
+ *       401:
+ *         description: No autorizado (falta token de autenticación).
  *       403:
- *         description: No autorizado
+ *         description: No tienes los permisos necesarios
+ *       404:
+ *         description: Reserva no encontrada
+ *       500:
+ *          description: Error en el servidor
  */
 reservationRouter.put(
   "/:id/reject",
@@ -202,8 +232,14 @@ reservationRouter.put(
  *     responses:
  *       200:
  *         description: Reserva eliminada
+ *       401:
+ *         description: No autorizado (falta token de autenticación).
  *       403:
- *         description: No autorizado
+ *         description: No tienes los permisos necesarios
+ *       404:
+ *         description: Reserva no encontrada
+ *       500:
+ *          description: Error en el servidor
  */
 reservationRouter.delete("/:id", authMiddleware, deleteReservation);
 
