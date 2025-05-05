@@ -1,7 +1,9 @@
-export default function Calendar(){
+import ProjectCalendar from "@/components/projects/ProjectCalendar";
+
+export default function CalendarPage(){
     return(
         <div>
-            <h1>CALENDARIO</h1>
+            <ProjectCalendar/>
         </div>
     )
 }
