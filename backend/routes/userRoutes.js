@@ -280,9 +280,9 @@ userRouter.get("/profile/:id", getUserProfileById);
 
 /**
  * @swagger
- * /api/users/{id}/restore:
- *   put:
- *     summary: Restaurar un usuario eliminado (soft delete)
+ * /api/users/{id}:
+ *   patch:
+ *     summary: Actualizar los datos de un usuario
  *     tags: [Users]
  *     security:
  *       - bearerAuth: []
@@ -290,18 +290,26 @@ userRouter.get("/profile/:id", getUserProfileById);
  *       - in: path
  *         name: id
  *         required: true
- *         description: ID del usuario a restaurar.
+ *         description: ID del usuario a actualizar.
  *         schema:
  *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UserUpdate'
  *     responses:
  *       200:
- *         description: Usuario restaurado correctamente.
+ *         description: Usuario actualizado correctamente.
+ *       400:
+ *         description: No puedes modificar el correo ni la contraseña.
  *       403:
- *         description: Solo los administradores pueden realizar esta acción.
+ *         description: No tienes permiso para editar este usuario.
  *       404:
  *         description: Usuario no encontrado.
  *       500:
- *         description: Error al restaurar el usuario.
+ *         description: Error del servidor.
  */
 userRouter.patch(
   "/:id",

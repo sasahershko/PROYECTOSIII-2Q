@@ -301,43 +301,51 @@ export const getAllUsers = async (req, res) => {
 
 /**
  * @desc Cambiar rol de un usuario (requiere ser admin y tener token)
- * @route PUT /api/users/update-role/:id
+ * @route PATCH /api/users/update-role/:id
  * @access Private (requiere ser admin y tener token)
  */
 export const updateUser = async (req, res) => {
   try {
-    const { id, name, surname, rol, grade, profileImage } = req.filteredData;
+    const { id, name, surname, rol, grade, profileImage, dni } =
+      req.filteredData;
+
     const usuarioAutenticado = req.usuario;
     const isAdmin = usuarioAutenticado.rol === "admin";
     const isSameUser = usuarioAutenticado.id === id;
 
-    if (!isSameUser && !isAdmin)
+    if (!isSameUser && !isAdmin) {
       return handleHttpError(
         res,
         "No tienes permiso para editar este usuario.",
         403
       );
+    }
 
-    if (req.body.email || req.body.password)
+    // Capa de seguridad extra por si llegan datos fuera del validador
+    if ("email" in req.body || "password" in req.body) {
       return handleHttpError(
         res,
         "No puedes modificar el correo ni la contraseña.",
         400
       );
+    }
 
+    // Solo actualizamos los campos permitidos
     const updatedData = {};
     if (name) updatedData.name = name;
     if (surname) updatedData.surname = surname;
     if (profileImage) updatedData.profileImage = profileImage;
     if (grade) updatedData.grade = grade;
+    if (dni) updatedData.dni = dni;
     if (rol && isAdmin) updatedData.rol = rol;
 
     const updatedUser = await User.findByIdAndUpdate(id, updatedData, {
       new: true,
     });
 
-    if (!updatedUser)
+    if (!updatedUser) {
       return handleHttpError(res, "Usuario no encontrado.", 404);
+    }
 
     await logEvent(`✏️ Usuario actualizado: ${updatedUser.email}`);
 

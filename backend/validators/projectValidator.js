@@ -1,4 +1,6 @@
 import { check, param } from "express-validator";
+import { matchedData } from "express-validator";
+import validateRequest from "../utils/handleValidator.js";
 
 export const createProjectValidator = [
   check("name").notEmpty().withMessage("El nombre es obligatorio"),
@@ -48,16 +50,19 @@ export const budgetValidator = [
   check("budget.title")
     .optional()
     .isString()
+    .trim()
     .withMessage("El título debe ser un texto."),
 
   check("budget.reason")
     .optional()
     .isString()
+    .trim()
     .withMessage("El motivo debe ser un texto."),
 
   check("budget.generalComments")
     .optional()
     .isString()
+    .trim()
     .withMessage("Los comentarios deben ser un texto."),
 
   check("budget.tutors.numTutors")
@@ -76,9 +81,9 @@ export const budgetValidator = [
     .withMessage("El precio por hora debe ser un número positivo."),
 
   check("budget.tutors.subtotal")
-    .optional()
-    .isFloat({ min: 0 })
-    .withMessage("El subtotal de tutores debe ser un número positivo."),
+    .not()
+    .exists()
+    .withMessage("El subtotal de tutores se calcula automáticamente."),
 
   check("budget.interns.numInterns")
     .optional()
@@ -102,9 +107,9 @@ export const budgetValidator = [
     ),
 
   check("budget.interns.subtotal")
-    .optional()
-    .isFloat({ min: 0 })
-    .withMessage("El subtotal de prácticas debe ser un número positivo."),
+    .not()
+    .exists()
+    .withMessage("El subtotal de prácticas se calcula automáticamente."),
 
   check("budget.extraExpenses")
     .optional()
@@ -129,14 +134,20 @@ export const budgetValidator = [
     ),
 
   check("budget.extraExpenses.*.subtotal")
-    .optional()
-    .isFloat({ min: 0 })
-    .withMessage("El subtotal del gasto extra debe ser un número positivo."),
+    .not()
+    .exists()
+    .withMessage("El subtotal del gasto extra se calcula automáticamente."),
 
   check("budget.totalGeneral")
-    .optional()
-    .isFloat({ min: 0 })
-    .withMessage("El total general debe ser un número positivo."),
+    .not()
+    .exists()
+    .withMessage("El total general se calcula automáticamente."),
+
+  // Middleware final para limpiar y validar
+  (req, res, next) => {
+    req.filteredData = matchedData(req, { locations: ["body"] });
+    validateRequest(req, res, next);
+  },
 ];
 
 export const validateProjectUsersUpdate = [

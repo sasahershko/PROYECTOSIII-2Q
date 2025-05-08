@@ -33,7 +33,7 @@ const reservationRouter = express.Router();
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Reservation'
+ *             $ref: '#/components/schemas/Reservations'
  *     responses:
  *       201:
  *         description: Reserva creada correctamente
