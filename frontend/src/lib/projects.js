@@ -64,14 +64,17 @@ export async function updateProject(projectId, updatedData) {
     const cookieStore = cookies();
     const token = cookieStore.get("token")?.value;
 
-    const res = await fetch(`${process.env.BACK_URL}/api/projects/${projectId}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token && { Authorization: `Bearer ${token}` }),
-      },
-      body: JSON.stringify(updatedData),
-    });
+    const res = await fetch(
+      `${process.env.BACK_URL}/api/projects/${projectId}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify(updatedData),
+      }
+    );
 
     const contentType = res.headers.get("content-type");
 
@@ -82,7 +85,9 @@ export async function updateProject(projectId, updatedData) {
     const responseData = await res.json();
 
     if (!res.ok) {
-      throw new Error(responseData.message || "Error al actualizar el proyecto.");
+      throw new Error(
+        responseData.message || "Error al actualizar el proyecto."
+      );
     }
 
     return responseData.project;
@@ -92,9 +97,7 @@ export async function updateProject(projectId, updatedData) {
   }
 }
 
-
 export async function getProjectById(projectId) {
-
   try {
     const res = await fetch(
       `${process.env.BACK_URL}/api/projects/${projectId}`,
@@ -118,20 +121,22 @@ export async function getProjectById(projectId) {
   }
 }
 
-
 export async function deleteProject(projectId) {
   try {
     const cookieStore = cookies();
     const token = cookieStore.get("token")?.value;
 
-    const res = await fetch(`${process.env.BACK_URL}/api/projects/${projectId}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token && { Authorization: `Bearer ${token}` }),
-      },
-      body: JSON.stringify({ id: projectId }), // porque tu backend espera `req.filteredData.id`
-    });
+    const res = await fetch(
+      `${process.env.BACK_URL}/api/projects/${projectId}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify({ id: projectId }), // porque tu backend espera `req.filteredData.id`
+      }
+    );
 
     const contentType = res.headers.get("content-type");
     if (!contentType?.includes("application/json")) {
@@ -150,20 +155,22 @@ export async function deleteProject(projectId) {
   }
 }
 
-
 export async function updateProjectBudget(projectId, budgetData) {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value;
 
-    const res = await fetch(`${process.env.BACK_URL}/api/projects/budget/${projectId}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token && { Authorization: `Bearer ${token}` }),
-      },
-      body: JSON.stringify(budgetData),
-    });
+    const res = await fetch(
+      `${process.env.BACK_URL}/api/projects/budget/${projectId}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify(budgetData),
+      }
+    );
 
     const contentType = res.headers.get("content-type");
 
@@ -184,24 +191,24 @@ export async function updateProjectBudget(projectId, budgetData) {
   }
 }
 
-
 export async function addNote(noteData, projectId) {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value;
 
-    const res = await fetch(`${process.env.BACK_URL}/api/projects/note/${projectId}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token && { Authorization: `Bearer ${token}` }),
-      },
-      body: JSON.stringify(noteData),
-    });
-
+    const res = await fetch(
+      `${process.env.BACK_URL}/api/projects/note/${projectId}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify(noteData),
+      }
+    );
 
     const contentType = res.headers.get("content-type");
-
 
     if (!contentType || !contentType.includes("application/json")) {
       throw new Error(`Error en el servidor: ${await res.text()}`);
@@ -209,11 +216,10 @@ export async function addNote(noteData, projectId) {
 
     const responseData = await res.json();
 
-
     if (!res.ok) {
       throw new Error(responseData.error);
     }
-    console.log(responseData.message)
+    console.log(responseData.message);
     return responseData;
   } catch (error) {
     console.error("Error al agregar la nota:", error.message);
@@ -226,14 +232,17 @@ export async function updateNote(noteData, projectId) {
     const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value;
 
-    const res = await fetch(`${process.env.BACK_URL}/api/projects/note/${projectId}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token && { Authorization: `Bearer ${token}` }),
-      },
-      body: JSON.stringify(noteData),
-    });
+    const res = await fetch(
+      `${process.env.BACK_URL}/api/projects/note/${projectId}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify(noteData),
+      }
+    );
 
     const contentType = res.headers.get("content-type");
     if (!contentType || !contentType.includes("application/json")) {
@@ -253,22 +262,23 @@ export async function updateNote(noteData, projectId) {
   }
 }
 
-
 export async function deleteNote(noteIndex, projectId) {
-
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value;
 
-    const res = await fetch(`${process.env.BACK_URL}/api/projects/note/${projectId}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token && { Authorization: `Bearer ${token}` }),
-      },
-      body: JSON.stringify(noteIndex),
-    });
-    console.log(JSON.stringify(noteIndex))
+    const res = await fetch(
+      `${process.env.BACK_URL}/api/projects/note/${projectId}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify(noteIndex),
+      }
+    );
+    console.log(JSON.stringify(noteIndex));
 
     const contentType = res.headers.get("content-type");
     if (!contentType?.includes("application/json")) {

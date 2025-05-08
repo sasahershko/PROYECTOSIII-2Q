@@ -1,51 +1,98 @@
 "use client";
 
-import React from "react";
-import { format, isAfter } from "date-fns";
-import { es } from "date-fns/locale";
+import React, { useState, useEffect } from "react";
 import { formatDate, getProjectDates } from "@/utils/projectUtils";
+import { getProfileById } from "@/lib/profile";
+import { LuCalendar, LuClock, LuHourglass } from "react-icons/lu";
+import Image from "next/image";
 
 export default function ProjectCard({ project, role }) {
-
   const areaColors = {
-    "INSO": "bg-blue-400",
-    "MAIS": "bg-red-400",
-    "FIIS": "bg-green-400",
-    "DIPI": "bg-cyan-400",
-    "ANIV": "bg-yellow-400",
-    "DIDI": "bg-pink-400",
+    INSO: "bg-blue-400",
+    MAIS: "bg-red-400",
+    FIIS: "bg-green-400",
+    DIPI: "bg-cyan-400",
+    ANIV: "bg-yellow-400",
+    DIDI: "bg-pink-400",
   };
 
   const statusColors = {
     "No iniciado": "bg-gray-500",
     "En curso": "bg-yellow-500",
     "En espera": "bg-orange-500",
-    "Completado": "bg-green-500",
+    Completado: "bg-green-500",
   };
 
+  // map our utility icons
   const icons = {
-    calendar: (<svg key="calendar" xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8 y2=6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>),
-    clock: (<svg key="clock" xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>),
-    hourglass: (<svg key="hourglass" xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2h12"></path><path d="M6 22h12"></path><path d="M6 2c0 4 6 4 6 8s-6 4-6 8"></path><path d="M18 2c0 4-6 4-6 8s6 4 6 8"></path></svg>)
+    calendar: <LuCalendar className="w-4 h-4" />,
+    clock: <LuClock className="w-4 h-4" />,
+    hourglass: <LuHourglass className="w-4 h-4" />,
   };
 
-  const projectStatus = project.pStatus?.length > 0 ? project.pStatus[project.pStatus.length - 1].status : "No iniciado";
-  project.categoryColor = areaColors[project.area] || "bg-gray-300";
-  project.statusColor = statusColors[project.pStatus] || "bg-gray-500";
+  // load full user profiles
+  const [participants, setParticipants] = useState([]);
+  const [loadingParticipants, setLoadingParticipants] = useState(true);
+  useEffect(() => {
+    async function load() {
+      if (!project.users?.length) {
+        setParticipants([]);
+        setLoadingParticipants(false);
+        return;
+      }
+      setLoadingParticipants(true);
+      const all = await Promise.all(
+        project.users.map((id) => getProfileById(id).catch(() => null))
+      );
+      setParticipants(all.filter(Boolean));
+      setLoadingParticipants(false);
+    }
+    load();
+  }, [project.users]);
+
+  const getInitials = (u) =>
+    ((u.name?.[0] || "") + (u.surname?.[0] || "")).toUpperCase();
+
+  const projectStatus =
+    project.pStatus?.length > 0
+      ? project.pStatus[project.pStatus.length - 1].status
+      : "No iniciado";
+
+  const areaColor = areaColors[project.area] || "bg-gray-300";
+  const statusColor = statusColors[projectStatus] || "bg-gray-500";
   const dates = getProjectDates(project);
 
   return (
     <div className="h-full flex flex-col rounded-xl overflow-hidden shadow-lg bg-card hover-grow relative">
-      {/* Imagen (Visible para todos) */}
-      <div className="h-48 bg-primary text-primary-text flex items-center justify-center rounded-t-xl">
-        Imagen
+      {/* Imagen */}
+      <div className="h-48 bg-primary select-none text-primary-text flex items-center justify-center rounded-t-xl">
+        {project.image ? (
+          <Image
+            src={project.image || "/placeholder.svg?height=350&width=700"}
+            alt={project.name}
+            fill
+            className="object-cover"
+          />
+        ) : (
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span className="text-gray-500 font-medium">
+              Imagen no disponible
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Contenido */}
-      <div className={`relative p-4 pt-10 flex flex-col justify-between flex-grow ${project.categoryColor}`}>
+      <div
+        className={`relative p-4 pt-10 flex flex-col justify-between flex-grow ${areaColor}`}
+      >
         <div className="absolute -top-4 left-4">
-          <div className={`relative inline-block px-5 py-1 ${project.categoryColor} rounded-tl-lg rounded-lg`}>
-            <span className="relative z-20 text-sm font-semibold text-white">{project.area}</span>
+          <div
+            className={`inline-block px-5 py-1 ${areaColor} rounded-tl-lg rounded-lg`}
+          >
+            <span className="text-sm font-semibold text-white">
+              {project.area}
+            </span>
           </div>
         </div>
 
@@ -54,52 +101,56 @@ export default function ProjectCard({ project, role }) {
           {project.description}
         </p>
 
-
         {(role === "admin" || role === "user") && (
           <>
-            {/* Avatares PROVISIONALES HASTA QUE TENGAMOS FOTOS DE PERFIL */}
+            {/* Avatares */}
             <div className="absolute top-1 right-5 flex -space-x-5">
-              {project.users.map((user, i) => {
-                const avatarURL = `https://ui-avatars.com/api/?name=User+${i + 1}&background=random&color=fff`;
-                return (
-                  <img
-                    key={i}
-                    src={avatarURL}
-                    alt="User avatar"
-                    className="w-10 h-10 rounded-full border-2 border-white object-cover"
-                  />
-                );
-              })}
+              {loadingParticipants
+                ? project.users.map((_, i) => (
+                    <div
+                      key={i}
+                      className="w-10 h-10 rounded-full bg-gray-300 border-2 border-white"
+                    />
+                  ))
+                : participants.map((u) =>
+                    u.profileImage ? (
+                      <img
+                        key={u.id}
+                        src={u.profileImage}
+                        alt={`${u.name} ${u.surname}`}
+                        className="w-10 h-10 rounded-full border-2 border-white object-cover"
+                      />
+                    ) : (
+                      <div
+                        key={u.id}
+                        className="w-10 h-10 rounded-full bg-primary-bg text-primary-text flex items-center justify-center text-sm font-bold border-2 border-white"
+                      >
+                        {getInitials(u)}
+                      </div>
+                    )
+                  )}
             </div>
 
-
-            {/* Estado del proyecto con etiqueta */}
-            <div className="inline-flex items-center px-3 py-1 rounded-full text-white text-sm font-semibold"
-              style={{ backgroundColor: project.statusColor }}>
-              {/* {project.status === "Completado" && (
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20 6L9 17l-5-5"></path>
-                </svg>
-              )}
-              {project.status === "En espera" && (
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <polyline points="12 6 12 12 16 14"></polyline>
-                </svg>
-              )} */}
+            {/* Estado */}
+            <div
+              className="inline-flex items-center px-3 py-1 rounded-full text-white text-sm font-semibold"
+              style={{ backgroundColor: statusColor }}
+            >
               {projectStatus}
             </div>
 
-            {/* Fechas  */}
+            {/* Fechas */}
             <div className="mt-3 flex justify-center items-center space-x-4 text-xs">
-              {dates.map((date, i) => date && (
-                <span key={i} className="flex items-center space-x-1">
-                  {icons[date.icon]} {/* Si hay más fechas de revisión, usa el icono del reloj */}
-                  <span>{formatDate(date.date)}</span>
-                </span>
-              ))}
+              {dates.map(
+                (d, i) =>
+                  d && (
+                    <span key={i} className="flex items-center space-x-1">
+                      {icons[d.icon]}
+                      <span>{formatDate(d.date)}</span>
+                    </span>
+                  )
+              )}
             </div>
-
           </>
         )}
       </div>

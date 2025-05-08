@@ -517,6 +517,8 @@ projectRouter.post("/note/:id", authMiddleware, createNoteValidator, addNotes);
  *                   example: "Nota actualizada correctamente."
  *       400:
  *         description: Índice no válido o datos incorrectos.
+ *       401:
+ *         description: Token no válido o no proporcionado.
  *       404:
  *         description: Proyecto o nota no encontrado.
  *       500:
@@ -529,6 +531,47 @@ projectRouter.patch(
   updateNote
 );
 
+/**
+ * @swagger
+ * /api/projects/note/{id}:
+ *   delete:
+ *     summary: Eliminar una nota específica de un proyecto.
+ *     tags:
+ *       - Notes
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del proyecto al que pertenece la nota.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - noteIndex
+ *             properties:
+ *               noteIndex:
+ *                 type: integer
+ *                 description: Índice de la nota que se desea eliminar en el arreglo pendingNotes del proyecto.
+ *                 example: 0
+ *     responses:
+ *       200:
+ *         description: Nota eliminada correctamente
+ *       400:
+ *         description: Índice de nota no válido
+ *       401:
+ *         description: Token no válido o no proporcionado
+ *       404:
+ *         description: Proyecto no encontrado
+ *       500:
+ *         description: Error interno del servidor
+ */
 projectRouter.delete(
   "/note/:id",
   authMiddleware,
@@ -623,6 +666,8 @@ projectRouter.delete(
  *                   $ref: '#/components/schemas/Budget'
  *       400:
  *         description: Datos inválidos.
+ *       401:
+ *         description: Token no válido o no proporcionado.
  *       404:
  *         description: Proyecto no encontrado.
  *       500:
@@ -672,6 +717,8 @@ projectRouter.patch(
  *         description: Usuarios añadidos correctamente
  *       400:
  *         description: Datos inválidos
+ *       401:
+ *         description: Token no válido o no proporcionado.
  *       403:
  *         description: No tienes permiso para modificar este proyecto
  *       404:
@@ -723,6 +770,8 @@ projectRouter.patch(
  *     responses:
  *       200:
  *         description: Usuarios eliminados correctamente
+ *       401:
+ *         description: Token no válido o no proporcionado.
  *       400:
  *         description: Datos inválidos
  *       403:

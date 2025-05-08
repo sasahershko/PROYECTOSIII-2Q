@@ -80,7 +80,7 @@ export const getAllProjects = async (req, res) => {
   try {
     let projects;
     if (!req.usuario) {
-      projects = await Project.find().select("area name description");
+      projects = await Project.find().select("area name description image");
     } else if (req.usuario.rol === "admin") {
       projects = await Project.find();
     } else {

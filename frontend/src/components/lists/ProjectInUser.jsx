@@ -2,6 +2,8 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { BsCalendar, BsClockHistory, BsHourglassSplit } from "react-icons/bs";
 import Image from "next/image";
+import { getProfileById } from "@/lib/profile";
+import { useEffect, useState } from "react";
 
 export default function ProjectCard({ project }) {
   const {
@@ -15,6 +17,21 @@ export default function ProjectCard({ project }) {
     users,
     pStatus,
   } = project;
+
+  const [updatedUsers, setUpdatedUsers] = useState([]);
+
+  useEffect(() => {
+    const fetchProfiles = async () => {
+      if (users?.length) {
+        const profiles = await Promise.all(
+          users.map((u) => getProfileById(u._id))
+        );
+        setUpdatedUsers(profiles);
+      }
+    };
+
+    fetchProfiles();
+  }, [users]);
 
   const currentStatus = pStatus?.[0]?.status || "Sin estado";
 
@@ -33,17 +50,11 @@ export default function ProjectCard({ project }) {
 
   return (
     <Link href={`/projects/${_id}`}>
-      {/* 
-        Añade "cursor-pointer" o estilos hover 
-        para indicar que es clicable
-      */}
       <div className="flex items-center justify-between bg-primary-bg rounded-md shadow px-4 py-2 gap-2 cursor-pointer hover:shadow-md transition-shadow">
-        {/* Nombre del proyecto */}
         <div className="text-sm font-semibold text-primary-text w-56">
           {name}
         </div>
 
-        {/* Empresa */}
         <div className="flex items-center gap-1 justify-start">
           <div className="border-[1px] mt-1 border-primary-text h-[30px] w-20 rounded-md flex items-center justify-center gap-1 scale-90">
             <Image
@@ -57,14 +68,12 @@ export default function ProjectCard({ project }) {
           </div>
         </div>
 
-        {/* Categoría */}
         {category && (
           <span className="text-xs font-medium px-2 py-1 rounded-full bg-pink-100 text-pink-800">
             {category}
           </span>
         )}
 
-        {/* Fechas */}
         <div className="flex items-center gap-4">
           {start && (
             <div className="flex items-center gap-1 text-sm text-secundary-text">
@@ -86,20 +95,28 @@ export default function ProjectCard({ project }) {
           )}
         </div>
 
-        {/* Participantes */}
         <div className="flex -space-x-2">
-          {users?.map((u) => (
+          {updatedUsers?.map((u) => (
             <div
               key={u._id}
-              className="w-8 h-8 rounded-full border-2 border-primary-bg bg-gray-300 flex items-center justify-center text-xs font-semibold"
+              className="w-8 h-8 rounded-full border-2 border-primary-bg bg-gray-300 flex items-center justify-center text-xs font-semibold overflow-hidden"
               title={`${u.name} ${u.surname}`}
             >
-              {u.name?.[0]?.toUpperCase()}
+              {u.profileImage ? (
+                <Image
+                  src={u.profileImage}
+                  alt={`${u.name} ${u.surname}`}
+                  width={32}
+                  height={32}
+                  className="rounded-full object-cover"
+                />
+              ) : (
+                u.name?.[0]?.toUpperCase()
+              )}
             </div>
           ))}
         </div>
 
-        {/* Estado */}
         <div className={`text-xs px-2 py-1 rounded-full ${statusClasses}`}>
           {currentStatus}
         </div>

@@ -18,7 +18,7 @@ import { adminOrSelfMiddleware } from "../middlewares/adminOrSelfMiddleware.js";
 
 const reservationRouter = express.Router();
 
-// Crear una nueva reserva (solo usuarios autenticados)
+
 /**
  * @openapi
  * /api/reservations:
@@ -33,12 +33,39 @@ const reservationRouter = express.Router();
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Reservations'
+ *             type: object
+ *             required:
+ *               - table
+ *               - project
+ *               - date
+ *               - startTime
+ *               - endTime
+ *             properties:
+ *               table:
+ *                 type: string
+ *                 description: ID de la mesa (MongoID)
+ *                 example: "60f6e5e5d1e4f814c8fabc99"
+ *               project:
+ *                 type: string
+ *                 description: ID del proyecto (MongoID)
+ *                 example: "60f6e5e5d1e4f814c8fabc88"
+ *               date:
+ *                 type: string
+ *                 format: date
+ *                 example: "2025-05-10"
+ *               startTime:
+ *                 type: string
+ *                 example: "14:00"
+ *               endTime:
+ *                 type: string
+ *                 example: "16:00"
  *     responses:
  *       201:
  *         description: Reserva creada correctamente
  *       400:
- *         description: Error en los datos enviados
+ *         description: Datos inválidos
+ *       401:
+ *         description: No autorizado
  */
 reservationRouter.post(
   "/",
@@ -61,12 +88,28 @@ reservationRouter.post(
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Table'
+ *             type: object
+ *             required:
+ *               - name
+ *               - seats
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Nombre identificativo de la mesa
+ *                 example: "Mesa A1"
+ *               seats:
+ *                 type: number
+ *                 description: Número de asientos disponibles
+ *                 example: 6
  *     responses:
  *       201:
  *         description: Mesa creada correctamente
  *       400:
- *         description: Error en los datos enviados
+ *         description: Datos inválidos
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: Prohibido
  */
 reservationRouter.post(
   "/table",
@@ -76,40 +119,42 @@ reservationRouter.post(
   createTable
 );
 
-// Obtener reservas del usuario autenticado
 /**
  * @openapi
  * /api/reservations:
  *   get:
  *     tags:
  *       - Reservations
- *     summary: Obtener reservas del usuario autenticado
+ *     summary: Obtener las reservas del usuario autenticado
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Lista de reservas
+ *         description: Lista de reservas del usuario
+ *       401:
+ *         description: No autorizado
  */
+
 reservationRouter.get("/", authMiddleware, getUserReservations);
 
-//PENDIENTE DE TEST ⬇️⬇️⬇️ (con admin)
-
-// Obtener todas las reservas (solo admin)
 /**
  * @openapi
  * /api/reservations/all:
  *   get:
  *     tags:
  *       - Reservations
- *     summary: Obtener todas las reservas (solo admin)
+ *     summary: Obtener todas las reservas (admin o responsable)
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Lista de todas las reservas
- *       403:
+ *       401:
  *         description: No autorizado
+ *       403:
+ *         description: Prohibido
  */
+
 reservationRouter.get(
   "/all",
   authMiddleware,
@@ -117,14 +162,13 @@ reservationRouter.get(
   getAllReservations
 );
 
-// Aprobar una reserva (solo admin)
 /**
  * @openapi
  * /api/reservations/{id}/approve:
  *   put:
  *     tags:
  *       - Reservations
- *     summary: Aprobar una reserva
+ *     summary: Aprobar una reserva por ID
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -133,11 +177,16 @@ reservationRouter.get(
  *         required: true
  *         schema:
  *           type: string
+ *         description: ID de la reserva
  *     responses:
  *       200:
  *         description: Reserva aprobada
- *       403:
+ *       401:
  *         description: No autorizado
+ *       403:
+ *         description: Prohibido
+ *       404:
+ *         description: Reserva no encontrada
  */
 reservationRouter.put(
   "/:id/approve",
@@ -146,14 +195,13 @@ reservationRouter.put(
   approveReservation
 );
 
-//Rechazar una reserva (solo admin)
 /**
  * @openapi
  * /api/reservations/{id}/reject:
  *   put:
  *     tags:
  *       - Reservations
- *     summary: Rechazar una reserva
+ *     summary: Rechazar una reserva por ID
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -162,11 +210,16 @@ reservationRouter.put(
  *         required: true
  *         schema:
  *           type: string
+ *         description: ID de la reserva
  *     responses:
  *       200:
  *         description: Reserva rechazada
- *       403:
+ *       401:
  *         description: No autorizado
+ *       403:
+ *         description: Prohibido
+ *       404:
+ *         description: Reserva no encontrada
  */
 reservationRouter.put(
   "/:id/reject",
@@ -175,16 +228,13 @@ reservationRouter.put(
   rejectReservation
 );
 
-//Borrar una reserva (admin o dueño de la reserva)
-//DELETE /api/reservations/:id
-//DELETE /api/reservations/:id?type=hard
 /**
  * @openapi
  * /api/reservations/{id}:
  *   delete:
  *     tags:
  *       - Reservations
- *     summary: Eliminar una reserva
+ *     summary: Eliminar una reserva por ID
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -193,17 +243,14 @@ reservationRouter.put(
  *         required: true
  *         schema:
  *           type: string
- *       - in: query
- *         name: type
- *         required: false
- *         schema:
- *           type: string
- *           enum: [soft, hard]
+ *         description: ID de la reserva
  *     responses:
  *       200:
  *         description: Reserva eliminada
- *       403:
+ *       401:
  *         description: No autorizado
+ *       404:
+ *         description: Reserva no encontrada
  */
 reservationRouter.delete("/:id", authMiddleware, deleteReservation);
 

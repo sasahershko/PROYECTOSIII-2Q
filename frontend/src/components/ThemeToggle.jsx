@@ -19,7 +19,7 @@ export default function ThemeToggle() {
     <select
       value={theme}
       onChange={(e) => setTheme(e.target.value)}
-      className="px-2 py-1 rounded bg-gray-200 text-gray-800 transition-colors duration-300 w-28"
+      className="px-3 py-1 rounded bg-accent text-primary-bg transition-colors duration-300 w-28"
     >
       {Object.entries(themeConfig).map(([key, { displayName }]) => (
         <option key={key} value={key}>
