@@ -4,9 +4,7 @@ import Image from "next/image";
 import ThemeUpdater from "@/components/ThemeUpdater";
 import { ThemeProvider } from "next-themes";
 
-
 export default function AuthLayout({ children }) {
-
   return (
     <div>
       <ThemeProvider attribute={"class"} enableColorScheme={false}>
@@ -19,16 +17,14 @@ export default function AuthLayout({ children }) {
         </Link>
 
         <div className="flex w-full min-h-screen bg-secundary">
-          <div className="flex-1 items-center justify-center">
-            {children}
-          </div>
+          <div className="flex-1 items-center justify-center">{children}</div>
 
           <div className="hidden md:flex flex-1 bg-gray-300 items-center justify-center">
             <Image
-              src="/foto-auth.webp"
+              src="tempPhotos/u-tad-1.jpg"
               width={1100}
               height={1200}
-              className="h-screen"
+              className="h-screen object-cover"
               alt="Imagen de autenticación"
               priority
             />
