@@ -1,20 +1,23 @@
 "use client";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { loginUser } from "@/lib/auth";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
+import Toast from "@/components/ui/Toast";
 
 export default function Login() {
   const [formData, setFormData] = useState({ correo: "", password: "" });
   const [error, setError] = useState("");
+  const [showToast, setShowToast] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validación antes de enviar la solicitud
     if (!formData.correo.trim() || !formData.password.trim()) {
       setError("Por favor, ingrese su correo y contraseña.");
+      setShowToast(true);
       return;
     }
 
@@ -23,6 +26,7 @@ export default function Login() {
       router.push("/");
     } catch (error) {
       setError(error.message);
+      setShowToast(true);
     }
   };
 
@@ -34,31 +38,17 @@ export default function Login() {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <AnimatePresence>
-        {error && (
-          <motion.div
-            onClick={() => setError("")}
-            className="absolute top-60 md:left-1/4 left-[50vw] min-w-[80%] md:min-w-min max-w-[80vw] md:max-w-[40vw] bg-red-600 text-white px-6 py-3 rounded shadow-lg z-50 animate-slideUp cursor-default"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div className="flex justify-between items-center">
-              <span>{error}</span>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setError("");
-                }}
-                className="ml-4 text-xl font-bold cursor-pointer"
-              >
-                ×
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {showToast && error && (
+        <Toast
+          message={error}
+          type="error"
+          onClose={() => {
+            setShowToast(false);
+            setError("");
+          }}
+        />
+      )}
+
       <motion.div
         className="bg-white p-12 rounded-lg shadow-lg w-full max-w-lg"
         initial={{ opacity: 0, scale: 0.95 }}

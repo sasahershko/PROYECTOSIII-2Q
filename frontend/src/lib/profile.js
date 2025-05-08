@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 
 export async function getProfile() {
   try {
-    const token = cookies().get("token")?.value; 
+    const token = await cookies().get("token")?.value; // Asumiendo que la cookie se llama 'token'
     if (!token) {
       throw new Error("Token not found in cookies");
     }
@@ -29,5 +29,31 @@ export async function getProfile() {
   }
 }
 
+export async function getProfileById(userId) {
+  try {
+    const token = await cookies().get("token")?.value; // Asumiendo que la cookie se llama 'token'
+    if (!token) {
+      throw new Error("Token not found in cookies");
+    }
 
+    const response = await fetch(
+      `${process.env.BACK_URL}/api/users/profile/${userId}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
+    if (!response.ok) {
+      throw new Error(`Error fetching profile by ID: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching profile by ID:", error);
+    throw error;
+  }
+}

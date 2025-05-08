@@ -1,26 +1,42 @@
+"use client";
+
 import { useState } from "react";
 import { deleteUser } from "@/lib/users";
 import DeleteUserModal from "@/components/lists/DeleteUserModal";
 import UserProfileModal from "@/components/lists/UserProfileModal";
-import GradeChip from "@components/ui/chip";
+import EditUserModal from "@/components/lists/EditUserModal";
+import { LuTrash, LuPencil } from "react-icons/lu";
+import GradeChip from "@/components/ui/chip";
+import Image from "next/image";
 
 export default function UserCard({ user, reloadUsers }) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const cancelDelete = () => setIsDeleteModalOpen(false);
-
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  const cancelDelete = () => setIsDeleteModalOpen(false);
   const openProfile = () => setIsProfileModalOpen(true);
   const closeProfile = () => setIsProfileModalOpen(false);
+  const openEdit = (e) => {
+    e.stopPropagation();
+    setIsEditModalOpen(true);
+  };
+  const closeEdit = () => setIsEditModalOpen(false);
 
   const handleDelete = (e) => {
-    e.stopPropagation(); // Evita que también abra el modal de perfil
+    e.stopPropagation();
     setIsDeleteModalOpen(true);
   };
-
   const confirmDelete = () => {
     deleteUser(user._id);
     reloadUsers();
     setIsDeleteModalOpen(false);
+  };
+
+  const getInitials = () => {
+    const n = user.name?.charAt(0) || "";
+    const s = user.surname?.charAt(0) || "";
+    return `${n}${s}`.toUpperCase();
   };
 
   return (
@@ -28,8 +44,26 @@ export default function UserCard({ user, reloadUsers }) {
       <div
         onClick={openProfile}
         className="grid gap-4 items-center px-2 py-2 border-b border-primary-bg hover:bg-accent/10 transition-colors cursor-pointer"
-        style={{ gridTemplateColumns: "2fr 2fr 3fr 2fr 0.8fr 0.8fr 1fr" }}
+        style={{ gridTemplateColumns: "auto 2fr 2fr 3fr 2fr 0.8fr 0.8fr 1fr" }}
       >
+        {/* Avatar */}
+        <div className="flex justify-center items-center">
+          {user.profileImage ? (
+            <Image
+              src={user.profileImage}
+              alt="avatar"
+              width={40}
+              height={40}
+              className="rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-gray-300 text-gray-700 flex items-center justify-center text-xs font-bold">
+              {getInitials()}
+            </div>
+          )}
+        </div>
+
+        {/* Datos */}
         <div className="text-sm text-primary-text">{user.surname}</div>
         <div className="text-sm text-primary-text">{user.name}</div>
         <div className="text-sm text-primary-text">{user.email}</div>
@@ -38,29 +72,25 @@ export default function UserCard({ user, reloadUsers }) {
           <GradeChip grado={user.grade} />
         </div>
         <div className="text-sm text-primary-text">{user.rol}</div>
-        <div className="flex items-center">
+
+        {/* Acciones: editar + eliminar */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={openEdit}
+            className="p-2 bg-blue-600 hover:bg-blue-500 text-white rounded"
+          >
+            <LuPencil className="w-4 h-4" />
+          </button>
           <button
             onClick={handleDelete}
-            className="p-2 bg-red-600 hover:bg-red-500 text-white rounded flex items-center"
+            className="p-2 bg-red-600 hover:bg-red-500 text-white rounded"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M19 7L5 7M10 11V17M14 11V17M6 7L6 19C6 20.1046 6.89543 21 8 21H16C17.1046 21 18 20.1046 18 19V7M9 7V5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 5V7"
-              />
-            </svg>
+            <LuTrash className="w-4 h-4" />
           </button>
         </div>
       </div>
 
+      {/* Modales */}
       <DeleteUserModal
         isOpen={isDeleteModalOpen}
         onCancel={cancelDelete}
@@ -71,6 +101,13 @@ export default function UserCard({ user, reloadUsers }) {
         user={user}
         isOpen={isProfileModalOpen}
         onClose={closeProfile}
+      />
+
+      <EditUserModal
+        user={user}
+        isOpen={isEditModalOpen}
+        onClose={closeEdit}
+        onUpdated={reloadUsers}
       />
     </>
   );

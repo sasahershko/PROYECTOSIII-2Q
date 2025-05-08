@@ -1,9 +1,10 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import { getIdeas } from "@lib/ideas"
-import { PlusCircle, AlertCircle, User } from "lucide-react"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { getIdeas } from "@lib/ideas";
+import { PlusCircle, AlertCircle, User } from "lucide-react";
+import SpinLoader from "@/components/SpinLoader";
 
 const areaColors = {
   INSO: {
@@ -42,8 +43,7 @@ const areaColors = {
     text: "text-fuchsia-700",
     badge: "bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200",
   },
-}
-
+};
 
 // Default colors for undefined areas
 const defaultAreaStyle = {
@@ -52,7 +52,7 @@ const defaultAreaStyle = {
   rotate: "rotate-[0deg]",
   text: "text-slate-800",
   badge: "bg-slate-100 text-slate-800 border-slate-200",
-}
+};
 
 // Rotation variations for a more natural look
 const rotations = [
@@ -62,43 +62,39 @@ const rotations = [
   "rotate-[-1deg]",
   "rotate-[1.5deg]",
   "rotate-[-1.5deg]",
-]
+];
 
 export default function IdeasPage() {
-  const [ideas, setIdeas] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [ideas, setIdeas] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     async function fetchIdeas() {
       try {
-        const data = await getIdeas()
-        setIdeas(data)
+        const data = await getIdeas();
+        setIdeas(data);
       } catch (err) {
-        setError(err.message || "Error al cargar las ideas")
+        setError(err.message || "Error al cargar las ideas");
       } finally {
-        setTimeout(() => setLoading(false), 400)
+        setTimeout(() => setLoading(false), 400);
       }
     }
 
-    fetchIdeas()
-  }, [])
+    fetchIdeas();
+  }, []);
 
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[70vh]">
         <div className="flex flex-col items-center gap-4">
-          <div className="relative w-14 h-14">
-            <div className="absolute inset-0 rounded-full border-2 border-slate-100"></div>
-            <div className="absolute inset-0 rounded-full border-t-2 border-slate-800 animate-[spin_1.2s_linear_infinite]"></div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-2 h-2 bg-slate-800 rounded-full animate-pulse"></div>
-            </div>
+          <div className="relative flex flex-col gap-6">
+            <SpinLoader size="86" />
+            <p className="text-slate-700 font-medium">Cargando ideas</p>
           </div>
-          <p className="text-slate-700 font-medium">Cargando ideas</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -110,7 +106,9 @@ export default function IdeasPage() {
               <AlertCircle className="h-8 w-8 text-red-500" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-slate-800 mb-2">No se pudieron cargar las ideas</h2>
+              <h2 className="text-xl font-semibold text-slate-800 mb-2">
+                No se pudieron cargar las ideas
+              </h2>
               <p className="text-slate-600">{error}</p>
             </div>
             <button
@@ -122,7 +120,7 @@ export default function IdeasPage() {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -130,8 +128,12 @@ export default function IdeasPage() {
       {/* Modern header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-12 gap-6">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-primary-text tracking-tight">Ideas</h1>
-          <p className="mt-2 text-slate-500 max-w-2xl">Explora y descubre nuevas ideas innovadoras</p>
+          <h1 className="text-3xl sm:text-4xl font-bold text-primary-text tracking-tight">
+            Ideas
+          </h1>
+          <p className="mt-2 text-slate-500 max-w-2xl">
+            Explora y descubre nuevas ideas innovadoras
+          </p>
         </div>
         <Link
           href="/admin/ideas/newIdeas"
@@ -146,9 +148,9 @@ export default function IdeasPage() {
       {ideas.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {ideas.map((idea, index) => {
-            const areaStyle = areaColors[idea.grado] || defaultAreaStyle
+            const areaStyle = areaColors[idea.grado] || defaultAreaStyle;
             // Use a different rotation for each card to create a natural look
-            const rotationClass = rotations[index % rotations.length]
+            const rotationClass = rotations[index % rotations.length];
 
             return (
               <Link
@@ -181,11 +183,13 @@ export default function IdeasPage() {
                     <div className="h-8 w-8 rounded-full bg-white/70 flex items-center justify-center mr-3 transition-all duration-300 shadow-sm">
                       <User className="h-4 w-4 text-slate-500" />
                     </div>
-                    <span className="text-sm text-slate-700 font-medium">{idea.usuario?.name || "Desconocido"}</span>
+                    <span className="text-sm text-slate-700 font-medium">
+                      {idea.usuario?.name || "Desconocido"}
+                    </span>
                   </div>
                 </div>
               </Link>
-            )
+            );
           })}
         </div>
       ) : (
@@ -194,8 +198,12 @@ export default function IdeasPage() {
             <div className="h-16 w-16 rounded-full bg-white/70 shadow-sm flex items-center justify-center mx-auto mb-6 transition-all duration-300">
               <PlusCircle className="h-8 w-8 text-slate-400" />
             </div>
-            <h2 className="text-xl font-semibold text-slate-800 mb-3">No hay ideas todavía</h2>
-            <p className="text-slate-700 mb-6">Sé el primero en compartir una idea innovadora con la comunidad</p>
+            <h2 className="text-xl font-semibold text-slate-800 mb-3">
+              No hay ideas todavía
+            </h2>
+            <p className="text-slate-700 mb-6">
+              Sé el primero en compartir una idea innovadora con la comunidad
+            </p>
             <Link
               href="/ideas/newIdeas"
               className="px-6 py-3 bg-slate-800 text-white rounded-lg font-medium transition-all duration-300 hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-800 focus:ring-offset-2 inline-flex items-center gap-2 shadow-sm"
@@ -207,6 +215,5 @@ export default function IdeasPage() {
         </div>
       )}
     </div>
-  )
+  );
 }
-

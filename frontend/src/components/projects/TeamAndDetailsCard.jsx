@@ -17,6 +17,8 @@ import { getUserData } from "@/lib/authClient";
 import { formatDate } from "@/utils/projectUtils";
 import AddUserModal from "@/components/projects/AddUserModal";
 import UserProfileModal from "../lists/UserProfileModal";
+import { getProfileById } from "@/lib/profile";
+import SpinLoader from "@/components/SpinLoader";
 
 export default function TeamAndDetailsCard({ project }) {
   const [userRole, setUserRole] = useState(null);
@@ -24,20 +26,20 @@ export default function TeamAndDetailsCard({ project }) {
   const [isResponsible, setIsResponsible] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
 
-  // Función para abrir el modal del perfil del usuario clickeado
-  const openProfile = (user) => setSelectedUser(user);
-  const closeProfile = () => setSelectedUser(null);
+  // detalles completos + loading
+  const [participantsDetails, setParticipantsDetails] = useState([]);
+  const [participantsLoading, setParticipantsLoading] = useState(true);
+  const [responsiblesDetails, setResponsiblesDetails] = useState([]);
+  const [responsiblesLoading, setResponsiblesLoading] = useState(true);
 
-  const handleNoteModal = (e) => {
-    e.stopPropagation();
-    setIsModalOpen(!isModalOpen);
-  };
+  const getInitials = (n, s) => ((n?.[0] || "") + (s?.[0] || "")).toUpperCase();
 
+  // verifica rol y permisos
   useEffect(() => {
-    async function fetchUser() {
+    (async () => {
       try {
         const { role, id } = await getUserData();
         setUserRole(role);
@@ -48,9 +50,42 @@ export default function TeamAndDetailsCard({ project }) {
       } finally {
         setLoading(false);
       }
-    }
-    fetchUser();
+    })();
   }, [project]);
+
+  // carga detalles de participantes
+  useEffect(() => {
+    (async () => {
+      setParticipantsLoading(true);
+      if (project.users?.length) {
+        const details = await Promise.all(
+          project.users.map((u) => getProfileById(u._id).catch(() => null))
+        );
+        setParticipantsDetails(details.filter(Boolean));
+      } else {
+        setParticipantsDetails([]);
+      }
+      setParticipantsLoading(false);
+    })();
+  }, [project.users]);
+
+  // carga detalles de responsables
+  useEffect(() => {
+    (async () => {
+      setResponsiblesLoading(true);
+      if (project.responsibles?.length) {
+        const details = await Promise.all(
+          project.responsibles.map((r) =>
+            getProfileById(r._id).catch(() => null)
+          )
+        );
+        setResponsiblesDetails(details.filter(Boolean));
+      } else {
+        setResponsiblesDetails([]);
+      }
+      setResponsiblesLoading(false);
+    })();
+  }, [project.responsibles]);
 
   if (
     loading ||
@@ -58,14 +93,15 @@ export default function TeamAndDetailsCard({ project }) {
       userRole === "admin" ||
       (userRole === "user" && (isParticipant || isResponsible))
     )
-  )
+  ) {
     return null;
+  }
 
   return (
     <Card className="shadow-sm max-w-[520px] p-0.5 rounded-t-lg">
       <CardContent className="p-0 bg-primary-bg">
         <Tabs defaultValue="team" className="w-full">
-          <TabsList className="grid grid-cols-2 w-full rounded-t-lg rounded-b-none">
+          <TabsList className="grid grid-cols-2 w-full rounded-t-lg border-b">
             <TabsTrigger value="team">
               <Users className="w-4 h-4" /> Equipo
             </TabsTrigger>
@@ -74,67 +110,82 @@ export default function TeamAndDetailsCard({ project }) {
             </TabsTrigger>
           </TabsList>
 
-          {/* TEAM */}
-          <TabsContent value="team" className="p-4 pt-6 space-y-6">
-            {project.users?.length > 0 && (
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <Users className="w-4 h-4" /> Participantes
-                  </h3>
-                  <div className="mr-4 shadow-lg border w-[90px] h-[30px] rounded-lg flex justify-center items-center">
-                    <button onClick={handleNoteModal}>+ Añadir</button>
-                  </div>
+          {/* PESTAÑA EQUIPO */}
+          <TabsContent value="team" className="p-4 space-y-6">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <Users className="w-4 h-4" /> Participantes
+              </h3>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsAddModalOpen(true);
+                }}
+                className="px-3 py-1 bg-accent text-white rounded"
+              >
+                + Añadir
+              </button>
+              <AddUserModal
+                isOpen={isAddModalOpen}
+                onClose={() => setIsAddModalOpen(false)}
+              />
+            </div>
 
-                  <AddUserModal
-                    isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
-                  />
-                </div>
-                <ScrollArea className="h-48 pr-4 space-y-3 pb-4">
-                  {project.users.map((user, i) => (
-                    <TooltipProvider key={i}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div
-                            className="flex items-center gap-3 p-2 rounded-md hover:bg-card hover:cursor-pointer"
-                            onClick={() => openProfile(user)}
-                          >
-                            <Avatar>
-                              <AvatarImage src="/tempPhotos/default-avatar.jpg" />
-                              <AvatarFallback>
-                                {user?.name?.[0] ?? ""}
-                                {user?.surname?.[0] ?? ""}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="font-medium">
-                                {user.name} {user.surname}
-                              </p>
-                              {user.role && (
-                                <p className="text-xs text-primary-bg">
-                                  {user.role}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{user.email}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  ))}
-                </ScrollArea>
+            {participantsLoading ? (
+              <div className="flex justify-center py-8">
+                <SpinLoader size="32px" />
               </div>
+            ) : participantsDetails.length > 0 ? (
+              <ScrollArea className="h-48 space-y-3 pr-4 pb-4">
+                {participantsDetails.map((u) => (
+                  <TooltipProvider key={u.id}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div
+                          className="flex items-center gap-3 p-2 rounded-md hover:bg-card cursor-pointer"
+                          onClick={() => setSelectedUser(u)}
+                        >
+                          <Avatar>
+                            {u.profileImage ? (
+                              <AvatarImage src={u.profileImage} />
+                            ) : (
+                              <AvatarFallback>
+                                {getInitials(u.name, u.surname)}
+                              </AvatarFallback>
+                            )}
+                          </Avatar>
+                          <div>
+                            <p className="font-medium">
+                              {u.name} {u.surname}
+                            </p>
+                            {u.rol && (
+                              <p className="text-xs text-secundary-text">
+                                {u.rol}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{u.email}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                ))}
+              </ScrollArea>
+            ) : (
+              <p className="text-center text-secundary-text">
+                No hay participantes.
+              </p>
             )}
           </TabsContent>
 
-          {/* DETAILS */}
-          <TabsContent value="details" className="p-4 pt-6 space-y-6">
+          {/* PESTAÑA DETALLES */}
+          <TabsContent value="details" className="p-4 space-y-6">
+            {/* Fechas */}
             {project.reviewDates?.length > 0 && (
               <div>
-                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
                   <CalendarIcon className="w-4 h-4" /> Fechas de revisión
                 </h3>
                 <div className="flex flex-wrap gap-2">
@@ -148,44 +199,62 @@ export default function TeamAndDetailsCard({ project }) {
               </div>
             )}
 
-            {project.responsibles?.length > 0 && (
-              <div>
-                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                  <UserCog className="w-4 h-4" /> Responsables
-                </h3>
+            {/* Responsables */}
+            <div>
+              <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+                <UserCog className="w-4 h-4" /> Responsables
+              </h3>
+              {responsiblesLoading ? (
+                <div className="flex justify-center py-8">
+                  <SpinLoader size="32px" />
+                </div>
+              ) : responsiblesDetails.length > 0 ? (
                 <div className="space-y-3">
-                  {project.responsibles.map((person, i) => (
-                    <TooltipProvider key={i}>
+                  {responsiblesDetails.map((r) => (
+                    <TooltipProvider key={r.id}>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <div className="flex items-center gap-3 p-2 rounded-md hover:bg-gray-600">
+                          <div
+                            className="flex items-center gap-3 p-2 rounded-md hover:bg-card cursor-pointer"
+                            onClick={() => setSelectedUser(r)}
+                          >
                             <Avatar>
-                              <AvatarImage src="/default-avatar.png" />
-                              <AvatarFallback>{person.name[0]}</AvatarFallback>
+                              {r.profileImage ? (
+                                <AvatarImage src={r.profileImage} />
+                              ) : (
+                                <AvatarFallback>
+                                  {getInitials(r.name, r.surname)}
+                                </AvatarFallback>
+                              )}
                             </Avatar>
                             <div>
-                              <p className="font-medium">{person.name}</p>
-                              {person.role && (
-                                <p className="text-xs text-gray-500">
-                                  {person.role}
+                              <p className="font-medium">{r.name}</p>
+                              {r.rol && (
+                                <p className="text-xs text-secundary-text">
+                                  {r.rol}
                                 </p>
                               )}
                             </div>
                           </div>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>{person.email}</p>
+                          <p>{r.email}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
                   ))}
                 </div>
-              </div>
-            )}
+              ) : (
+                <p className="text-center text-secundary-text">
+                  No hay responsables.
+                </p>
+              )}
+            </div>
 
+            {/* Cliente externo */}
             {project.contactPerson && (
               <div>
-                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
                   <User className="w-4 h-4" /> Cliente Externo
                 </h3>
                 <div className="flex items-center gap-3 p-2 rounded-md bg-primary-bg">
@@ -198,7 +267,9 @@ export default function TeamAndDetailsCard({ project }) {
                   <div>
                     <p className="font-medium">{project.contactPerson.name}</p>
                     <p className="text-xs text-gray-500">
-                      {project.contactPerson.email} <br></br>{project.contactPerson.phone}
+                      {project.contactPerson.email}
+                      <br />
+                      {project.contactPerson.phone}
                     </p>
                   </div>
                 </div>
@@ -207,16 +278,17 @@ export default function TeamAndDetailsCard({ project }) {
           </TabsContent>
         </Tabs>
       </CardContent>
+
       <CardFooter className="text-xs text-gray-500 pt-2 pb-4 px-4 bg-primary-bg">
         Última actualización: {formatDate(new Date().toISOString())}
       </CardFooter>
 
-      {/* Modal único para el perfil del usuario seleccionado */}
+      {/* Modal de perfil */}
       {selectedUser && (
         <UserProfileModal
           user={selectedUser}
           isOpen={true}
-          onClose={closeProfile}
+          onClose={() => setSelectedUser(null)}
         />
       )}
     </Card>
