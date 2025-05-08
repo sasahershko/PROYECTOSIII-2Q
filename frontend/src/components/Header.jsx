@@ -88,7 +88,7 @@ export default function Header() {
           </>
         ) : (
           <Link href="/login" className="select-none">
-            LOGIN
+            Iniciar Sesión
           </Link>
         )}
       </div>

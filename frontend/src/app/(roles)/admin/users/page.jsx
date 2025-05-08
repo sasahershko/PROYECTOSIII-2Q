@@ -7,6 +7,19 @@ import SpinLoader from "@components/SpinLoader";
 import { AnimatePresence, motion } from "framer-motion";
 import { LuFilter, LuAArrowUp, LuAArrowDown, LuSearch } from "react-icons/lu";
 
+const areaColors = {
+  INSO: "bg-blue-400",
+  MAIS: "bg-red-400",
+  FIIS: "bg-green-400",
+  DIPI: "bg-cyan-400",
+  ANIV: "bg-yellow-400",
+};
+
+const rolColors = {
+  user: "bg-gray-500",
+  admin: "bg-gray-500",
+};
+
 export default function Users() {
   const [mapaUsers, setMapaUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -115,25 +128,25 @@ export default function Users() {
       </div>
 
       {/* Active filter chips */}
-      <div className="w-[95%] max-w-8xl mb-4 flex flex-wrap gap-2">
+      <div className="w-[95%] max-w-8xl mb-4 flex flex-wrap gap-2 px-4">
         {[
           ...filterGrade.map((g) => ({
             label: g,
-            setter: setFilterGrade,
-            list: filterGrade,
+            color: areaColors[g] || "bg-gray-400",
+            remove: () => removeChip(g, setFilterGrade, filterGrade),
           })),
           ...filterRol.map((r) => ({
             label: r,
-            setter: setFilterRol,
-            list: filterRol,
+            color: rolColors[r] || "bg-gray-400",
+            remove: () => removeChip(r, setFilterRol, filterRol),
           })),
-        ].map(({ label, setter, list }) => (
+        ].map((chip) => (
           <div
-            key={label}
-            onClick={() => removeChip(label, setter, list)}
-            className="flex items-center bg-accent text-white rounded-full px-3 py-1 text-sm gap-2 cursor-pointer select-none"
+            key={chip.label}
+            onClick={chip.remove}
+            className={`${chip.color} text-white rounded-full px-3 py-1 text-sm gap-2 flex items-center cursor-pointer select-none`}
           >
-            <span>{label}</span>
+            <span>{chip.label}</span>
             <span className="font-bold">×</span>
           </div>
         ))}
@@ -171,7 +184,7 @@ export default function Users() {
               <div className="mb-4">
                 <h4 className="font-semibold mb-2 select-none">Grado</h4>
                 <div className="flex flex-col gap-2">
-                  {["INSO", "MAIS", "FIIS", "DIPI", "ANIV"].map((g) => (
+                  {Object.keys(areaColors).map((g) => (
                     <label
                       key={g}
                       className="flex items-center gap-2 cursor-pointer select-none"
@@ -192,7 +205,7 @@ export default function Users() {
               <div className="mb-4">
                 <h4 className="font-semibold mb-2 select-none">Rol</h4>
                 <div className="flex flex-col gap-2">
-                  {["user", "admin"].map((r) => (
+                  {Object.keys(rolColors).map((r) => (
                     <label
                       key={r}
                       className="flex items-center gap-2 cursor-pointer select-none"
