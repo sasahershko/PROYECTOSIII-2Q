@@ -54,3 +54,13 @@ async function getToken() {
   }
   return token;
 }
+
+
+export async function fetchAllUsers() {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BACK_URL}/api/users`, {
+    credentials: "include", // si tu API lo requiere
+    cache: "no-store",      // para no usar SWR o SSR cache
+  });
+  if (!res.ok) throw new Error(`fetchAllUsers: ${res.status}`);
+  return res.json(); // espera un array de usuarios [{ _id, name, avatar, … }]
+}

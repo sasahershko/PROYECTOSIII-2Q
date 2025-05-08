@@ -1,9 +1,11 @@
+// src/lib/profile.js
 "use server";
 import { cookies } from "next/headers";
 
+
 export async function getProfile() {
   try {
-    const token = cookies().get("token")?.value; // Asumiendo que la cookie se llama 'token'
+    const token = cookies().get("token")?.value; 
     if (!token) {
       throw new Error("Token not found in cookies");
     }
@@ -26,3 +28,6 @@ export async function getProfile() {
     throw error;
   }
 }
+
+
+
