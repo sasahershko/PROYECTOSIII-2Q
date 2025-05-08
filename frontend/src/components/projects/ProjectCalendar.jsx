@@ -69,10 +69,12 @@ export default function ProjectCalendar() {
   }
 
   return (
-    <div className="min-h-screen bg-primary-bg p-4">
+    <div className="max-h-screen bg-primary-bg p-4">
       <FullCalendar
         plugins={[dayGridPlugin, interactionPlugin]}
         locale={esLocale}
+        dayMaxRow={false} // asegura que no se apilen varios eventos
+        fixedWeekCount={false}
         themeSystem="standard"
         initialView="dayGridMonth"
 
@@ -100,7 +102,7 @@ export default function ProjectCalendar() {
         eventBorderColor="transparent"
 
         // 1) Celdas más altas y sin overflow
-        dayCellClassNames={() => ["h-56", "overflow-hidden"]}
+        dayCellClassNames={() => ["h-36", "overflow-hidden"]}
 
         // 2) Solo pintamos el número a la izquierda
         dayCellContent={(arg) => (
@@ -113,11 +115,14 @@ export default function ProjectCalendar() {
         dayCellDidMount={(info) => {
           const top = info.el.querySelector(".fc-daygrid-day-top");
           if (top) {
-            top.classList.add("relative", "w-full", "h-6", "p-1");
+            top.style.height = "1rem";           // reduce la altura del número
+            top.style.padding = "2px 4px";       // menos espacio arriba
           }
           const eventsCt = info.el.querySelector(".fc-daygrid-day-events");
           if (eventsCt) {
-            eventsCt.classList.add("mt-6", "px-1");
+            eventsCt.style.marginTop = "1rem";     // equivalente a mt-14
+            eventsCt.style.paddingLeft = "0.25rem";  // equivalente a px-1
+            eventsCt.style.paddingRight = "0.25rem";
           }
         }}
 

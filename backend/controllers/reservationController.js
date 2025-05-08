@@ -19,6 +19,8 @@ export const createReservation = async (req, res) => {
       _id: project,
       members: userId,
     });
+
+
     if (!existingProject)
       return handleHttpError(res, "No tienes acceso a este proyecto.", 403);
 
