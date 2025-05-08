@@ -71,7 +71,7 @@ export default function UserMenu() {
             }}
             className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
           >
-            Profile
+            Perfil
           </button>
           <button
             onClick={() => {
@@ -80,13 +80,13 @@ export default function UserMenu() {
             }}
             className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
           >
-            Settings
+            Ajustes
           </button>
           <button
             onClick={handleLogout}
             className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
           >
-            Logout
+            Cerrar sesión
           </button>
         </div>
       )}
