@@ -5,6 +5,7 @@ import { logout } from "@/lib/logout";
 import { useRouter } from "next/navigation";
 import { getProfile } from "@/lib/profile";
 import Image from "next/image";
+import { AnimatePresence, motion } from "framer-motion";
 
 export default function UserMenu() {
   const [isOpen, setIsOpen] = useState(false);
@@ -24,7 +25,7 @@ export default function UserMenu() {
     fetchUser();
   }, []);
 
-  // Cerrar menú al clicar fuera
+  // Cierra el menú al hacer clic fuera
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -33,8 +34,6 @@ export default function UserMenu() {
     };
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside);
     }
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
@@ -79,34 +78,44 @@ export default function UserMenu() {
         )}
       </div>
 
-      {isOpen && (
-        <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-lg py-2 z-50">
-          <button
-            onClick={() => {
-              router.push("/profile");
-              setIsOpen(false);
-            }}
-            className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+      {/* Animación del dropdown con Framer Motion */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            key="dropdown"
+            className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-lg py-2 z-50"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
           >
-            Perfil
-          </button>
-          <button
-            onClick={() => {
-              router.push("/settings");
-              setIsOpen(false);
-            }}
-            className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
-          >
-            Ajustes
-          </button>
-          <button
-            onClick={handleLogout}
-            className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
-          >
-            Cerrar sesión
-          </button>
-        </div>
-      )}
+            <button
+              onClick={() => {
+                router.push("/profile");
+                setIsOpen(false);
+              }}
+              className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+            >
+              Perfil
+            </button>
+            <button
+              onClick={() => {
+                router.push("/settings");
+                setIsOpen(false);
+              }}
+              className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+            >
+              Ajustes
+            </button>
+            <button
+              onClick={handleLogout}
+              className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+            >
+              Cerrar sesión
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
