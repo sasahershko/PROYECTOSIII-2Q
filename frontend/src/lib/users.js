@@ -1,6 +1,7 @@
+
 "use server";
 import { cookies } from "next/headers";
-
+ 
 export async function getUsers() {
   try {
     const token = await getToken();
