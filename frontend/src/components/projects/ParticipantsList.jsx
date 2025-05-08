@@ -2,16 +2,15 @@
 
 import React, { useEffect, useState } from "react";
 import { getProjects } from "@/lib/projects";
-import { getUsers } from "@/lib/users"; // Obtener todos los usuarios
+import { getUsers } from "@/lib/users";
 import SpinLoader from "@/components/SpinLoader";
-import UserProfileModal from "@components/lists/UserProfileModal"; // Ajusta la ruta según tu proyecto
+import UserProfileModal from "@components/lists/UserProfileModal";
 
-const ParticipantsList = ({ projectId }) => {
+export default function ParticipantsList({ projectId }) {
   const [participants, setParticipants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Estados para el modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
 
@@ -24,17 +23,16 @@ const ParticipantsList = ({ projectId }) => {
         const project = projects.find((p) => p._id === projectId);
         if (!project) throw new Error("No se encontró el proyecto.");
 
-        const users = await getUsers(); // Obtener todos los usuarios
+        const users = await getUsers();
 
-        // Relacionar IDs con los usuarios completos
         const projectParticipants = project.users
-          .map((userId) => users.find((user) => user._id === userId))
-          .filter(Boolean); // Filtra valores null si un ID no coincide
+          .map((userId) => users.find((u) => u._id === userId))
+          .filter(Boolean);
 
         setParticipants(projectParticipants);
       } catch (err) {
         setError("No se pudieron obtener los participantes.");
-        console.error("Error obteniendo participantes:", err);
+        console.error(err);
       } finally {
         setLoading(false);
       }
@@ -46,6 +44,12 @@ const ParticipantsList = ({ projectId }) => {
   const handleParticipantClick = (participant) => {
     setSelectedUser(participant);
     setIsModalOpen(true);
+  };
+
+  const getInitials = (user) => {
+    const n = user.name?.charAt(0) || "";
+    const s = user.surname?.charAt(0) || "";
+    return (n + s).toUpperCase();
   };
 
   if (loading) {
@@ -62,28 +66,33 @@ const ParticipantsList = ({ projectId }) => {
 
   return (
     <>
-      {/* Lista de participantes */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {participants.length > 0 ? (
           participants.map((participant) => (
             <div
               key={participant._id}
               onClick={() => handleParticipantClick(participant)}
-              className="flex items-center gap-4 p-4 bg-card rounded-md shadow-sm
-                         transition-shadow duration-300 hover:shadow-md 
-                         hover:cursor-pointer"
+              className="flex items-center gap-4 p-4 bg-card rounded-md shadow-sm transition-shadow hover:shadow-md cursor-pointer"
             >
-              <img
-                src="/tempPhotos/default-avatar.jpg"
-                alt={participant.name}
-                className="w-12 h-12 rounded-full object-cover"
-              />
+              {participant.profileImage ? (
+                <img
+                  src={participant.profileImage}
+                  alt={participant.name}
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-primary-bg/50 text-primary-text flex items-center justify-center text-base font-bold">
+                  {getInitials(participant)}
+                </div>
+              )}
               <div>
                 <p className="text-base font-medium text-primary-text">
-                  {participant.name}
+                  {participant.name} {participant.surname}
                 </p>
-                {participant.role && (
-                  <p className="text-sm text-gray-500">{participant.role}</p>
+                {participant.rol && (
+                  <p className="text-sm text-secundary-text">
+                    {participant.rol}
+                  </p>
                 )}
               </div>
             </div>
@@ -95,7 +104,6 @@ const ParticipantsList = ({ projectId }) => {
         )}
       </div>
 
-      {/* Modal para el usuario seleccionado */}
       <UserProfileModal
         user={selectedUser}
         isOpen={isModalOpen}
@@ -103,6 +111,4 @@ const ParticipantsList = ({ projectId }) => {
       />
     </>
   );
-};
-
-export default ParticipantsList;
+}

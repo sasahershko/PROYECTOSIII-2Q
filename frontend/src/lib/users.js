@@ -54,3 +54,29 @@ async function getToken() {
   }
   return token;
 }
+
+export async function updateUser(id, userData) {
+  try {
+    const token = await getToken();
+
+    const response = await fetch(`${process.env.BACK_URL}/api/users/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(userData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Error al actualizar el usuario");
+    }
+
+    const data = await response.json();
+    return data.user; // Devuelve el usuario actualizado
+  } catch (error) {
+    console.error("Error actualizando usuario:", error);
+    throw error;
+  }
+}
