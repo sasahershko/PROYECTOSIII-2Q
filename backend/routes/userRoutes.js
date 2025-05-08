@@ -300,7 +300,7 @@ userRouter.get("/profile/:id", getUserProfileById);
  *     responses:
  *       200:
  *         description: Usuario restaurado correctamente.
-*       401:
+ *       401:
  *         description: Token no válido o no proporcionado.
  *       403:
  *         description: Solo los administradores pueden realizar esta acción.
