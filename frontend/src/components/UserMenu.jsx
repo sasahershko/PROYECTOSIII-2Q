@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { logout } from "@/lib/logout";
 import { useRouter } from "next/navigation";
 import { getProfile } from "@/lib/profile";
@@ -10,6 +10,7 @@ export default function UserMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState(null);
   const router = useRouter();
+  const menuRef = useRef(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -20,9 +21,25 @@ export default function UserMenu() {
         console.error("Error al obtener el perfil:", error);
       }
     };
-
     fetchUser();
   }, []);
+
+  // Cerrar menú al clicar fuera
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
 
   const handleLogout = async () => {
     try {
@@ -42,10 +59,10 @@ export default function UserMenu() {
   };
 
   return (
-    <div className="relative">
+    <div className="relative" ref={menuRef}>
       <div
         className="w-10 h-10 bg-gray-300 rounded-full cursor-pointer flex items-center justify-center overflow-hidden"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => setIsOpen((o) => !o)}
       >
         {user?.profileImage ? (
           <Image
