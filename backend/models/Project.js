@@ -73,6 +73,8 @@ const projectSchema = new Schema(
     },
     pendingNotes: { type: [pendingNotesSchema], default: [] },
 
+    image: { type: String, default: "" },
+
     // PRESUPUESTO
     budget: {
       title: { type: String, default:'' },

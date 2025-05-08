@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import useProjects from "@/hooks/useProjects";
 import SpinLoader from "@/components/SpinLoader";
 import AddReviewDateModal from "@/components/projects/AddReviewDateModal";
-
+import esLocale from '@fullcalendar/core/locales/es';
+import EventModal from "@/components/projects/EventModal";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -17,6 +18,10 @@ export default function ProjectCalendar() {
   // estado para el modal de añadir review
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedCellDate, setSelectedCellDate] = useState(null);
+
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
+
 
   const areaColors = {
     INSO: "#1f77b4",
@@ -35,7 +40,7 @@ export default function ProjectCalendar() {
         return [
           { title: `${title} (Inicio)`, start: p.startDate, allDay: true, color },
           ...(p.reviewDates || []).map((d, i) => ({
-            title: `${title} (Review ${i + 1})`,
+            title: `${title} (Revisión ${i + 1})`,
             start: d,
             allDay: true,
             color,
@@ -56,10 +61,13 @@ export default function ProjectCalendar() {
   }
 
   return (
-    <div className="min-h-screen bg-white p-4">
+    <div className="max-h-screen bg-primary-bg p-4">
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
         initialView="dayGridMonth"
+        locale={esLocale}
+        dayMaxRow={false} // asegura que no se apilen varios eventos
+        fixedWeekCount={false} 
         headerToolbar={{
           left: "prev,next today",
           center: "title",
@@ -78,8 +86,7 @@ export default function ProjectCalendar() {
         events={events}
         height="auto"
 
-        // 1) Celdas más altas y sin overflow
-        dayCellClassNames={() => ["h-56", "overflow-hidden"]}
+        dayCellClassNames={() => ["h-36", "overflow-hidden"]}
 
         // 2) Solo pintamos el número del día a la izquierda
         dayCellContent={(arg) => (
@@ -92,24 +99,28 @@ export default function ProjectCalendar() {
         dayCellDidMount={(info) => {
           const top = info.el.querySelector(".fc-daygrid-day-top");
           if (top) {
-            top.classList.add("relative", "w-full", "h-6", "p-1");
+            top.style.height = "1rem";
+            top.style.padding = "2px 4px";
           }
+
           const eventsCt = info.el.querySelector(".fc-daygrid-day-events");
           if (eventsCt) {
-            eventsCt.classList.add("mt-6", "px-1");
+            eventsCt.style.marginTop = "1rem";
+            eventsCt.style.paddingLeft = "0.25rem";
+            eventsCt.style.paddingRight = "0.25rem";
           }
         }}
 
-        // 4) Click en cualquier parte vacía de la celda → abrir modal
         dateClick={(info) => {
           setSelectedCellDate(info.date);
           setIsAddModalOpen(true);
         }}
 
-        // 5) Click en evento → aquí podrías abrir tu EventModal
         eventClick={(info) => {
-          console.log("Evento clickado:", info.event);
+          setSelectedEvent(info.event);
+          setIsEventModalOpen(true);
         }}
+
       />
 
       <AddReviewDateModal
@@ -119,9 +130,17 @@ export default function ProjectCalendar() {
         existingDates={[]}       // ajusta según tu lógica
         initialDate={selectedCellDate}
         onSave={(newDate) => {
-          // lógica para guardar el nuevo review
         }}
       />
+
+      {selectedEvent && (
+        <EventModal
+          event={selectedEvent}
+          isOpen={isEventModalOpen}
+          onClose={() => setIsEventModalOpen(false)}
+        />
+      )}
+
     </div>
   );
 }

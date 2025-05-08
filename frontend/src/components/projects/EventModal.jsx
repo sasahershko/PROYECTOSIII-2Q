@@ -38,7 +38,7 @@ export default function EventModal({ event, isOpen, onClose }) {
             </header>
             <div>
               {/* Aquí puedes incluir más detalles o formularios para notas */}
-              <p className="text-primary-text">Detalles del evento selecciondo...</p>
+              <p className="text-primary-text">Detalles del evento seleccionado...</p>
             </div>
             <button
               className="mt-6 inline-block px-4 py-2 bg-accent text-white rounded-md hover:bg-accent/90"
