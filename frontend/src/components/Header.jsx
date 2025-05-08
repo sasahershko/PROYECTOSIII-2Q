@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import UserCircle from "@components/UserMenu";
 
 export default function Header() {
-  const [userRole, setUserRole] = useState("guest");
+  const [userRole, setUserRole] = useState("guest"); // <-- aquí quitamos el <...>
   const router = useRouter();
 
   useEffect(() => {
@@ -20,37 +20,45 @@ export default function Header() {
   }, []);
 
   return (
-    <div className="flex items-center px-6 h-20 bg-secundary text-white fixed w-full z-50">
-      {/* Logo alineado a la izquierda */}
+    <div
+      className="
+        flex items-center
+        px-6 h-20
+        bg-secundary text-white
+        fixed w-full z-50
+        select-none
+      "
+    >
+      {/* Logo */}
       <div className="flex-none">
-        <Link href="/">
+        <Link href="/" draggable={false} className="select-none">
           <Image
-            src={"/logos/logoPC-White.webp"}
+            src="/logos/logoPC-White.webp"
             alt="Logo"
             width={160}
             height={50}
+            draggable={false}
           />
         </Link>
       </div>
 
-      {/* Menú alineado a la derecha */}
+      {/* Menú */}
       <div className="flex-1 flex justify-end items-center gap-5 font-semibold text-sm">
         {userRole === "admin" || userRole === "user" ? (
           <>
             <Link
-              href={"/projects"}
-              className="transition duration-300 hover:text-gray-500"
+              href="/projects"
+              className="transition hover:text-gray-500 select-none"
             >
               Proyectos
             </Link>
-
             <Link
               href={
                 userRole === "admin"
                   ? "/admin/reservations"
                   : "/user/reservations"
               }
-              className="transition duration-300 hover:text-gray-500"
+              className="transition hover:text-gray-500 select-none"
             >
               Reservas
             </Link>
@@ -58,20 +66,19 @@ export default function Header() {
               <>
                 <Link
                   href="/admin/users"
-                  className="transition duration-300 hover:text-gray-500"
+                  className="transition hover:text-gray-500 select-none"
                 >
                   Usuarios
                 </Link>
                 <Link
                   href="/admin/calendar"
-                  className="transition duration-300 hover:text-gray-500"
+                  className="transition hover:text-gray-500 select-none"
                 >
                   Calendario
                 </Link>
-
                 <Link
                   href="/admin/ideas"
-                  className="transition duration-300 hover:text-gray-500"
+                  className="transition hover:text-gray-500 select-none"
                 >
                   Ideas
                 </Link>
@@ -80,11 +87,9 @@ export default function Header() {
             <UserCircle />
           </>
         ) : (
-          <>
-            <Link href="/login" className="">
-              LOGIN
-            </Link>
-          </>
+          <Link href="/login" className="select-none">
+            LOGIN
+          </Link>
         )}
       </div>
     </div>
