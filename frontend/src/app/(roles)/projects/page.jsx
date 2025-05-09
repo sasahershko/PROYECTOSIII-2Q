@@ -50,6 +50,8 @@ export default function AdminProjectDashboard() {
   const [searchText, setSearchText] = useState("");
   const [ordenFecha, setOrdenFecha] = useState("asc");
   const [showFilters, setShowFilters] = useState(false);
+  const [vista, setVista] = useState("mosaico");
+
 
   // Cerrar modal al clicar fuera
   const modalRef = useRef(null);
@@ -263,13 +265,36 @@ export default function AdminProjectDashboard() {
         >
           + Nuevo Proyecto
         </Link>
+        {/* Botones para cambiar vista */}
+      <div className="flex gap-2">
+        <button
+          onClick={() => setVista("mosaico")}
+          className={`px-4 py-2 rounded font-semibold ${
+            vista === "mosaico"
+              ? "bg-blue-600 text-white"
+              : "bg-gray-200 text-gray-800"
+          }`}
+        >
+          Mosaico
+        </button>
+        <button
+          onClick={() => setVista("listado")}
+          className={`px-4 py-2 rounded font-semibold ${
+            vista === "listado"
+              ? "bg-blue-600 text-white"
+              : "bg-gray-200 text-gray-800"
+          }`}
+        >
+          Listado
+        </button>
+      </div>
       </div>
 
       {/* Grid de proyectos */}
       <div className="w-[95%] max-w-8xl mx-auto px-4 pb-8">
         {proyectosFiltrados.length === 0 ? (
           <p className="text-center py-12">No existen proyectos.</p>
-        ) : (
+        ) : vista === "mosaico" ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <AnimatePresence>
               {proyectosFiltrados.map((project, idx) => (
@@ -280,7 +305,6 @@ export default function AdminProjectDashboard() {
                   transition={{ delay: idx * 0.05, duration: 0.3 }}
                 >
                   <div
-                    key={project._id}
                     onClick={() => router.push(`/projects/${project._id}`)}
                   >
                     <ProjectCard project={project} role={userRole} />
@@ -288,6 +312,39 @@ export default function AdminProjectDashboard() {
                 </motion.div>
               ))}
             </AnimatePresence>
+          </div>
+        ) : (
+          <div className="overflow-x-auto mt-4">
+            <table className="min-w-full text-left border border-gray-300">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="px-4 py-2 border">Nombre</th>
+                  <th className="px-4 py-2 border">Responsable</th>
+                  <th className="px-4 py-2 border">Estado</th>
+                  <th className="px-4 py-2 border">Grado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {proyectosFiltrados.map((project) => (
+                  <tr
+                    key={project._id}
+                    className="hover:bg-gray-50 cursor-pointer"
+                    onClick={() => router.push(`/projects/${project._id}`)}
+                  >
+                    <td className="px-4 py-2 border">{project.name}</td>
+                    <td className="px-4 py-2 border">
+                      {project.responsable?.nombre || "—"}
+                    </td>
+                    <td className="px-4 py-2 border">
+                      {project.status === "COMPLETED"
+                        ? "Completado"
+                        : "No completado"}
+                    </td>
+                    <td className="px-4 py-2 border">{project.area}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
