@@ -1,7 +1,7 @@
 "use client";
 
-import { getUsers } from "@lib/users";
 import { useState, useEffect } from "react";
+import { getUsers } from "@lib/users";
 import UserCard from "@components/lists/UserCard";
 import SpinLoader from "@components/SpinLoader";
 import { AnimatePresence, motion } from "framer-motion";
@@ -31,7 +31,7 @@ export default function Users() {
   const [showFilters, setShowFilters] = useState(false);
   const [page, setPage] = useState(1);
 
-  const PAGE_SIZE = 12;
+  const PAGE_SIZE = 12; //numero de usuarios por página
 
   const reloadUsers = () => {
     setLoading(true);
@@ -86,6 +86,11 @@ export default function Users() {
     return matchesSearch && matchesGrade && matchesRol;
   });
 
+  // Resetear página al cambiar filtros o búsqueda
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, filterGrade, filterRol]);
+
   // Paginación
   const totalPages = Math.max(1, Math.ceil(filteredUsers.length / PAGE_SIZE));
   const paginatedUsers = filteredUsers.slice(
@@ -115,11 +120,6 @@ export default function Users() {
     }
   };
 
-  // Resetear página al cambiar filtros/búsqueda
-  useEffect(() => {
-    setPage(1);
-  }, [searchTerm, filterGrade, filterRol]);
-
   return (
     <div className="flex flex-col w-full items-center min-h-screen bg-primary-bg text-primary-text">
       {/* Top bar */}
@@ -146,7 +146,7 @@ export default function Users() {
       </div>
 
       {/* Active filter chips */}
-      <div className="w-[95%] max-w-8xl mb-4 flex flex-wrap gap-2 px-4">
+      <div className="w-[95%] max-w-8xl mb-2 flex flex-wrap gap-2 px-4">
         {[
           ...filterGrade.map((g) => ({
             label: g,
@@ -168,6 +168,11 @@ export default function Users() {
             <span className="font-bold">×</span>
           </div>
         ))}
+      </div>
+
+      {/* Contador de resultados */}
+      <div className="w-[95%] max-w-8xl mb-4 px-4 text-sm text-secundary-text">
+        Mostrando {filteredUsers.length} de {mapaUsers.length}
       </div>
 
       {/* Filters modal */}
