@@ -29,6 +29,9 @@ export default function Users() {
   const [filterGrade, setFilterGrade] = useState([]);
   const [filterRol, setFilterRol] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
+  const [page, setPage] = useState(1);
+
+  const PAGE_SIZE = 12;
 
   const reloadUsers = () => {
     setLoading(true);
@@ -61,6 +64,7 @@ export default function Users() {
     );
   };
 
+  // Ordenar
   const sortedUsers = [...mapaUsers].sort((a, b) => {
     const aVal = a[sortBy]?.toString().toLowerCase() || "";
     const bVal = b[sortBy]?.toString().toLowerCase() || "";
@@ -69,6 +73,7 @@ export default function Users() {
     return 0;
   });
 
+  // Filtrar
   const filteredUsers = sortedUsers.filter((user) => {
     const search = searchTerm.toLowerCase();
     const matchesSearch = Object.values(user).some((v) =>
@@ -80,6 +85,14 @@ export default function Users() {
       filterRol.length > 0 ? filterRol.includes(user.rol) : true;
     return matchesSearch && matchesGrade && matchesRol;
   });
+
+  // Paginación
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / PAGE_SIZE));
+  const paginatedUsers = filteredUsers.slice(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE
+  );
+  const goToPage = (p) => setPage(Math.min(Math.max(1, p), totalPages));
 
   const toggleFilter = (value, setter, current) =>
     setter(
@@ -101,6 +114,11 @@ export default function Users() {
       setShowFilters(false);
     }
   };
+
+  // Resetear página al cambiar filtros/búsqueda
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, filterGrade, filterRol]);
 
   return (
     <div className="flex flex-col w-full items-center min-h-screen bg-primary-bg text-primary-text">
@@ -196,7 +214,7 @@ export default function Users() {
                           toggleFilter(g, setFilterGrade, filterGrade)
                         }
                       />
-                      <span className="select-none">{g}</span>
+                      <span>{g}</span>
                     </label>
                   ))}
                 </div>
@@ -217,7 +235,7 @@ export default function Users() {
                           toggleFilter(r, setFilterRol, filterRol)
                         }
                       />
-                      <span className="select-none">{r}</span>
+                      <span>{r}</span>
                     </label>
                   ))}
                 </div>
@@ -240,7 +258,7 @@ export default function Users() {
       </AnimatePresence>
 
       {/* Users table */}
-      <div className="w-[95%] max-w-8xl bg-card shadow-md rounded-lg mb-8 px-4">
+      <div className="w-[95%] max-w-8xl bg-card shadow-md rounded-lg mb-4 px-4">
         <div
           className="grid gap-4 items-center px-2 py-2 border-b"
           style={{
@@ -271,13 +289,13 @@ export default function Users() {
           <div className="flex justify-center items-center py-8">
             <SpinLoader />
           </div>
-        ) : filteredUsers.length === 0 ? (
+        ) : paginatedUsers.length === 0 ? (
           <div className="text-center text-secundary-text font-medium py-8">
             No se encuentran usuarios para tus filtros.
           </div>
         ) : (
           <AnimatePresence>
-            {filteredUsers.map((user, idx) => (
+            {paginatedUsers.map((user, idx) => (
               <motion.div
                 key={user._id}
                 initial={{ opacity: 0, y: 10 }}
@@ -290,6 +308,39 @@ export default function Users() {
           </AnimatePresence>
         )}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center gap-2 mb-8">
+          <button
+            onClick={() => goToPage(page - 1)}
+            disabled={page === 1}
+            className="px-3 py-1 bg-card rounded disabled:opacity-50"
+          >
+            Anterior
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+            <button
+              key={p}
+              onClick={() => goToPage(p)}
+              className={`px-3 py-1 rounded ${
+                p === page
+                  ? "bg-accent text-white"
+                  : "bg-card hover:bg-secundary-text/30"
+              }`}
+            >
+              {p}
+            </button>
+          ))}
+          <button
+            onClick={() => goToPage(page + 1)}
+            disabled={page === totalPages}
+            className="px-3 py-1 bg-card rounded disabled:opacity-50 hover:bg-secundary-text/30"
+          >
+            Siguiente
+          </button>
+        </div>
+      )}
     </div>
   );
 }
