@@ -60,5 +60,13 @@ export async function middleware(req) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/user/:path*", "/login", "/register", "/projects"], //middleware solo en rutas protegidas
+  matcher: [
+    "/admin/:path*",
+    "/user/:path*",
+    "/login",
+    "/register",
+    "/projects/:path*",
+    "/profile",
+    "/settings",
+  ], //middleware solo en rutas protegidas
 };

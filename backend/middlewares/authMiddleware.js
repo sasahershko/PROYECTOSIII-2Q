@@ -12,7 +12,7 @@ export const authMiddleware = async (req, res, next) => {
     if (!token) {
       return res
         .status(401)
-        .json({ mensaje: "No autorizado. Token no proporcionado." });
+        .json({ message: "No autorizado. Token no proporcionado." });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -21,13 +21,13 @@ export const authMiddleware = async (req, res, next) => {
     if (!req.usuario) {
       return res
         .status(401)
-        .json({ mensaje: "Token inválido o usuario no encontrado." });
+        .json({ message: "Token inválido o usuario no encontrado." });
     }
 
     next();
   } catch (error) {
     console.error("❌ Error en autenticación:", error);
-    res.status(401).json({ mensaje: "Token inválido o expirado." });
+    res.status(401).json({ message: "Token inválido o expirado." });
   }
 };
 

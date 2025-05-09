@@ -39,7 +39,7 @@ const projectRouter = express.Router();
 /**
  * @swagger
  * tags:
- *   name: Proyectos
+ *   name: Projects
  *   description: Endpoints para gestionar proyectos (solo proyectos no eliminados)
  */
 
@@ -48,7 +48,7 @@ const projectRouter = express.Router();
  * /api/projects/create:
  *   post:
  *     summary: Crear un nuevo proyecto
- *     tags: [Proyectos]
+ *     tags: [Projects]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -145,7 +145,7 @@ projectRouter.post(
  * /api/projects:
  *   get:
  *     summary: Obtener todos los proyectos
- *     tags: [Proyectos]
+ *     tags: [Projects]
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -163,7 +163,7 @@ projectRouter.get("/", authMiddlewareOptional, getAllProjects);
  * /api/projects/deleted:
  *   get:
  *     summary: Obtener todos los proyectos eliminados (soft delete)
- *     tags: [Proyectos]
+ *     tags: [Projects]
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -187,7 +187,7 @@ projectRouter.get("/deleted", authMiddleware, getDeletedProjects);
  * /api/projects/{id}:
  *   get:
  *     summary: Obtener un proyecto por ID
- *     tags: [Proyectos]
+ *     tags: [Projects]
  *     parameters:
  *       - in: path
  *         name: id
@@ -215,7 +215,7 @@ projectRouter.get(
  * /api/projects/{id}:
  *   put:
  *     summary: Actualizar un proyecto existente
- *     tags: [Proyectos]
+ *     tags: [Projects]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -299,7 +299,7 @@ projectRouter.patch(
  *   delete:
  *     summary: Eliminar un proyecto (soft o hard delete)
  *     description: Elimina un proyecto. Por defecto realiza un soft delete. Para eliminar permanentemente (hard delete), añadir el parámetro de consulta `?hard=true`.
- *     tags: [Proyectos]
+ *     tags: [Projects]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -340,7 +340,7 @@ projectRouter.delete(
  * /api/projects/hard/{id}:
  *   delete:
  *     summary: Eliminar un proyecto permanentemente (hard delete)
- *     tags: [Proyectos]
+ *     tags: [Projects]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -373,7 +373,7 @@ projectRouter.delete(
  * /api/projects/{id}/restore:
  *   put:
  *     summary: Restaurar un proyecto eliminado (soft delete)
- *     tags: [Proyectos]
+ *     tags: [Projects]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -407,7 +407,7 @@ projectRouter.put(
  *   post:
  *     summary: Agregar una nueva nota a un proyecto.
  *     tags:
- *       - Notas
+ *       - Notes
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -462,7 +462,7 @@ projectRouter.post("/note/:id", authMiddleware, createNoteValidator, addNotes);
  *   patch:
  *     summary: Actualizar una nota existente en un proyecto.
  *     tags:
- *       - Notas
+ *       - Notes
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -517,6 +517,8 @@ projectRouter.post("/note/:id", authMiddleware, createNoteValidator, addNotes);
  *                   example: "Nota actualizada correctamente."
  *       400:
  *         description: Índice no válido o datos incorrectos.
+ *       401:
+ *         description: Token no válido o no proporcionado.
  *       404:
  *         description: Proyecto o nota no encontrado.
  *       500:
@@ -529,6 +531,47 @@ projectRouter.patch(
   updateNote
 );
 
+/**
+ * @swagger
+ * /api/projects/note/{id}:
+ *   delete:
+ *     summary: Eliminar una nota específica de un proyecto.
+ *     tags:
+ *       - Notes
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del proyecto al que pertenece la nota.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - noteIndex
+ *             properties:
+ *               noteIndex:
+ *                 type: integer
+ *                 description: Índice de la nota que se desea eliminar en el arreglo pendingNotes del proyecto.
+ *                 example: 0
+ *     responses:
+ *       200:
+ *         description: Nota eliminada correctamente
+ *       400:
+ *         description: Índice de nota no válido
+ *       401:
+ *         description: Token no válido o no proporcionado
+ *       404:
+ *         description: Proyecto no encontrado
+ *       500:
+ *         description: Error interno del servidor
+ */
 projectRouter.delete(
   "/note/:id",
   authMiddleware,
@@ -541,7 +584,7 @@ projectRouter.delete(
  * /api/projects/budget/{id}:
  *   patch:
  *     summary: Actualizar el presupuesto de un proyecto
- *     tags: [Proyectos]
+ *     tags: [Projects]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -623,6 +666,8 @@ projectRouter.delete(
  *                   $ref: '#/components/schemas/Budget'
  *       400:
  *         description: Datos inválidos.
+ *       401:
+ *         description: Token no válido o no proporcionado.
  *       404:
  *         description: Proyecto no encontrado.
  *       500:
@@ -640,7 +685,7 @@ projectRouter.patch(
  * /api/proyectos/{id}/add-users:
  *   patch:
  *     summary: Añadir participantes y/o responsables a un proyecto
- *     tags: [Proyectos]
+ *     tags: [Projects]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -672,6 +717,8 @@ projectRouter.patch(
  *         description: Usuarios añadidos correctamente
  *       400:
  *         description: Datos inválidos
+ *       401:
+ *         description: Token no válido o no proporcionado.
  *       403:
  *         description: No tienes permiso para modificar este proyecto
  *       404:
@@ -693,7 +740,7 @@ projectRouter.patch(
  * /api/proyectos/{id}/remove-users:
  *   patch:
  *     summary: Eliminar participantes y/o responsables de un proyecto
- *     tags: [Proyectos]
+ *     tags: [Projects]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -723,6 +770,8 @@ projectRouter.patch(
  *     responses:
  *       200:
  *         description: Usuarios eliminados correctamente
+ *       401:
+ *         description: Token no válido o no proporcionado.
  *       400:
  *         description: Datos inválidos
  *       403:

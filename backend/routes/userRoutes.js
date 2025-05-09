@@ -30,7 +30,7 @@ const userRouter = express.Router();
 /**
  * @swagger
  * tags:
- *   name: Usuarios
+ *   name: Users
  *   description: Endpoints para la gestión de usuarios
  */
 
@@ -39,7 +39,7 @@ const userRouter = express.Router();
  * /api/users/register:
  *   post:
  *     summary: Registrar un nuevo usuario
- *     tags: [Usuarios]
+ *     tags: [Users]
  *     description: Permite registrar un usuario con validaciones de email y DNI.
  *     requestBody:
  *       required: true
@@ -85,7 +85,7 @@ userRouter.post(
  * /api/users/verify-code:
  *   post:
  *     summary: Verificar código de autenticación
- *     tags: [Usuarios]
+ *     tags: [Users]
  *     requestBody:
  *       required: true
  *       content:
@@ -120,7 +120,7 @@ userRouter.post(
  * /api/users/resend-verification:
  *   post:
  *     summary: Reenviar el código de verificación
- *     tags: [Usuarios]
+ *     tags: [Users]
  *     requestBody:
  *       required: true
  *       content:
@@ -152,7 +152,7 @@ userRouter.post(
  * /api/users/login:
  *   post:
  *     summary: Iniciar sesión
- *     tags: [Usuarios]
+ *     tags: [Users]
  *     requestBody:
  *       required: true
  *       content:
@@ -184,7 +184,7 @@ userRouter.post("/login", loginUserValidator, validateRequest, loginUser);
  * /api/users:
  *   get:
  *     summary: Obtener todos los usuarios
- *     tags: [Usuarios]
+ *     tags: [Users]
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -197,17 +197,10 @@ userRouter.get("/", authMiddleware, getAllUsers);
 
 /**
  * @swagger
- * tags:
- *   name: Usuarios
- *   description: Endpoints para la gestión de usuarios
- */
-
-/**
- * @swagger
  * /api/users/deleted:
  *   get:
  *     summary: Obtener usuarios eliminados (solo admin)
- *     tags: [Usuarios]
+ *     tags: [Users]
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -223,7 +216,7 @@ userRouter.get("/deleted", authMiddleware, getDeletedUsers);
  * /api/users/{id}/restore:
  *   put:
  *     summary: Restaurar un usuario eliminado
- *     tags: [Usuarios]
+ *     tags: [Users]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -238,6 +231,8 @@ userRouter.get("/deleted", authMiddleware, getDeletedUsers);
  *         description: Usuario restaurado correctamente.
  *       403:
  *         description: Solo los administradores pueden restaurar usuarios.
+ *       401:
+ *         description: No autorizado (falta token de autenticación).
  *       500:
  *         description: Error al restaurar el usuario.
  */
@@ -254,7 +249,7 @@ userRouter.put(
  * /api/users/profile:
  *   get:
  *     summary: Obtener el perfil del usuario autenticado
- *     tags: [Usuarios]
+ *     tags: [Users]
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -270,7 +265,7 @@ userRouter.get("/profile", authMiddleware, getUserProfile);
  * /api/users/profile/{id}:
  *   get:
  *     summary: Obtener perfil público de un usuario por ID
- *     tags: [Usuarios]
+ *     tags: [Users]
  *     parameters:
  *       - in: path
  *         name: id
@@ -280,6 +275,8 @@ userRouter.get("/profile", authMiddleware, getUserProfile);
  *     responses:
  *       200:
  *         description: Perfil público del usuario.
+ *       401:
+ *         description: Token no válido o no proporcionado.
  *       404:
  *         description: Usuario no encontrado.
  */
@@ -290,7 +287,7 @@ userRouter.get("/profile/:id", getUserProfileById);
  * /api/users/{id}/restore:
  *   put:
  *     summary: Restaurar un usuario eliminado (soft delete)
- *     tags: [Usuarios]
+ *     tags: [Users]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -303,6 +300,8 @@ userRouter.get("/profile/:id", getUserProfileById);
  *     responses:
  *       200:
  *         description: Usuario restaurado correctamente.
+ *       401:
+ *         description: Token no válido o no proporcionado.
  *       403:
  *         description: Solo los administradores pueden realizar esta acción.
  *       404:
@@ -325,7 +324,7 @@ userRouter.patch(
  * /api/users/{id}:
  *   delete:
  *     summary: Eliminar un usuario (soft delete)
- *     tags: [Usuarios]
+ *     tags: [Users]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -338,6 +337,8 @@ userRouter.patch(
  *     responses:
  *       200:
  *         description: Usuario marcado como eliminado (soft delete).
+ *       401:
+ *         description: Token no válido o no proporcionado.
  *       403:
  *         description: No autorizado para eliminar este usuario.
  *       404:
@@ -359,7 +360,7 @@ userRouter.delete(
  * /api/users/hard/{id}:
  *   delete:
  *     summary: Eliminar un usuario permanentemente (hard delete)
- *     tags: [Usuarios]
+ *     tags: [Users]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -372,6 +373,8 @@ userRouter.delete(
  *     responses:
  *       200:
  *         description: Usuario eliminado permanentemente y referencias limpiadas.
+ *       401:
+ *         description: Token no válido o no proporcionado.
  *       403:
  *         description: Solo los administradores pueden realizar esta acción.
  *       404:
