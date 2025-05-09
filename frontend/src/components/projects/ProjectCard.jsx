@@ -63,7 +63,7 @@ export default function ProjectCard({ project, role }) {
   const dates = getProjectDates(project);
 
   return (
-    <div className="h-full flex flex-col rounded-xl overflow-hidden shadow-lg bg-card hover-grow relative">
+    <div className="h-full flex flex-col rounded-xl overflow-hidden shadow-lg bg-card hover-grow hover:cursor-pointer relative">
       {/* Imagen */}
       <div className="h-48 bg-primary select-none text-primary-text flex items-center justify-center rounded-t-xl">
         {project.image ? (

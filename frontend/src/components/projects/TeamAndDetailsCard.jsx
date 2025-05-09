@@ -98,7 +98,7 @@ export default function TeamAndDetailsCard({ project }) {
   }
 
   return (
-    <Card className="shadow-sm max-w-[520px] p-0.5 rounded-t-lg">
+    <Card className="shadow-sm max-w-[520px] p-0.5 rounded-t-lg ml-3 -mt-4">
       <CardContent className="p-0 bg-primary-bg">
         <Tabs defaultValue="team" className="w-full">
           <TabsList className="grid grid-cols-2 w-full rounded-t-lg border-b">
@@ -136,7 +136,7 @@ export default function TeamAndDetailsCard({ project }) {
                 <SpinLoader size="32px" />
               </div>
             ) : participantsDetails.length > 0 ? (
-              <ScrollArea className="h-48 space-y-3 pr-4 pb-4">
+              <ScrollArea className="h-auto max-h-56 overflow-y-auto space-y-3 pr-4 pb-4">
                 {participantsDetails.map((u) => (
                   <TooltipProvider key={u.id}>
                     <Tooltip>
