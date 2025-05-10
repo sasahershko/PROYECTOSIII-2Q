@@ -25,9 +25,9 @@ export default function Step3Reserva({ formData, prevStep, onSubmit }) {
       {/* Secciones */}
       <div className="grid lg:grid-cols-2 gap-8">
         {/* Detalles */}
-        <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+        <div className="rounded-xl shadow-md p-6 border border-gray-200">
           <h2 className="text-lg font-semibold mb-4">Detalles de la Reserva</h2>
-          <div className="space-y-3 bg-blue-100 rounded-md p-4 text-sm text-blue-900">
+          <div className="space-y-3 bg-blue-200 rounded-md p-4 text-sm text-blue-900">
             <div className="flex items-center gap-2">
               <CalendarDays className="w-4 h-4" />
               <span><strong>Fecha:</strong> {date}</span>
@@ -65,7 +65,7 @@ export default function Step3Reserva({ formData, prevStep, onSubmit }) {
         </div>
 
         {/* Zona */}
-        <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+        <div className="rounded-xl shadow-md p-6 border border-gray-200">
           <h2 className="text-lg font-semibold mb-4">Zona</h2>
           <div className="border border-gray-300 rounded-md p-4 h-48 flex items-center justify-center text-gray-500">
             Mesa seleccionada: <span className="ml-2 font-bold text-blue-700">{table}</span>
