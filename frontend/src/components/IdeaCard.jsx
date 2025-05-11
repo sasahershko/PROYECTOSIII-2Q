@@ -3,6 +3,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { motion } from "framer-motion";
 import PropTypes from "prop-types";
 
 const areaColors = {
@@ -69,6 +70,16 @@ export default function IdeaCard({ idea, rotationClass }) {
       ? `${name || ""}${name && surname ? " " : ""}${surname || ""}`
       : "Desconocido";
 
+  // Pin animation variants
+  const pinVariants = {
+    hidden: { scale: 0, opacity: 0 },
+    visible: {
+      scale: 1,
+      opacity: 1,
+      transition: { delay: 0.35, type: "spring", stiffness: 200 },
+    },
+  };
+
   return (
     <Link
       href={`/admin/ideas/${idea._id}`}
@@ -77,8 +88,13 @@ export default function IdeaCard({ idea, rotationClass }) {
       <div
         className={`${style.bg} ${style.shadow} ${rotationClass} p-6 flex flex-col h-full rounded-sm transition-all duration-300 overflow-hidden relative`}
       >
-        {/* Chincheta simulada como círculo rojo más oscuro y sombra pronunciada */}
-        <div className="absolute top-2 left-1/2 transform -translate-x-1/2 h-4 w-4 bg-red-600 rounded-full shadow-2xl ring-2 ring-black/30"></div>
+        {/* Chincheta aparece tras animación de la card */}
+        <motion.div
+          className="absolute top-2 left-1/2 transform -translate-x-1/2 h-4 w-4 bg-red-600 rounded-full shadow-2xl"
+          variants={pinVariants}
+          initial="hidden"
+          animate="visible"
+        />
 
         {/* Badge */}
         <div className="mb-4">

@@ -6,6 +6,7 @@ import SpinLoader from "@/components/SpinLoader";
 import { AlertCircle, PlusCircle } from "lucide-react";
 import { getIdeas } from "@lib/ideas";
 import IdeaCard from "@/components/IdeaCard";
+import { motion } from "framer-motion";
 
 const rotations = [
   "rotate-[0.5deg]",
@@ -15,6 +16,17 @@ const rotations = [
   "rotate-[1.5deg]",
   "rotate-[-1.5deg]",
 ];
+
+// Variants for staggering card animations
+const containerVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.1 } },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 },
+};
 
 export default function IdeasPage() {
   const [ideas, setIdeas] = useState([]);
@@ -40,8 +52,7 @@ export default function IdeasPage() {
       <div className="flex justify-center items-center min-h-[70vh]">
         <div className="flex flex-col items-center gap-4">
           <div className="relative flex flex-col gap-6">
-            <SpinLoader size="86" />
-            <p className="text-slate-700 font-medium">Cargando ideas</p>
+            <SpinLoader />
           </div>
         </div>
       </div>
@@ -87,15 +98,26 @@ export default function IdeasPage() {
       </div>
 
       {ideas.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        <motion.div
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
           {ideas.map((idea, idx) => (
-            <IdeaCard
+            <motion.div
               key={idea._id}
-              idea={idea}
-              rotationClass={rotations[idx % rotations.length]}
-            />
+              variants={cardVariants}
+              whileHover={{ scale: 1.03, zIndex: 1 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <IdeaCard
+                idea={idea}
+                rotationClass={rotations[idx % rotations.length]}
+              />
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       ) : (
         <EmptyState />
       )}
