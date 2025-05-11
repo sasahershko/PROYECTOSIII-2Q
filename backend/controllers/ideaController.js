@@ -5,7 +5,10 @@ import { logEvent } from "../utils/handleLogger.js";
 // Obtener todas las ideas
 export const getIdeas = async (req, res) => {
   try {
-    const ideas = await Idea.find().populate("usuario", "name email");
+    const ideas = await Idea.find().populate(
+      "usuario",
+      "name surname email profileImage"
+    );
     res.status(200).json(ideas);
   } catch (error) {
     handleHttpError(res, error);
@@ -17,7 +20,7 @@ export const getIdeaById = async (req, res) => {
   try {
     const idea = await Idea.findById(req.params.id).populate(
       "usuario",
-      "name email"
+      "name surname email profileImage"
     );
     if (!idea) return handleHttpError(res, "Idea no encontrada", 404);
     res.status(200).json(idea);
