@@ -31,7 +31,7 @@ export default function Users() {
   const [showFilters, setShowFilters] = useState(false);
   const [page, setPage] = useState(1);
 
-  const PAGE_SIZE = 12; //numero de usuarios por página
+  const PAGE_SIZE = 10; //numero de usuarios por página
 
   const reloadUsers = () => {
     setLoading(true);
@@ -121,7 +121,7 @@ export default function Users() {
   };
 
   return (
-    <div className="flex flex-col w-full items-center min-h-screen bg-primary-bg text-primary-text">
+    <div className="flex flex-col w-full items-center min-h-full overflow-y-scroll bg-primary-bg text-primary-text">
       {/* Top bar */}
       <div className="w-[95%] max-w-8xl mt-8 mb-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <h1 className="text-2xl font-bold select-none">Lista de Personas</h1>
@@ -315,8 +315,8 @@ export default function Users() {
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center gap-2 mb-8">
+      {totalPages > 0 && (
+        <div className="flex items-center gap-2 mb-8 absolute z-10 bottom-0">
           <button
             onClick={() => goToPage(page - 1)}
             disabled={page === 1}

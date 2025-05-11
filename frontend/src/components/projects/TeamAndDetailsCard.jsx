@@ -166,8 +166,11 @@ export default function TeamAndDetailsCard({ project }) {
                           </div>
                         </div>
                       </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{u.email}</p>
+                      <TooltipContent
+                        sideOffset={4}
+                        className="bg-card text-xs text-primary-text px-4 py-3 rounded-lg shadow-lg ring-1 ring-accent ring-opacity-5"
+                      >
+                        <p className="whitespace-nowrap">{u.email}</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -237,8 +240,11 @@ export default function TeamAndDetailsCard({ project }) {
                             </div>
                           </div>
                         </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{r.email}</p>
+                        <TooltipContent
+                          sideOffset={4}
+                          className="bg-card text-xs text-primary-text px-4 py-3 rounded-lg shadow-lg ring-1 ring-accent ring-opacity-5"
+                        >
+                          <p className="whitespace-nowrap">{r.email}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
