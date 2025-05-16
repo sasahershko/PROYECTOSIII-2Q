@@ -80,6 +80,7 @@ export default function CarruselProyectos() {
       </div>
     );
   }
+  console.log(proyectos)
 
   return (
     <div id="proyectos" className="w-full max-w-7xl px-10 mb-10">

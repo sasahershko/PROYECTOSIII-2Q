@@ -48,7 +48,6 @@ const pendingNotesSchema = new Schema(
 const projectSchema = new Schema(
   {
     name: { type: String, required: true },
-    //! DEBERÍA TENER CORREO Y NÚMERO DE TELÉFONO
     contactPerson: {
       name: { type: String, required: true },
       email: { type: String, required: true },
