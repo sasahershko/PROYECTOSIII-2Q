@@ -21,7 +21,7 @@ export default function AuthLayout({ children }) {
 
           <div className="hidden md:flex flex-1 bg-gray-300 items-center justify-center">
             <Image
-              src="tempPhotos/u-tad-1.jpg"
+              src="tempPhotos/u-tad-2.jpeg"
               width={1100}
               height={1200}
               className="h-screen object-cover"

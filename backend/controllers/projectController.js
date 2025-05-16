@@ -81,7 +81,6 @@ export const getAllProjects = async (req, res) => {
     let projects;
     if (!req.usuario) {
       projects = await Project.find().select("area name description image").populate("responsibles", "name surname profileImage").populate("users", "name surname profileImage");
-      projects = await Project.find().select("area name description");
     } else if (req.usuario.rol === "admin") {
       projects = await Project.find().populate("responsibles", "name surname profileImage").populate("users", "name surname profileImage");
     } else {
