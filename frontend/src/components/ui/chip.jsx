@@ -25,10 +25,10 @@ export default function GradeChip({ grado }) {
   }
 
   return (
-    <span
-      className={`px-[12px] py-[4px] rounded-full text-sm font-medium ${styles}`}
+    <div
+      className={`px-[12px] py-[4px] w-[58px] rounded-full text-center ${styles}`}
     >
-      {capitalize(grado)}
-    </span>
+      <span className={`text-sm font-medium`}>{capitalize(grado)}</span>
+    </div>
   );
 }
