@@ -199,6 +199,37 @@ const schemas = {
       },
     },
   },
+  UserUpdate: {
+    type: "object",
+    properties: {
+      name: {
+        type: "string",
+        example: "Iván",
+      },
+      surname: {
+        type: "string",
+        example: "Martínez",
+      },
+      dni: {
+        type: "string",
+        example: "12345678Z",
+      },
+      grade: {
+        type: "string",
+        enum: ["INSO", "MAIS", "FIIS", "DIPI", "ANIV"],
+        example: "INSO",
+      },
+      rol: {
+        type: "string",
+        enum: ["admin", "moderator", "user"],
+        example: "moderator",
+      },
+      profileImage: {
+        type: "string",
+        example: "https://cdn.img/ivan.png",
+      },
+    },
+  },
   Reservations: {
     type: "object",
     required: ["user", "table", "project", "date", "startTime", "endTime"],
@@ -253,6 +284,57 @@ const schemas = {
       capacity: {
         type: "integer",
         example: 4,
+      },
+    },
+  },
+  Budget: {
+    type: "object",
+    properties: {
+      title: {
+        type: "string",
+        example: "Presupuesto inicial",
+      },
+      reason: {
+        type: "string",
+        example: "Proyecto de colaboración con empresa externa",
+      },
+      generalComments: {
+        type: "string",
+        example: "Versión preliminar",
+      },
+      tutors: {
+        type: "object",
+        properties: {
+          numTutors: { type: "number", example: 2 },
+          estimatedHours: { type: "number", example: 10 },
+          pricePerHour: { type: "number", example: 25 },
+          subtotal: { type: "number", example: 500 },
+        },
+      },
+      interns: {
+        type: "object",
+        properties: {
+          numInterns: { type: "number", example: 1 },
+          estimatedHours: { type: "number", example: 80 },
+          pricePerHour: { type: "number", example: 12 },
+          subtotal: { type: "number", example: 960 },
+        },
+      },
+      extraExpenses: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            description: { type: "string", example: "Licencia software" },
+            quantity: { type: "number", example: 3 },
+            unitPrice: { type: "number", example: 50 },
+            subtotal: { type: "number", example: 150 },
+          },
+        },
+      },
+      totalGeneral: {
+        type: "number",
+        example: 1610,
       },
     },
   },

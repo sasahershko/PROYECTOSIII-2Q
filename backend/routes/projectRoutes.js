@@ -174,7 +174,7 @@ projectRouter.get("/", authMiddlewareOptional, getAllProjects);
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Project'
+ *                 $ref: '#/components/schemas/Projects'
  *       403:
  *         description: Solo los administradores pueden ver proyectos eliminados.
  *       500:
