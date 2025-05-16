@@ -19,7 +19,7 @@ export default function ZoneSelector({ selectedTable, setTable }) {
               onClick={() => !t.busy && setTable(t.id)}
               className={`
                 p-4 rounded-md text-center text-sm font-medium border shadow-sm cursor-pointer
-                ${t.busy ? 'bg-red-200 text-gray-500 cursor-not-allowed' : 'bg-gray-100 hover:bg-blue-100'}
+                ${t.busy ? 'bg-red-400 text-gray-200 cursor-not-allowed' : 'hover:bg-blue-100'}
                 ${selectedTable === t.id ? 'ring-2 ring-blue-600 border-blue-600' : ''}
               `}
             >

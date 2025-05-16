@@ -65,7 +65,7 @@ export default function ReservasPage() {
           {/* Línea de conexión que va de paso 1 a 3 */}
           <div className="absolute top-3 left-1/2 -translate-x-1/2 w-full max-w-[480px] h-0.5 bg-gray-300 z-0">
             <div
-              className="h-full bg-black transition-all duration-300"
+              className="h-full transition-all duration-300"
               style={{ width: `${(step - 1) * 50}%` }}
             />
           </div>
@@ -78,7 +78,7 @@ export default function ReservasPage() {
               <div key={stepNumber} className="flex flex-col items-center z-10 flex-1">
                 <div className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${
                   isActive
-                    ? 'bg-black text-white'
+                    ? 'bg-green-600 text-white'
                     : isCompleted
                     ? 'bg-gray-700 text-white'
                     : 'bg-gray-200 text-gray-500'
@@ -86,7 +86,7 @@ export default function ReservasPage() {
                   {stepNumber}
                 </div>
                 <div className="mt-2 text-sm">
-                  <span className={`${isActive ? 'text-black underline font-medium' : 'text-gray-500'}`}>
+                  <span className={`${isActive ? 'font-medium' : 'text-gray-500'}`}>
                     {stepNumber === 1 && 'Fecha y Hora'}
                     {stepNumber === 2 && 'Motivo y Complementos'}
                     {stepNumber === 3 && 'Finalizar Reserva'}

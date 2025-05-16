@@ -20,44 +20,57 @@ export default function PresupuestoForm({ presupuestoInicial = null, onSuccess }
   const router = useRouter();
 
   const [tutores, setTutores] = useState({
-    cantidad: presupuestoInicial?.tutors?.numTutors || 0,
-    horas: presupuestoInicial?.tutors?.estimatedHours || 0,
-    precio: presupuestoInicial?.tutors?.pricePerHour || 0,
+    cantidad:presupuestoInicial?.tutors?.numTutors?.toString()||'',
+    horas:presupuestoInicial?.tutors?.estimatedHours?.toString()||'',
+    precio:presupuestoInicial?.tutors?.pricePerHour?.toString()||'',
   });
 
   const [estudiantes, setEstudiantes] = useState({
-    cantidad: presupuestoInicial?.interns?.numInterns || 0,
-    horas: presupuestoInicial?.interns?.estimatedHours || 0,
-    precio: presupuestoInicial?.interns?.pricePerHour || 0,
+    cantidad:presupuestoInicial?.interns?.numInterns?.toString()||'',
+    horas:presupuestoInicial?.interns?.estimatedHours?.toString()||'',
+    precio:presupuestoInicial?.interns?.pricePerHour?.toString()||'',
   });
 
   const [otrosGastos, setOtrosGastos] = useState(
-    presupuestoInicial?.extraExpenses?.map(g => ({
-      descripcion: g.description || '',
-      cantidad: g.quantity || 0,
-      precio: g.unitPrice || 0,
-    })) || []
+    (presupuestoInicial?.extraExpenses || []).map(g => ({
+      descripcion:g.description||'',
+      cantidad:String(g.quantity||''),
+      precio:String(g.unitPrice||''),
+    }))
   );
   
-  const [nuevoGasto, setNuevoGasto] = useState({ descripcion: '', cantidad: 0, precio: 0 });
+  // Inicializar como cadenas vacías
+  const [nuevoGasto, setNuevoGasto] = useState({
+    descripcion: '',
+    cantidad: '',
+    precio: '',
+  });
 
   const agregarGasto = () => {
+    const qty = Number(nuevoGasto.cantidad);
+    const unit = Number(nuevoGasto.precio);
+
     if (
       !nuevoGasto.descripcion.trim() ||
-      nuevoGasto.cantidad <= 0 ||
-      nuevoGasto.precio <= 0
+      isNaN(qty) || qty <= 0 ||
+      isNaN(unit) || unit <= 0
     ) {
       return;
     }
-    setOtrosGastos([...otrosGastos, nuevoGasto]);
-    setNuevoGasto({ descripcion: '', cantidad: 0, precio: 0 });
+
+    setOtrosGastos([
+      ...otrosGastos,
+      { descripcion: nuevoGasto.descripcion, cantidad: qty, precio: unit }
+    ]);
+
+    // Campos vacíos
+    setNuevoGasto({ descripcion: '', cantidad: '', precio: '' });
   };
 
   const eliminarGasto = async () => {
     if (indiceAEliminar === null) return;
   
     const nuevosGastos = otrosGastos.filter((_, i) => i !== indiceAEliminar);
-  
     const presupuesto = {
       title: titulo,
       reason: motivo,
@@ -110,11 +123,11 @@ export default function PresupuestoForm({ presupuestoInicial = null, onSuccess }
         pricePerHour: estudiantes.precio,
       },
       extraExpenses: otrosGastos
-        .filter(g => g.descripcion && g.cantidad > 0 && g.precio > 0)
+        .filter(g => g.descripcion.trim() !== '' && Number(g.cantidad) > 0 && Number(g.precio) > 0)
         .map(g => ({
           description: g.descripcion,
-          quantity: g.cantidad,
-          unitPrice: g.precio,
+          quantity:    Number(g.cantidad),
+          unitPrice:   Number(g.precio),
         })),
     };
 
@@ -153,25 +166,38 @@ export default function PresupuestoForm({ presupuestoInicial = null, onSuccess }
         <div className="max-w-5xl mx-auto bg-card p-8 rounded-xl shadow-lg">
           {/* 1. Información General */}
           <section>
-              <h2 className="text-2xl font-bold text-primary-text mb-6 flex items-center mt-2">
-                <span className="w-8 h-8 bg-accent rounded-full flex items-center justify-center text-white mr-3 text-sm">
-                  1
-                </span>
-                Información General
-              </h2>
+            <h2 className="text-2xl font-bold text-primary-text mb-6 flex items-center mt-2">
+              <span className="w-8 h-8 bg-accent rounded-full flex items-center justify-center text-white mr-3 text-sm">
+                1
+              </span>
+              Información General
+            </h2>
             <div className="grid md:grid-cols-2 gap-6">
               <div>
                 <label className="block mb-1 font-medium text-sm">Título del presupuesto *</label>
-                <input value={titulo} onChange={e => setTitulo(e.target.value)} className="w-full border rounded-lg p-3" />
+                <input
+                  value={titulo}
+                  onChange={e => setTitulo(e.target.value)}
+                  className="w-full border rounded-lg p-3"
+                />
               </div>
               <div>
                 <label className="block mb-1 font-medium text-sm">Motivo del presupuesto *</label>
-                <input value={motivo} onChange={e => setMotivo(e.target.value)} className="w-full border rounded-lg p-3" />
+                <input
+                  value={motivo}
+                  onChange={e => setMotivo(e.target.value)}
+                  className="w-full border rounded-lg p-3"
+                />
               </div>
             </div>
             <div className="mt-4">
               <label className="block mb-1 font-medium text-sm">Comentarios generales</label>
-              <textarea value={comentarios} onChange={e => setComentarios(e.target.value)} className="w-full border rounded-lg p-3" rows={3} />
+              <textarea
+                value={comentarios}
+                onChange={e => setComentarios(e.target.value)}
+                className="w-full border rounded-lg p-3"
+                rows={3}
+              />
             </div>
           </section>
 
@@ -184,7 +210,7 @@ export default function PresupuestoForm({ presupuestoInicial = null, onSuccess }
               Recursos Humanos
             </h2>
 
-            {/* Profesores */}
+            {/* Profesores y Tutores */}
             <div className="p-4 mb-6 space-y-2">
               <h3 className="font-semibold mb-2">Profesores y Tutores</h3>
               <div className="grid grid-cols-3 gap-4 text-sm font-medium text-gray-500">
@@ -193,14 +219,42 @@ export default function PresupuestoForm({ presupuestoInicial = null, onSuccess }
                 <label>€/hora</label>
               </div>
               <div className="grid grid-cols-3 gap-4 mt-1">
-                <input type="number" value={tutores.cantidad} onChange={e => setTutores({ ...tutores, cantidad: +e.target.value })} className="input" />
-                <input type="number" value={tutores.horas} onChange={e => setTutores({ ...tutores, horas: +e.target.value })} className="input" />
-                <input type="number" value={tutores.precio} onChange={e => setTutores({ ...tutores, precio: +e.target.value })} className="input" />
+                <input
+                  type="text"
+                  value={tutores.cantidad}
+                  onChange={e => setTutores({ ...tutores, cantidad: e.target.value })}
+                  className="input"
+                  placeholder="Cantidad"
+                />
+                <input
+                  type="text"
+                  value={tutores.horas}
+                  onChange={e => setTutores({ ...tutores, horas: e.target.value })}
+                  className="input"
+                  placeholder="Horas"
+                />
+                <input
+                  type="text"
+                  value={tutores.precio}
+                  onChange={e => setTutores({ ...tutores, precio: e.target.value })}
+                  className="input"
+                  placeholder="€/hora"
+                />
               </div>
-              <p className="text-right font-medium mt-2">Subtotal: {subtotalTutores.toFixed(2)}€</p>
+              <p className="text-right font-medium mt-2">
+                Subtotal:{' '}
+                {(() => {
+                  const c = Number(tutores.cantidad);
+                  const h = Number(tutores.horas);
+                  const p = Number(tutores.precio);
+                  return !isNaN(c) && !isNaN(h) && !isNaN(p)
+                    ? (c * h * p).toFixed(2) + '€'
+                    : '—';
+                })()}
+              </p>
             </div>
 
-            {/* Estudiantes */}
+            {/* Estudiantes en Prácticas */}
             <div className="p-4 space-y-2">
               <h3 className="font-semibold mb-2">Estudiantes en Prácticas</h3>
               <div className="grid grid-cols-3 gap-4 text-sm font-medium text-gray-500">
@@ -209,11 +263,39 @@ export default function PresupuestoForm({ presupuestoInicial = null, onSuccess }
                 <label>€/hora</label>
               </div>
               <div className="grid grid-cols-3 gap-4 mt-1">
-                <input type="number" value={estudiantes.cantidad} onChange={e => setEstudiantes({ ...estudiantes, cantidad: +e.target.value })} className="input" />
-                <input type="number" value={estudiantes.horas} onChange={e => setEstudiantes({ ...estudiantes, horas: +e.target.value })} className="input" />
-                <input type="number" value={estudiantes.precio} onChange={e => setEstudiantes({ ...estudiantes, precio: +e.target.value })} className="input" />
+                <input
+                  type="text"
+                  value={estudiantes.cantidad}
+                  onChange={e => setEstudiantes({ ...estudiantes, cantidad: e.target.value })}
+                  className="input"
+                  placeholder="Cantidad"
+                />
+                <input
+                  type="text"
+                  value={estudiantes.horas}
+                  onChange={e => setEstudiantes({ ...estudiantes, horas: e.target.value })}
+                  className="input"
+                  placeholder="Horas"
+                />
+                <input
+                  type="text"
+                  value={estudiantes.precio}
+                  onChange={e => setEstudiantes({ ...estudiantes, precio: e.target.value })}
+                  className="input"
+                  placeholder="€/hora"
+                />
               </div>
-              <p className="text-right font-medium mt-2">Subtotal: {subtotalEstudiantes.toFixed(2)}€</p>
+              <p className="text-right font-medium mt-2">
+                Subtotal:{' '}
+                {(() => {
+                  const c = Number(estudiantes.cantidad);
+                  const h = Number(estudiantes.horas);
+                  const p = Number(estudiantes.precio);
+                  return !isNaN(c) && !isNaN(h) && !isNaN(p)
+                    ? (c * h * p).toFixed(2) + '€'
+                    : '—';
+                })()}
+              </p>
             </div>
           </section>
 
@@ -227,8 +309,11 @@ export default function PresupuestoForm({ presupuestoInicial = null, onSuccess }
             </h2>
 
             <div className="p-4">
-              <div className="grid gap-4 text-sm font-medium text-gray-500 mb-2"
-                style={{ gridTemplateColumns: '2fr 1fr 1fr 1fr 0.5fr' }}>
+              {/* cabecera */}
+              <div
+                className="grid gap-4 text-sm font-medium text-gray-500 mb-2"
+                style={{ gridTemplateColumns: '2fr 1.2fr 1.2fr 1fr 0.5fr' }}
+              >
                 <span>Descripción</span>
                 <span>Cantidad</span>
                 <span>€/unidad</span>
@@ -236,38 +321,115 @@ export default function PresupuestoForm({ presupuestoInicial = null, onSuccess }
                 <span>Acción</span>
               </div>
 
-              {/* Gastos existentes */}
-              {otrosGastos.map((gasto, idx) => (
-                <div
-                  key={idx}
-                  className="grid gap-4 mb-3 items-center"
-                  style={{ gridTemplateColumns: '2fr 1fr 1fr 1fr 0.5fr' }}
-                >
-                  <span>{gasto.descripcion}</span>
-                  <span>{gasto.cantidad}</span>
-                  <span>{Number(gasto.precio).toFixed(2)}€</span>
-                  <span>{(gasto.cantidad * gasto.precio).toFixed(2)}€</span>
-                  <button
-                    onClick={() => {
-                      setIndiceAEliminar(idx);
-                      setModalAbierto(true);
-                    }}
-                    className="mx-1 w-8 h-8 bg-red-600 hover:bg-red-700 text-white rounded flex justify-center items-center"
-                    title="Eliminar gasto"
-                  >
-                    <FaTrash className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
+              {/* filas editables */}
+              {otrosGastos.map((gasto, idx) => {
+                const qtyNum   = Number(gasto.cantidad);
+                const unitNum  = Number(gasto.precio);
+                const totalNum = (!isNaN(qtyNum) && !isNaN(unitNum)) ? qtyNum * unitNum : 0;
 
-              {/* Nuevo gasto */}
+                return (
+                  <div
+                    key={idx}
+                    className="grid gap-4 mb-3 items-center"
+                    style={{ gridTemplateColumns: '2fr 1fr 1fr 1fr 0.5fr' }}
+                  >
+                    {/* Descripción editable */}
+                    <input
+                      type="text"
+                      className="input"
+                      value={gasto.descripcion}
+                      onChange={e => {
+                        const copia = [...otrosGastos];
+                        copia[idx].descripcion = e.target.value;
+                        setOtrosGastos(copia);
+                      }}
+                    />
+
+                    {/* Cantidad editable como texto */}
+                    <input
+                      type="text"
+                      className="input"
+                      value={gasto.cantidad}
+                      onChange={e => {
+                        const copia = [...otrosGastos];
+                        copia[idx].cantidad = e.target.value;
+                        setOtrosGastos(copia);
+                      }}
+                      placeholder="Cantidad"
+                    />
+
+                    {/* €/unidad editable como texto */}
+                    <input
+                      type="text"
+                      className="input"
+                      value={gasto.precio}
+                      onChange={e => {
+                        const copia = [...otrosGastos];
+                        copia[idx].precio = e.target.value;
+                        setOtrosGastos(copia);
+                      }}
+                      placeholder="€/unidad"
+                    />
+
+                    {/* Total calculado */}
+                    <span>{totalNum.toFixed(2)}€</span>
+
+                    {/* Eliminar */}
+                    <button
+                      onClick={() => {
+                        setIndiceAEliminar(idx);
+                        setModalAbierto(true);
+                      }}
+                      className="mx-1 w-8 h-8 bg-red-600 hover:bg-red-700 text-white rounded flex justify-center items-center"
+                      title="Eliminar gasto"
+                    >
+                      <FaTrash className="w-4 h-4" />
+                    </button>
+                  </div>
+                );
+              })}
+
+              {/* fila para nuevo gasto */}
               <div
-                className="grid gap-4 items-center"
-                style={{ gridTemplateColumns: '2fr 1.5fr 1.6fr 0.5fr' }}
+                className="grid gap-4 mb-3 items-center"
+                style={{ gridTemplateColumns: '2fr 1fr 1fr 1fr 0.5fr' }}
               >
-                <input value={nuevoGasto.descripcion} onChange={e => setNuevoGasto({ ...nuevoGasto, descripcion: e.target.value })} className="input" placeholder="Descripción" />
-                <input type="number" value={nuevoGasto.cantidad} onChange={e => setNuevoGasto({ ...nuevoGasto, cantidad: +e.target.value })} className="input" />
-                <input type="number" value={nuevoGasto.precio} onChange={e => setNuevoGasto({ ...nuevoGasto, precio: +e.target.value })} className="input" />
+                <input
+                  value={nuevoGasto.descripcion}
+                  onChange={e =>
+                    setNuevoGasto({ ...nuevoGasto, descripcion: e.target.value })
+                  }
+                  className="input"
+                  placeholder="Descripción"
+                />
+                <input
+                  type="number"
+                  value={nuevoGasto.cantidad}
+                  onChange={e =>
+                    setNuevoGasto({ ...nuevoGasto, cantidad: e.target.value })
+                  }
+                  className="input"
+                  placeholder="Cantidad"
+                />
+                <input
+                  type="number"
+                  value={nuevoGasto.precio}
+                  onChange={e =>
+                    setNuevoGasto({ ...nuevoGasto, precio: e.target.value })
+                  }
+                  className="input"
+                  placeholder="€/unidad"
+                />
+                {/* Total calculado */}
+                <span>
+                  {(() => {
+                    const qty = Number(nuevoGasto.cantidad);
+                    const pr  = Number(nuevoGasto.precio);
+                    return !isNaN(qty) && !isNaN(pr)
+                      ? (qty * pr).toFixed(2) + '€'
+                      : '—';
+                  })()}
+                </span>
                 <button
                   onClick={agregarGasto}
                   className="mx-1 w-8 h-8 bg-accent hover:bg-accent/80 text-white rounded flex justify-center items-center"
@@ -277,7 +439,9 @@ export default function PresupuestoForm({ presupuestoInicial = null, onSuccess }
                 </button>
               </div>
 
-              <p className="text-right font-medium mt-4">Subtotal: {subtotalOtros.toFixed(2)}€</p>
+              <p className="text-right font-medium mt-4">
+                Subtotal: {subtotalOtros.toFixed(2)}€
+              </p>
             </div>
           </section>
 
@@ -303,6 +467,7 @@ export default function PresupuestoForm({ presupuestoInicial = null, onSuccess }
               Guardar Presupuesto
             </button>
           </div>
+
           <DeleteConfirmModal
             isOpen={modalAbierto}
             onClose={() => {

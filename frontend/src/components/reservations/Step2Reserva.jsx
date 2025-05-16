@@ -7,14 +7,14 @@ export default function Step2Reserva({ formData, updateForm, nextStep, prevStep 
     <div className="space-y-6">
       <div className="grid lg:grid-cols-2 gap-8">
         {/* Zona */}
-        <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+        <div className="rounded-xl shadow-md p-6 border border-gray-200">
           <ZoneSelector selectedTable={formData.table} setTable={(table) => updateForm({ table })} />
         </div>
 
         {/* Motivo + Materiales */}
         <div className="space-y-6">
           {/* Motivo */}
-          <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+          <div className="rounded-xl shadow-md p-6 border border-gray-200">
             <h2 className="text-lg font-semibold mb-2">Motivo de la Reserva</h2>
             <textarea
               value={formData.reason}
@@ -26,7 +26,7 @@ export default function Step2Reserva({ formData, updateForm, nextStep, prevStep 
           </div>
 
           {/* Materiales */}
-          <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+          <div className="rounded-xl shadow-md p-6 border border-gray-200">
             <MaterialCheckboxes
               selected={formData.materials}
               onChange={(materials) => updateForm({ materials })}

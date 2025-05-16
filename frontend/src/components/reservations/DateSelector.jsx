@@ -75,9 +75,9 @@ export default function DateSelector({ date, setDate }) {
                 box-border rounded-md p-2 cursor-pointer transition-all
                 ${isBusy(day) ? 'bg-red-200 text-gray-500 cursor-not-allowed' : ''}
                 ${isSelected(day) ? 'bg-green-500 text-white font-bold' : ''}
-                ${!isBusy(day) && !isSelected(day) ? 'hover:bg-blue-100' : ''}
+                ${!isBusy(day) && !isSelected(day) ? 'hover:bg-blue-300' : ''}
                 ${isToday(day) && !isSelected(day) && !isBusy(day)
-                  ? 'border-2 border-blue-600 text-blue-600 font-semibold bg-blue-50 shadow-sm py-1.5'
+                  ? 'border-2 border-blue-600 text-blue-600 font-semibold shadow-sm py-1.5'
                   : ''}
               `}                                         
               onClick={() => !isBusy(day) && setDate(formatted)}
