@@ -6,7 +6,6 @@ import SpinLoader from "@components/SpinLoader";
 import { getProjectById } from '@lib/projects';
 import { useParams } from 'next/navigation';
 
-
 export default function ProjectPage() {
     const { id } = useParams();
     const [project, setProject] = useState(null);
@@ -28,8 +27,8 @@ export default function ProjectPage() {
     }
 
     return (
-        <>
+        <div>
             <ProjectDescription project={project} />
-        </>
+        </div>
     );
 }

@@ -17,7 +17,6 @@ import { getUserData } from "@/lib/authClient";
 import { formatDate } from "@/utils/projectUtils";
 import AddUserModal from "@/components/projects/AddUserModal";
 import UserProfileModal from "../lists/UserProfileModal";
-import { getProfileById } from "@/lib/profile";
 import SpinLoader from "@/components/SpinLoader";
 
 export default function TeamAndDetailsCard({ project }) {
@@ -28,12 +27,6 @@ export default function TeamAndDetailsCard({ project }) {
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
-
-  // detalles completos + loading
-  const [participantsDetails, setParticipantsDetails] = useState([]);
-  const [participantsLoading, setParticipantsLoading] = useState(true);
-  const [responsiblesDetails, setResponsiblesDetails] = useState([]);
-  const [responsiblesLoading, setResponsiblesLoading] = useState(true);
 
   const getInitials = (n, s) => ((n?.[0] || "") + (s?.[0] || "")).toUpperCase();
 
@@ -53,40 +46,6 @@ export default function TeamAndDetailsCard({ project }) {
     })();
   }, [project]);
 
-  // carga detalles de participantes
-  useEffect(() => {
-    (async () => {
-      setParticipantsLoading(true);
-      if (project.users?.length) {
-        const details = await Promise.all(
-          project.users.map((u) => getProfileById(u._id).catch(() => null))
-        );
-        setParticipantsDetails(details.filter(Boolean));
-      } else {
-        setParticipantsDetails([]);
-      }
-      setParticipantsLoading(false);
-    })();
-  }, [project.users]);
-
-  // carga detalles de responsables
-  useEffect(() => {
-    (async () => {
-      setResponsiblesLoading(true);
-      if (project.responsibles?.length) {
-        const details = await Promise.all(
-          project.responsibles.map((r) =>
-            getProfileById(r._id).catch(() => null)
-          )
-        );
-        setResponsiblesDetails(details.filter(Boolean));
-      } else {
-        setResponsiblesDetails([]);
-      }
-      setResponsiblesLoading(false);
-    })();
-  }, [project.responsibles]);
-
   if (
     loading ||
     !(
@@ -96,6 +55,7 @@ export default function TeamAndDetailsCard({ project }) {
   ) {
     return null;
   }
+  console.log(project)
 
   return (
     <Card className="shadow-sm max-w-[520px] p-0.5 rounded-t-lg">
@@ -131,14 +91,10 @@ export default function TeamAndDetailsCard({ project }) {
               />
             </div>
 
-            {participantsLoading ? (
-              <div className="flex justify-center py-8">
-                <SpinLoader size="32px" />
-              </div>
-            ) : participantsDetails.length > 0 ? (
-              <ScrollArea className="h-48 space-y-3 pr-4 pb-4">
-                {participantsDetails.map((u) => (
-                  <TooltipProvider key={u.id}>
+            {project.users?.length > 0 ? (
+              <ScrollArea className="h-auto max-h-56 overflow-y-auto space-y-3 pr-4 pb-4">
+                {project.users.map((u) => (
+                  <TooltipProvider key={u._id}>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div
@@ -204,14 +160,10 @@ export default function TeamAndDetailsCard({ project }) {
               <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
                 <UserCog className="w-4 h-4" /> Responsables
               </h3>
-              {responsiblesLoading ? (
-                <div className="flex justify-center py-8">
-                  <SpinLoader size="32px" />
-                </div>
-              ) : responsiblesDetails.length > 0 ? (
+              {project.responsibles?.length > 0 ? (
                 <div className="space-y-3">
-                  {responsiblesDetails.map((r) => (
-                    <TooltipProvider key={r.id}>
+                  {project.responsibles.map((r) => (
+                    <TooltipProvider key={r._id}>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <div
@@ -265,7 +217,9 @@ export default function TeamAndDetailsCard({ project }) {
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium">{project.contactPerson.name}</p>
+                    <p className="font-medium">
+                      {project.contactPerson.name}
+                    </p>
                     <p className="text-xs text-gray-500">
                       {project.contactPerson.email}
                       <br />
@@ -293,4 +247,5 @@ export default function TeamAndDetailsCard({ project }) {
       )}
     </Card>
   );
+
 }

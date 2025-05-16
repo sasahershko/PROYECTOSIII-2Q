@@ -69,7 +69,8 @@ export default function ProjectCalendar() {
   }
 
   return (
-    <div className="max-h-screen bg-primary-bg p-4">
+    <div
+      className="max-h-screen bg-primary-bg p-4">
       <FullCalendar
         plugins={[dayGridPlugin, interactionPlugin]}
         locale={esLocale}
