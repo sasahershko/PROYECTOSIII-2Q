@@ -91,14 +91,10 @@ export default function TeamAndDetailsCard({ project }) {
               />
             </div>
 
-            {participantsLoading ? (
-              <div className="flex justify-center py-8">
-                <SpinLoader size="32px" />
-              </div>
-            ) : participantsDetails.length > 0 ? (
+            {project.users.length > 0 ? (
               <ScrollArea className="h-auto max-h-56 overflow-y-auto space-y-3 pr-4 pb-4">
-                {participantsDetails.map((u) => (
-                  <TooltipProvider key={u.id}>
+                {project.users.map((u) => (
+                  <TooltipProvider key={u._id}>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div
