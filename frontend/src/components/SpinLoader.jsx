@@ -1,49 +1,32 @@
+// components/SpinLoader.jsx
 import React from "react";
 
-export default function SpinLoader({ size = "36px" }) {
+export default function SpinLoader({
+  size = "36px",
+  className = "text-primary-text",
+}) {
   return (
     <div
       style={{
         width: size,
         height: size,
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
       }}
+      className={`flex justify-center items-center ${className}`}
     >
       <svg
-        viewBox="0 0 24 24"
-        fill="none"
+        viewBox="0 0 16 16"
         xmlns="http://www.w3.org/2000/svg"
-        transform="rotate(180)"
-        style={{
-          width: size,
-          height: size,
-          animation: "spin 1s linear infinite",
-        }}
+        fill="currentColor"
+        className="w-full h-full animate-spin"
       >
-        <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
-        <g
-          id="SVGRepo_tracerCarrier"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        ></g>
-        <g id="SVGRepo_iconCarrier">
-          {" "}
-          <path
-            d="M2 12C2 6.47715 6.47715 2 12 2V5C8.13401 5 5 8.13401 5 12H2Z"
-            fill="currentColor"
-          ></path>{" "}
-        </g>
+        {/* Background circle with low opacity */}
+        <path
+          d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8z"
+          fillOpacity="0.2"
+        />
+        {/* Foreground arc */}
+        <path d="M7.25.75A.75.75 0 018 0a8 8 0 018 8 .75.75 0 01-1.5 0A6.5 6.5 0 008 1.5a.75.75 0 01-.75-.75z" />
       </svg>
-      <style>
-        {`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}
-      </style>
     </div>
   );
 }

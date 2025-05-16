@@ -43,7 +43,7 @@ export default function UserCard({ user, reloadUsers }) {
     <>
       <div
         onClick={openProfile}
-        className="grid gap-4 items-center px-2 py-2 border-b border-primary-bg hover:bg-accent/10 transition-colors cursor-pointer"
+        className="grid h-[57px] gap-4 items-center px-2 py-2 border-b border-primary-bg hover:bg-accent/10 transition-colors cursor-pointer"
         style={{ gridTemplateColumns: "auto 2fr 2fr 3fr 2fr 0.8fr 0.8fr 1fr" }}
       >
         {/* Avatar */}

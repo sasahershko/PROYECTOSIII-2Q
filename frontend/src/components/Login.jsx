@@ -8,6 +8,7 @@ import Toast from "@/components/ui/Toast";
 
 export default function Login() {
   const [formData, setFormData] = useState({ correo: "", password: "" });
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showToast, setShowToast] = useState(false);
   const router = useRouter();
@@ -22,9 +23,11 @@ export default function Login() {
     }
 
     try {
+      setLoading(true);
       await loginUser({ email: formData.correo, password: formData.password });
       router.push("/");
     } catch (error) {
+      setLoading(false);
       setError(error.message);
       setShowToast(true);
     }
@@ -91,7 +94,7 @@ export default function Login() {
             type="submit"
             className="w-full bg-accent text-white py-3 rounded-lg font-semibold hover:bg-gray-700"
           >
-            Iniciar sesión
+            {loading ? "Iniciando Sesión..." : "Iniciar Sesión"}
           </button>
         </form>
 

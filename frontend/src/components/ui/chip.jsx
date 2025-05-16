@@ -1,10 +1,11 @@
 export default function GradeChip({ grado }) {
   const colorMap = {
-    INSO: "bg-blue-100 text-black",
-    MAIS: "bg-blue-100 text-black",
-    FIIS: "bg-blue-100 text-black",
-    DIPI: "bg-purple-100 text-black",
-    ANIV: "bg-yellow-100 text-black",
+    INSO: "bg-blue-400 text-white",
+    MAIS: "bg-red-400 text-white",
+    FIIS: "bg-green-400 text-white",
+    DIPI: "bg-cyan-400 text-white",
+    ANIV: "bg-yellow-400 text-white",
+    DIDI: "bg-pink-400 text-white",
   };
 
   const styles = colorMap[grado] || "bg-gray-100 text-gray-800";
@@ -24,10 +25,10 @@ export default function GradeChip({ grado }) {
   }
 
   return (
-    <span
-      className={`px-[12px] py-[4px] rounded-full text-sm font-medium ${styles}`}
+    <div
+      className={`px-[12px] py-[4px] w-[58px] rounded-full text-center ${styles}`}
     >
-      {capitalize(grado)}
-    </span>
+      <span className={`text-sm font-medium`}>{capitalize(grado)}</span>
+    </div>
   );
 }
