@@ -80,13 +80,14 @@ export const getAllProjects = async (req, res) => {
   try {
     let projects;
     if (!req.usuario) {
-      projects = await Project.find().select("area name description image");
+      projects = await Project.find().select("area name description image").populate("responsibles", "name surname profileImage").populate("users", "name surname profileImage");
+      projects = await Project.find().select("area name description");
     } else if (req.usuario.rol === "admin") {
-      projects = await Project.find();
+      projects = await Project.find().populate("responsibles", "name surname profileImage").populate("users", "name surname profileImage");
     } else {
       projects = await Project.find({
         $or: [{ responsibles: req.usuario._id }, { users: req.usuario._id }],
-      });
+      }).populate("responsibles", "name surname profileImage").populate("users", "name surname profileImage");
     }
     res.status(200).json(projects);
   } catch (error) {
@@ -99,8 +100,8 @@ export const getProjectById = async (req, res) => {
   try {
     const { id } = req.filteredData;
     const project = await Project.findById(id)
-      .populate("responsibles", "name")
-      .populate("users", "name surname")
+      .populate("responsibles", "name surname profileImage")
+      .populate("users", "name surname profileImage")
       .populate("pendingNotes.userWhoWrites", "name")
       .populate("pendingNotes.userWhoRecieves", "name");
 
