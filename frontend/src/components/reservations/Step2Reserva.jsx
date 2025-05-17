@@ -1,44 +1,50 @@
+// components/reservations/Step2Reserva.jsx
 'use client';
 import ZoneSelector from './ZoneSelector';
-import MaterialCheckboxes from './MaterialCheckboxes';
+import useProjects from '@/hooks/useProjects';
 
-export default function Step2Reserva({ formData, updateForm, nextStep, prevStep }) {
+export default function Step2Reserva({ formData, updateForm, nextStep, prevStep, reservations }) {
+  const { projects, loading } = useProjects();
+
   return (
     <div className="space-y-6">
       <div className="grid lg:grid-cols-2 gap-8">
-        {/* Zona */}
+        {/* Selector de mesas */}
         <div className="rounded-xl shadow-md p-6 border border-gray-200">
-          <ZoneSelector selectedTable={formData.table} setTable={(table) => updateForm({ table })} />
+          <ZoneSelector
+            selectedTable={formData.table}
+            setTable={(table) => updateForm({ table })}
+            reservations={reservations}
+            date={formData.date}
+          />
         </div>
 
-        {/* Motivo + Materiales */}
-        <div className="space-y-6">
-          {/* Motivo */}
-          <div className="rounded-xl shadow-md p-6 border border-gray-200">
-            <h2 className="text-lg font-semibold mb-2">Motivo de la Reserva</h2>
-            <textarea
-              value={formData.reason}
-              onChange={(e) => updateForm({ reason: e.target.value })}
+        {/* Selector de proyecto */}
+        <div className="rounded-xl shadow-md p-6 border border-gray-200">
+          <h2 className="text-lg font-semibold mb-2">Proyecto</h2>
+          {loading ? (
+            <p className="text-sm text-gray-500">Cargando proyectos…</p>
+          ) : (
+            <select
+              value={formData.project}
+              onChange={(e) => updateForm({ project: e.target.value })}
               className="w-full border border-gray-300 rounded-md p-3 text-sm focus:outline-blue-500"
-              rows={3}
-              placeholder="Describe el motivo de tu reserva..."
-            />
-          </div>
-
-          {/* Materiales */}
-          <div className="rounded-xl shadow-md p-6 border border-gray-200">
-            <MaterialCheckboxes
-              selected={formData.materials}
-              onChange={(materials) => updateForm({ materials })}
-            />
-          </div>
+            >
+              <option value="">Selecciona un proyecto</option>
+              {projects.map((p) => (
+                <option key={p._id} value={p._id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
       </div>
 
       {/* Navegación */}
       <div className="flex justify-between mt-6">
         <button
-          className="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded text-sm font-medium"
+          className="hover:bg-gray-300 px-4 py-2 rounded text-sm font-medium"
           onClick={prevStep}
         >
           ← Atrás

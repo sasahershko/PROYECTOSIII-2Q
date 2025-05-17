@@ -18,7 +18,7 @@ export default function Step1Reserva({ formData, updateForm, nextStep }) {
 
   return (
     <div className="space-y-6">
-      <div className="grid lg:grid-cols-2 gap-8">
+      <div className="grid lg:grid-cols-2 gap-6">
         <div className="rounded-xl shadow p-6 border">
           <DateSelector date={date} setDate={(d) => updateForm({ date: d })} />
         </div>
