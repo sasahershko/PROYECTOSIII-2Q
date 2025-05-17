@@ -14,28 +14,33 @@ export const createReservation = async (req, res) => {
     const existingTable = await Table.findById(table);
     if (!existingTable) return handleHttpError(res, "Mesa no encontrada.", 404);
 
-    // Verificar si el proyecto existe y pertenece al usuario
+    // Verificar si el proyecto existe y el usuario pertenece a él
     const existingProject = await Project.findOne({
       _id: project,
-      members: userId,
+      users: userId,
     });
-
-
     if (!existingProject)
       return handleHttpError(res, "No tienes acceso a este proyecto.", 403);
 
-    // Verificar disponibilidad de la mesa en la franja horaria
+    // Construir fechas completas con hora
+    const parsedDate = new Date(date);
+    const startTimeParsed = new Date(`${date}T${startTime}:00`);
+    const endTimeParsed = new Date(`${date}T${endTime}:00`);
+
+    // Verificar solapamiento
     const overlappingReservation = await Reservation.findOne({
       table,
-      date,
+      date: parsedDate,
       $or: [
-        { startTime: { $lt: endTime, $gte: startTime } }, // Se solapa al inicio
-        { endTime: { $gt: startTime, $lte: endTime } }, // Se solapa al final
-        { startTime: { $lte: startTime }, endTime: { $gte: endTime } }, // Contiene la reserva completamente
+        { startTime: { $lt: endTimeParsed, $gte: startTimeParsed } },
+        { endTime: { $gt: startTimeParsed, $lte: endTimeParsed } },
+        {
+          startTime: { $lte: startTimeParsed },
+          endTime: { $gte: endTimeParsed },
+        },
       ],
     });
 
-    //if (overlappingReservation && overlappingReservation.status != "rejected") {
     if (overlappingReservation)
       return handleHttpError(
         res,
@@ -48,15 +53,16 @@ export const createReservation = async (req, res) => {
       user: userId,
       table,
       project,
-      date,
-      startTime,
-      endTime,
+      date: parsedDate,
+      startTime: startTimeParsed,
+      endTime: endTimeParsed,
       status: "pending",
     });
+
     await newReservation.save();
 
     await logEvent(
-      `📅 Nueva reserva creada por ${req.usuario.email} para la mesa ${table} el ${date}`
+      `📅 Nueva reserva creada por ${req.usuario.email} para la mesa ${table} el ${date} de ${startTime} a ${endTime}`
     );
 
     res.status(201).json({
@@ -72,7 +78,9 @@ export const getUserReservations = async (req, res) => {
   try {
     const userId = req.usuario._id;
 
-    const reservations = await Reservation.find({ user: userId });
+    const reservations = await Reservation.find({ user: userId })
+      .populate("table", "name zone capacity")
+      .populate("project", "name");
 
     if (reservations.length === 0)
       return handleHttpError(res, "No se encontraron reservas.", 404);
@@ -85,7 +93,9 @@ export const getUserReservations = async (req, res) => {
 //probar find().populate("table", "number zone capacity")
 export const getAllReservations = async (req, res) => {
   try {
-    const reservations = await Reservation.find();
+    const reservations = await Reservation.find()
+      .populate("table", "name zone capacity")
+      .populate("project", "name");
 
     if (reservations.length === 0)
       return handleHttpError(res, "No se encontraron reservas.", 404);
