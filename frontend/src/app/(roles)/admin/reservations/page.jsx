@@ -116,46 +116,45 @@ export default function ReservasPage() {
       {view === 'create' && (
         <div className="space-y-6">
           {/* Progreso */}
-          <div className="relative flex items-center justify-between w-3/4 mx-auto mb-6">
-            <div className="absolute inset-4 h-0.5 bg-gray-300">
-              <div
-                className="h-full bg-green-600"
-                style={{ width: `${(step - 1) * 50}%` }}
-              />
-            </div>
-            {[1, 2, 3].map((n) => {
-              const active = step === n,
-                done = step > n;
-              return (
+          <div className="mb-10">
+            <p className="text-sm text-gray-500 mb-6">Selecciona el horario para tu reserva</p>
+            
+            <div className="relative flex items-start justify-between w-3/4 mx-auto">
+
+              {/* Línea de conexión que va de paso 1 a 3 */}
+              <div className="absolute top-3 left-1/2 -translate-x-1/2 w-full max-w-[550px] h-0.5 bg-gray-300 z-0">
                 <div
-                  key={n}
-                  className="flex flex-col items-center z-10 flex-1"
-                >
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold ${
-                      active
+                  className="h-full transition-all duration-300"
+                  style={{ width: `${(step - 1) * 50}%` }}
+                />
+              </div>
+
+              {[1, 2, 3].map((stepNumber) => {
+                const isActive = step === stepNumber;
+                const isCompleted = step > stepNumber;
+
+                return (
+                  <div key={stepNumber} className="flex flex-col items-center z-10 flex-1">
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${
+                      isActive
                         ? 'bg-green-600 text-white'
-                        : done
+                        : isCompleted
                         ? 'bg-gray-700 text-white'
                         : 'bg-gray-200 text-gray-500'
-                    }`}
-                  >
-                    {n}
+                    }`}>
+                      {stepNumber}
+                    </div>
+                    <div className="mt-2 text-sm">
+                      <span className={`${isActive ? 'font-medium' : 'text-gray-500'}`}>
+                        {stepNumber === 1 && 'Fecha y Hora'}
+                        {stepNumber === 2 && 'Motivo y Complementos'}
+                        {stepNumber === 3 && 'Finalizar Reserva'}
+                      </span>
+                    </div>
                   </div>
-                  <span
-                    className={`mt-2 text-sm ${
-                      active ? 'font-medium' : 'text-gray-500'
-                    }`}
-                  >
-                    {n === 1
-                      ? 'Fecha y Hora'
-                      : n === 2
-                      ? 'Proyecto y Mesa'
-                      : 'Finalizar Reserva'}
-                  </span>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
 
           {step === 1 && (
