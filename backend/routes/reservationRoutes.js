@@ -18,7 +18,6 @@ import { adminOrSelfMiddleware } from "../middlewares/adminOrSelfMiddleware.js";
 
 const reservationRouter = express.Router();
 
-
 /**
  * @openapi
  * /api/reservations:
@@ -126,15 +125,54 @@ reservationRouter.post(
  *     tags:
  *       - Reservations
  *     summary: Obtener las reservas del usuario autenticado
+ *     description: Devuelve todas las reservas creadas por el usuario, incluyendo los datos de mesa y proyecto.
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Lista de reservas del usuario
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   _id:
+ *                     type: string
+ *                   date:
+ *                     type: string
+ *                     format: date
+ *                   startTime:
+ *                     type: string
+ *                     format: date-time
+ *                   endTime:
+ *                     type: string
+ *                     format: date-time
+ *                   status:
+ *                     type: string
+ *                     enum: [pending, approved, rejected]
+ *                   table:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                       name:
+ *                         type: string
+ *                       zone:
+ *                         type: string
+ *                       capacity:
+ *                         type: number
+ *                   project:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                       name:
+ *                         type: string
  *       401:
  *         description: No autorizado
  */
-
 reservationRouter.get("/", authMiddleware, getUserReservations);
 
 /**
@@ -144,17 +182,23 @@ reservationRouter.get("/", authMiddleware, getUserReservations);
  *     tags:
  *       - Reservations
  *     summary: Obtener todas las reservas (admin o responsable)
+ *     description: Devuelve todas las reservas con los datos de mesa y proyecto incluidos (populate).
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Lista de todas las reservas
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: "#/components/schemas/Reservations"
  *       401:
  *         description: No autorizado
  *       403:
  *         description: Prohibido
  */
-
 reservationRouter.get(
   "/all",
   authMiddleware,
