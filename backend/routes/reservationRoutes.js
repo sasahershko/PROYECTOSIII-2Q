@@ -181,8 +181,8 @@ reservationRouter.get("/", authMiddleware, getUserReservations);
  *   get:
  *     tags:
  *       - Reservations
- *     summary: Obtener todas las reservas (admin o responsable)
- *     description: Devuelve todas las reservas con los datos de mesa y proyecto incluidos (populate).
+ *     summary: Obtener todas las reservas
+ *     description: Devuelve todas las reservas con los datos de mesa y proyecto incluidos. Requiere autenticación.
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -196,15 +196,8 @@ reservationRouter.get("/", authMiddleware, getUserReservations);
  *                 $ref: "#/components/schemas/Reservations"
  *       401:
  *         description: No autorizado
- *       403:
- *         description: Prohibido
  */
-reservationRouter.get(
-  "/all",
-  authMiddleware,
-  adminOrSelfMiddleware,
-  getAllReservations
-);
+reservationRouter.get("/all", authMiddleware, getAllReservations);
 
 /**
  * @openapi
