@@ -379,6 +379,30 @@ const schemas = {
     },
   },
 
+  StorageItem: {
+    type: "object",
+    properties: {
+      filename: {
+        type: "string",
+        example: "profile_ivan.png",
+      },
+      url: {
+        type: "string",
+        example: "https://gateway.pinata.cloud/ipfs/QmEjemploArchivo",
+      },
+      createdAt: {
+        type: "string",
+        format: "date-time",
+        example: "2025-05-18T12:00:00Z",
+      },
+      updatedAt: {
+        type: "string",
+        format: "date-time",
+        example: "2025-05-18T12:00:00Z",
+      },
+    },
+  },
+
   
 };
 
