@@ -33,9 +33,9 @@ export default function ProjectDescription({ project }) {
   };
 
   return (
-    <div className="max-h-screen grid grid-cols-3 grid-rows-2">
+    <div className="grid grid-cols-3 grid-rows-2 max-h-0">
       {/* COLUMNA IZQUIERDA */}
-      <div className="col-span-2 row-span-2">
+      <div className="col-span-2 row-span-2 max-h-screen mb-20">
         <div className="flex mt-10 gap-2 ">
           <h1 className="text-4xl font-bold ml-6">{project.name}</h1>
           <div className="border-[1px] mt-1 border-black h-[30px] w-20 rounded-md flex items-center justify-center gap-1">
@@ -85,14 +85,13 @@ export default function ProjectDescription({ project }) {
         </div>
 
         {/* NOTAS */}
-        <div className="mt-8 ml-6 w-full mb-2">
+        <div className="mt-8 ml-6 w-full">
           <NotesSection
             notes={project.pendingNotes}
             projectId={project._id}
             projectUsers={project.users}
           />
         </div>
-        {/* </div> */}
       </div>
 
       {/* COLUMNA DERECHA ARRIBA */}
@@ -104,11 +103,10 @@ export default function ProjectDescription({ project }) {
         <div className="ml-10 mt-10">
           <TeamAndDetailsCard project={project} />
         </div>
-        {/* )} */}
       </div>
 
       {/* COLUMNA DERECHA ABAJO */}
-      <div className="col-span-1 "></div>
+      <div className="col-span-1 max-h-0"></div>
     </div>
   );
 }
