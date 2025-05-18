@@ -403,6 +403,68 @@ const schemas = {
     },
   },
 
+  IdeaCreate: {
+    type: "object",
+    required: ["nombre", "descripcion", "usuario", "grado"],
+    properties: {
+      nombre: { type: "string", example: "App para cafeterías" },
+      descripcion: {
+        type: "string",
+        example: "Una app para gestionar pedidos y reservas en cafeterías.",
+      },
+      usuario: {
+        type: "string",
+        example: "6617f1f57e95e18f0fbf0a7a",
+        description: "ID del usuario que propone la idea",
+      },
+      grado: {
+        type: "string",
+        example: "INSO",
+      },
+    },
+  },
+
+  IdeaUpdate: {
+    type: "object",
+    properties: {
+      nombre: { type: "string", example: "Nueva idea modificada" },
+      descripcion: { type: "string", example: "Descripción actualizada" },
+      usuario: {
+        type: "string",
+        example: "6617f1f57e95e18f0fbf0a7a",
+      },
+      grado: {
+        type: "string",
+        example: "FIIS",
+      },
+    },
+  },
+
+  IdeaResponse: {
+    type: "object",
+    properties: {
+      _id: { type: "string", example: "6617f1f57e95e18f0fbf0a7e" },
+      nombre: { type: "string", example: "App para cafeterías" },
+      descripcion: {
+        type: "string",
+        example: "Una app para gestionar pedidos y reservas en cafeterías.",
+      },
+      usuario: {
+        type: "object",
+        properties: {
+          _id: { type: "string" },
+          name: { type: "string" },
+          surname: { type: "string" },
+          email: { type: "string" },
+          profileImage: { type: "string" },
+        },
+      },
+      grado: { type: "string", example: "INSO" },
+      createdAt: { type: "string", format: "date-time" },
+      updatedAt: { type: "string", format: "date-time" },
+    },
+  },
+
   
 };
 

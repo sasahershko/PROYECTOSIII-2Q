@@ -1,5 +1,11 @@
 import express from "express";
-import { getIdeas, getIdeaById, createIdea, updateIdea, deleteIdea } from "../controllers/ideaController.js";
+import {
+  getIdeas,
+  getIdeaById,
+  createIdea,
+  updateIdea,
+  deleteIdea,
+} from "../controllers/ideaController.js";
 
 const router = express.Router();
 
@@ -19,6 +25,12 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: Lista de ideas obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/IdeaResponse'
  *       500:
  *         description: Error del servidor
  */
@@ -40,6 +52,10 @@ router.get("/", getIdeas);
  *     responses:
  *       200:
  *         description: Idea obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/IdeaResponse'
  *       404:
  *         description: Idea no encontrada
  *       500:
@@ -58,19 +74,14 @@ router.get("/:id", getIdeaById);
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               nombre:
- *                 type: string
- *               descripcion:
- *                 type: string
- *               usuario:
- *                 type: string
- *               grado:
- *                 type: string
+ *             $ref: '#/components/schemas/IdeaCreate'
  *     responses:
  *       201:
  *         description: Idea creada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/IdeaResponse'
  *       500:
  *         description: Error del servidor
  */
@@ -94,19 +105,14 @@ router.post("/", createIdea);
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               nombre:
- *                 type: string
- *               descripcion:
- *                 type: string
- *               usuario:
- *                 type: string
- *               grado:
- *                 type: string
+ *             $ref: '#/components/schemas/IdeaUpdate'
  *     responses:
  *       200:
  *         description: Idea actualizada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/IdeaResponse'
  *       404:
  *         description: Idea no encontrada
  *       500:
