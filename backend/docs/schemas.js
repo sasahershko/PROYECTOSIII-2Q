@@ -186,6 +186,199 @@ const schemas = {
     },
   },
 
+  ProjectCreate: {
+    type: "object",
+    required: [
+      "name",
+      "contactPerson",
+      "company",
+      "area",
+      "description",
+      "startDate",
+      "endDate",
+    ],
+    properties: {
+      name: { type: "string", example: "Plataforma Gestión Académica" },
+      contactPerson: {
+        type: "object",
+        required: ["name", "email", "phone"],
+        properties: {
+          name: { type: "string", example: "Juan Pérez" },
+          email: { type: "string", example: "juan@empresa.com" },
+          phone: { type: "string", example: "666555444" },
+        },
+      },
+      company: {
+        type: "string",
+        enum: ["U-TAD", "ILION", "OTROS"],
+        example: "U-TAD",
+      },
+      area: {
+        type: "string",
+        enum: ["INSO", "MAIS", "FIIS", "DIPI", "ANIV", "DIDI"],
+        example: "INSO",
+      },
+      responsibles: {
+        type: "array",
+        items: { type: "string" },
+        example: ["6617f1f57e95e18f0fbf0a7e"],
+      },
+      users: {
+        type: "array",
+        items: { type: "string" },
+        example: ["6617f1f57e95e18f0fbf0a7d"],
+      },
+      benefit: { type: "string", example: "Facilita la gestión centralizada" },
+      folder: { type: "string", example: "/ruta/a/la/carpeta" },
+      description: { type: "string", example: "Proyecto académico U-TAD" },
+      practicesAgreement: { type: "boolean", example: true },
+      practicesStudents: { type: "integer", example: 3 },
+      sdpStudents: { type: "integer", example: 2 },
+      startDate: { type: "string", format: "date", example: "2025-04-01" },
+      reviewDates: {
+        type: "array",
+        items: { type: "string", format: "date" },
+        example: ["2025-05-01", "2025-06-01"],
+      },
+      endDate: { type: "string", format: "date", example: "2025-07-01" },
+    },
+  },
+
+  ProjectUpdate: {
+    type: "object",
+    properties: {
+      name: { type: "string" },
+      contactPerson: {
+        type: "object",
+        properties: {
+          name: { type: "string" },
+          email: { type: "string" },
+          phone: { type: "string" },
+        },
+      },
+      company: {
+        type: "string",
+        enum: ["U-TAD", "ILION", "OTROS"],
+      },
+      area: {
+        type: "string",
+        enum: ["INSO", "MAIS", "FIIS", "DIPI", "ANIV", "DIDI"],
+      },
+      responsibles: {
+        type: "array",
+        items: { type: "string" },
+      },
+      users: {
+        type: "array",
+        items: { type: "string" },
+      },
+      benefit: { type: "string" },
+      folder: { type: "string" },
+      description: { type: "string" },
+      practicesAgreement: { type: "boolean" },
+      practicesStudents: { type: "integer", minimum: 0 },
+      sdpStudents: { type: "integer", minimum: 0 },
+      startDate: { type: "string", format: "date" },
+      endDate: { type: "string", format: "date" },
+    },
+  },
+
+  ProjectResponse: {
+    type: "object",
+    properties: {
+      _id: { type: "string", example: "6617f1f57e95e18f0fbf0a7c" },
+      name: { type: "string", example: "Plataforma Gestión Académica" },
+      contactPerson: {
+        type: "object",
+        properties: {
+          name: { type: "string", example: "Juan Pérez" },
+          email: { type: "string", example: "juan@empresa.com" },
+          phone: { type: "string", example: "666555444" },
+        },
+      },
+      company: { type: "string", example: "U-TAD" },
+      area: { type: "string", example: "INSO" },
+      responsibles: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            _id: { type: "string" },
+            name: { type: "string" },
+            surname: { type: "string" },
+            profileImage: { type: "string" },
+          },
+        },
+      },
+      users: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            _id: { type: "string" },
+            name: { type: "string" },
+            surname: { type: "string" },
+            profileImage: { type: "string" },
+          },
+        },
+      },
+      benefit: { type: "string" },
+      folder: { type: "string" },
+      description: { type: "string" },
+      image: { type: "string" },
+      startDate: { type: "string", format: "date" },
+      endDate: { type: "string", format: "date" },
+      practicesAgreement: { type: "boolean" },
+      practicesStudents: { type: "integer" },
+      sdpStudents: { type: "integer" },
+      reviewDates: {
+        type: "array",
+        items: { type: "string", format: "date" },
+      },
+      createdAt: { type: "string", format: "date-time" },
+      updatedAt: { type: "string", format: "date-time" },
+    },
+  },
+
+  ProjectBudget: {
+    type: "object",
+    properties: {
+      title: { type: "string", example: "Presupuesto inicial" },
+      reason: {
+        type: "string",
+        example: "Proyecto de colaboración con empresa externa",
+      },
+      generalComments: { type: "string", example: "Versión preliminar" },
+      tutors: {
+        type: "object",
+        properties: {
+          numTutors: { type: "number", example: 2 },
+          estimatedHours: { type: "number", example: 10 },
+          pricePerHour: { type: "number", example: 25 },
+        },
+      },
+      interns: {
+        type: "object",
+        properties: {
+          numInterns: { type: "number", example: 1 },
+          estimatedHours: { type: "number", example: 80 },
+          pricePerHour: { type: "number", example: 12 },
+        },
+      },
+      extraExpenses: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            description: { type: "string", example: "Licencia software" },
+            quantity: { type: "number", example: 3 },
+            unitPrice: { type: "number", example: 50 },
+          },
+        },
+      },
+    },
+  },
+
   
 };
 

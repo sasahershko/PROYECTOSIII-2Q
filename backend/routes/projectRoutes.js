@@ -56,75 +56,14 @@ const projectRouter = express.Router();
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - name
- *               - contactPerson
- *               - company
- *               - area
- *               - description
- *               - startDate
- *               - endDate
- *             properties:
- *               name:
- *                 type: string
- *                 example: "Plataforma Gestión Académica"
- *               contactPerson:
- *                 type: string
- *                 example: "Juan Pérez"
- *               company:
- *                 type: string
- *                 enum: ["U-TAD", "ILION", "OTROS"]
- *                 example: "U-TAD"
- *               area:
- *                 type: string
- *                 enum: ["INSO", "MAIS", "FIIS", "DIPI", "ANIV", "DIDI"]
- *                 example: "INSO"
- *               responsibles:
- *                 type: array
- *                 items:
- *                   type: string
- *                 example: ["660e3c8a4f3caa23e483bdf1"]
- *               users:
- *                 type: array
- *                 items:
- *                   type: string
- *                 example: ["660e3c8a4f3caa23e483bdf2"]
- *               benefit:
- *                 type: string
- *                 example: "Facilita la gestión centralizada"
- *               folder:
- *                 type: string
- *                 example: "/ruta/a/la/carpeta"
- *               description:
- *                 type: string
- *                 example: "Este proyecto busca unificar herramientas académicas."
- *               practicesAgreement:
- *                 type: boolean
- *                 example: true
- *               practicesStudents:
- *                 type: integer
- *                 example: 3
- *               sdpStudents:
- *                 type: integer
- *                 example: 2
- *               startDate:
- *                 type: string
- *                 format: date
- *                 example: "2025-04-01"
- *               reviewDates:
- *                 type: array
- *                 items:
- *                   type: string
- *                   format: date
- *                 example: ["2025-04-15", "2025-05-10"]
- *               endDate:
- *                 type: string
- *                 format: date
- *                 example: "2025-07-01"
+ *             $ref: "#/components/schemas/ProjectCreate"
  *     responses:
  *       201:
  *         description: Proyecto creado con éxito.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/ProjectResponse"
  *       400:
  *         description: Validaciones fallidas o datos incorrectos.
  *       401:
@@ -150,11 +89,17 @@ projectRouter.post(
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Lista de proyectos
+ *         description: Lista de proyectos.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: "#/components/schemas/ProjectResponse"
  *       403:
- *         description: Solo los administradores pueden ver proyectos eliminados.
+ *         description: No autorizado.
  *       500:
- *         description: Error al obtener los proyectos eliminados.
+ *         description: Error interno del servidor.
  */
 projectRouter.get("/", authMiddlewareOptional, getAllProjects);
 
@@ -197,6 +142,10 @@ projectRouter.get("/deleted", authMiddleware, getDeletedProjects);
  *     responses:
  *       200:
  *         description: Proyecto encontrado con éxito.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/ProjectResponse"
  *       404:
  *         description: Proyecto no encontrado o eliminado.
  *       500:
@@ -213,7 +162,7 @@ projectRouter.get(
 /**
  * @swagger
  * /api/projects/{id}:
- *   put:
+ *   patch:
  *     summary: Actualizar un proyecto existente
  *     tags: [Projects]
  *     security:
@@ -222,61 +171,26 @@ projectRouter.get(
  *       - in: path
  *         name: id
  *         required: true
+ *         description: ID del proyecto a actualizar.
  *         schema:
  *           type: string
- *         description: ID del proyecto a actualizar.
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *               contactPerson:
- *                 type: string
- *               company:
- *                 type: string
- *                 enum: [U-TAD, ILION, OTROS]
- *               area:
- *                 type: string
- *                 enum: [INSO, MAIS, FIIS, DIPI, ANIV, DIDI]
- *               responsibles:
- *                 type: array
- *                 items:
- *                   type: string
- *               users:
- *                 type: array
- *                 items:
- *                   type: string
- *               benefit:
- *                 type: string
- *               folder:
- *                 type: string
- *               description:
- *                 type: string
- *               practicesAgreement:
- *                 type: boolean
- *               practicesStudents:
- *                 type: integer
- *                 minimum: 0
- *               sdpStudents:
- *                 type: integer
- *                 minimum: 0
- *               startDate:
- *                 type: string
- *                 format: date
- *               endDate:
- *                 type: string
- *                 format: date
+ *             $ref: "#/components/schemas/ProjectUpdate"
  *     responses:
  *       200:
  *         description: Proyecto actualizado con éxito.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/ProjectResponse"
  *       400:
  *         description: Datos inválidos o campos requeridos faltantes.
  *       401:
- *         description: No autorizado (falta token de autenticación).
+ *         description: No autorizado.
  *       403:
  *         description: No tienes permisos para actualizar este proyecto.
  *       404:
@@ -609,55 +523,7 @@ projectRouter.delete(
  *             type: object
  *             properties:
  *               budget:
- *                 type: object
- *                 properties:
- *                   title:
- *                     type: string
- *                     example: "Presupuesto inicial"
- *                   reason:
- *                     type: string
- *                     example: "Proyecto de colaboración con empresa externa"
- *                   generalComments:
- *                     type: string
- *                     example: "Versión preliminar"
- *                   tutors:
- *                     type: object
- *                     properties:
- *                       numTutors:
- *                         type: number
- *                         example: 2
- *                       estimatedHours:
- *                         type: number
- *                         example: 10
- *                       pricePerHour:
- *                         type: number
- *                         example: 25
- *                   interns:
- *                     type: object
- *                     properties:
- *                       numInterns:
- *                         type: number
- *                         example: 1
- *                       estimatedHours:
- *                         type: number
- *                         example: 80
- *                       pricePerHour:
- *                         type: number
- *                         example: 12
- *                   extraExpenses:
- *                     type: array
- *                     items:
- *                       type: object
- *                       properties:
- *                         description:
- *                           type: string
- *                           example: "Licencia software"
- *                         quantity:
- *                           type: number
- *                           example: 3
- *                         unitPrice:
- *                           type: number
- *                           example: 50
+ *                 $ref: '#/components/schemas/ProjectBudget'
  *     responses:
  *       200:
  *         description: Presupuesto actualizado correctamente.
@@ -670,7 +536,7 @@ projectRouter.delete(
  *                   type: string
  *                   example: "Presupuesto actualizado correctamente"
  *                 budget:
- *                   $ref: '#/components/schemas/Budget'
+ *                   $ref: '#/components/schemas/ProjectBudget'
  *       400:
  *         description: Datos inválidos.
  *       401:
