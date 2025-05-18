@@ -124,7 +124,7 @@ export default function Users() {
     <div className="flex flex-col w-full items-center min-h-full overflow-y-scroll bg-primary-bg text-primary-text">
       {/* Top bar */}
       <div className="w-[95%] max-w-8xl mt-8 mb-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold select-none">Lista de Personas</h1>
+        <h1 className="text-2xl font-bold select-none">Lista de Usuarios</h1>
         <div className="flex flex-wrap gap-2 items-center">
           <div className="relative group">
             <LuSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-secundary-text group-focus-within:text-accent transition-colors" />

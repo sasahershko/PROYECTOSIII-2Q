@@ -101,17 +101,21 @@ export default function ResumenPage() {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { when: "beforeChildren", staggerChildren: 0.1 },
+      transition: {
+        when: "beforeChildren",
+        staggerChildren: 0.05,
+        duration: 0.25,
+      },
     },
-    exit: { opacity: 0, y: -20, transition: { duration: 0.3 } },
+    exit: { opacity: 0, y: -20, transition: { duration: 0.2 } },
   };
   const sectionVariants = {
     hidden: { opacity: 0, y: 10 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.25 } },
   };
   const itemVariants = {
     hidden: { opacity: 0, scale: 0.95 },
-    visible: { opacity: 1, scale: 1, transition: { duration: 0.4 } },
+    visible: { opacity: 1, scale: 1, transition: { duration: 0.18 } },
   };
 
   return (
