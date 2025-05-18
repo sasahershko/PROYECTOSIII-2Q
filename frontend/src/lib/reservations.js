@@ -109,3 +109,30 @@ export async function getAllReservations() {
     return [];
   }
 }
+
+export async function getAvailableTables({ date, startTime, endTime }) {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+
+    const params = new URLSearchParams({
+      date,
+      startTime,
+      endTime
+    });
+
+    const res = await fetch(`${process.env.BACK_URL}/api/reservations/tables/available?${params}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` })
+      }
+    });
+
+    if (!res.ok) throw new Error("Error al obtener mesas disponibles.");
+    return await res.json();
+  } catch (err) {
+    console.error("Error en getAvailableTables:", err.message);
+    return [];
+  }
+}

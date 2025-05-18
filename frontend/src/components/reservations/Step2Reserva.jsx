@@ -1,4 +1,3 @@
-// components/reservations/Step2Reserva.jsx
 'use client';
 import ZoneSelector from './ZoneSelector';
 import useProjects from '@/hooks/useProjects';
@@ -14,8 +13,9 @@ export default function Step2Reserva({ formData, updateForm, nextStep, prevStep,
           <ZoneSelector
             selectedTable={formData.table}
             setTable={(table) => updateForm({ table })}
-            reservations={reservations}
             date={formData.date}
+            startTime={formData.startTime}
+            endTime={formData.endTime}
           />
         </div>
 
