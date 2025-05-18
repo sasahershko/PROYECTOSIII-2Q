@@ -34,8 +34,13 @@ export default function Step1Reserva({ formData, updateForm, nextStep }) {
 
       <div className="flex justify-end">
         <button
-          onClick={handleNext}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-medium shadow"
+          onClick={date && startTime && endTime ? handleNext : null}
+          disabled={!date || !startTime || !endTime}
+          className={`px-6 py-2 rounded font-medium shadow
+            ${date && startTime && endTime
+              ? 'bg-blue-600 hover:bg-blue-700 text-white'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'}
+          `}
         >
           Siguiente →
         </button>

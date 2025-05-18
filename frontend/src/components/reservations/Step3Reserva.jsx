@@ -49,7 +49,7 @@ export default function Step3Reserva({ formData, prevStep, onSubmit }) {
         <div className="rounded-xl shadow-md p-6 border border-gray-200">
           <h2 className="text-lg font-semibold mb-4">Zona</h2>
           <div className="border border-gray-300 rounded-md p-4 h-48 flex items-center justify-center text-gray-500">
-            Mesa seleccionada: <span className="ml-2 font-bold text-blue-700">{table}</span>
+            Mesa seleccionada: <span className="ml-2 font-bold text-blue-700">{}</span>
           </div>
         </div>
       </div>

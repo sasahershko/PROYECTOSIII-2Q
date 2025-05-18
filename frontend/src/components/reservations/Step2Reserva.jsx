@@ -50,11 +50,17 @@ export default function Step2Reserva({ formData, updateForm, nextStep, prevStep,
           ← Atrás
         </button>
         <button
-          className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded shadow"
-          onClick={nextStep}
+          className={`font-medium px-6 py-2 rounded shadow flex items-center gap-2
+            ${formData.project
+              ? 'bg-blue-600 hover:bg-blue-700 text-white'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'}
+          `}
+          onClick={formData.project ? nextStep : null}
+          disabled={!formData.project}
         >
           Siguiente →
         </button>
+
       </div>
     </div>
   );
