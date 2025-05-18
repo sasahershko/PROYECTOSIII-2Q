@@ -488,6 +488,80 @@ const schemas = {
       },
     },
   },
+
+  ReservationCreate: {
+    type: "object",
+    required: ["table", "project", "date", "startTime", "endTime"],
+    properties: {
+      table: {
+        type: "string",
+        example: "6617f1f57e95e18f0fbf0a7c",
+        description: "ID de la mesa reservada",
+      },
+      project: {
+        type: "string",
+        example: "6617f1f57e95e18f0fbf0a7d",
+        description: "ID del proyecto asociado",
+      },
+      date: {
+        type: "string",
+        format: "date",
+        example: "2025-05-20",
+      },
+      startTime: {
+        type: "string",
+        example: "14:00",
+      },
+      endTime: {
+        type: "string",
+        example: "16:00",
+      },
+    },
+  },
+
+  ReservationResponse: {
+    type: "object",
+    properties: {
+      _id: { type: "string", example: "6620d923eafd884b9c490245" },
+      user: { type: "string", example: "6617f1f57e95e18f0fbf0a7a" },
+      table: {
+        type: "object",
+        properties: {
+          _id: { type: "string" },
+          number: { type: "integer" },
+          zone: { type: "string" },
+          capacity: { type: "integer" },
+        },
+      },
+      project: {
+        type: "object",
+        properties: {
+          _id: { type: "string" },
+          name: { type: "string" },
+        },
+      },
+      date: {
+        type: "string",
+        format: "date",
+        example: "2025-05-20",
+      },
+      startTime: {
+        type: "string",
+        example: "14:00",
+      },
+      endTime: {
+        type: "string",
+        example: "16:00",
+      },
+      status: {
+        type: "string",
+        enum: ["pending", "approved", "rejected"],
+        example: "pending",
+      },
+      createdAt: { type: "string", format: "date-time" },
+      updatedAt: { type: "string", format: "date-time" },
+    },
+  },
 };
 
 export default schemas;

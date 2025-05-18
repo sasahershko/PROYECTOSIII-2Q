@@ -39,35 +39,20 @@ const reservationRouter = express.Router();
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - table
- *               - project
- *               - date
- *               - startTime
- *               - endTime
- *             properties:
- *               table:
- *                 type: string
- *                 description: ID de la mesa (MongoID)
- *                 example: "60f6e5e5d1e4f814c8fabc99"
- *               project:
- *                 type: string
- *                 description: ID del proyecto (MongoID)
- *                 example: "60f6e5e5d1e4f814c8fabc88"
- *               date:
- *                 type: string
- *                 format: date
- *                 example: "2025-05-10"
- *               startTime:
- *                 type: string
- *                 example: "14:00"
- *               endTime:
- *                 type: string
- *                 example: "16:00"
+ *             $ref: "#/components/schemas/ReservationCreate"
  *     responses:
  *       201:
  *         description: Reserva creada correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Reserva creada con éxito."
+ *                 reservation:
+ *                   $ref: "#/components/schemas/ReservationResponse"
  *       400:
  *         description: Datos inválidos
  *       401:
@@ -132,7 +117,6 @@ reservationRouter.post(
  *     tags:
  *       - Reservations
  *     summary: Obtener las reservas del usuario autenticado
- *     description: Devuelve todas las reservas creadas por el usuario, incluyendo los datos de mesa y proyecto.
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -143,40 +127,7 @@ reservationRouter.post(
  *             schema:
  *               type: array
  *               items:
- *                 type: object
- *                 properties:
- *                   _id:
- *                     type: string
- *                   date:
- *                     type: string
- *                     format: date
- *                   startTime:
- *                     type: string
- *                     format: date-time
- *                   endTime:
- *                     type: string
- *                     format: date-time
- *                   status:
- *                     type: string
- *                     enum: [pending, approved, rejected]
- *                   table:
- *                     type: object
- *                     properties:
- *                       _id:
- *                         type: string
- *                       name:
- *                         type: string
- *                       zone:
- *                         type: string
- *                       capacity:
- *                         type: number
- *                   project:
- *                     type: object
- *                     properties:
- *                       _id:
- *                         type: string
- *                       name:
- *                         type: string
+ *                 $ref: "#/components/schemas/ReservationResponse"
  *       401:
  *         description: No autorizado
  */
@@ -189,7 +140,6 @@ reservationRouter.get("/", authMiddleware, getUserReservations);
  *     tags:
  *       - Reservations
  *     summary: Obtener todas las reservas
- *     description: Devuelve todas las reservas con los datos de mesa y proyecto incluidos. Requiere autenticación.
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -200,7 +150,7 @@ reservationRouter.get("/", authMiddleware, getUserReservations);
  *             schema:
  *               type: array
  *               items:
- *                 $ref: "#/components/schemas/Reservations"
+ *                 $ref: "#/components/schemas/ReservationResponse"
  *       401:
  *         description: No autorizado
  */
