@@ -6,6 +6,7 @@ import {
   approveReservation,
   rejectReservation,
   deleteReservation,
+  getAvailableTables
 } from "../controllers/reservationController.js";
 
 import { createTable } from "../controllers/tablesController.js";
@@ -247,5 +248,66 @@ reservationRouter.put(
  *         description: Reserva no encontrada
  */
 reservationRouter.delete("/:id", authMiddleware, deleteReservation);
+
+/** 
+ * @openapi
+ * /api/reservations/tables/available:
+ *   get:
+ *     tags:
+ *       - Reservations
+ *     summary: Obtener mesas disponibles para una fecha y franja horaria
+ *     description: Devuelve las mesas que no tienen reservas solapadas en la franja de tiempo especificada. Las horas deben estar en formato HH:mm y se interpretan en zona horaria Europe/Madrid.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: date
+ *         in: query
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Fecha de la reserva (formato YYYY-MM-DD)
+ *       - name: startTime
+ *         in: query
+ *         required: true
+ *         schema:
+ *           type: string
+ *           pattern: '^\\d{2}:\\d{2}$'
+ *           example: '12:00'
+ *         description: Hora de inicio en formato HH:mm (zona horaria Europe/Madrid)
+ *       - name: endTime
+ *         in: query
+ *         required: true
+ *         schema:
+ *           type: string
+ *           pattern: '^\\d{2}:\\d{2}$'
+ *           example: '14:00'
+ *         description: Hora de fin en formato HH:mm (zona horaria Europe/Madrid)
+ *     responses:
+ *       200:
+ *         description: Lista de mesas disponibles
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   _id:
+ *                     type: string
+ *                   number:
+ *                     type: number
+ *                   zone:
+ *                     type: string
+ *                   capacity:
+ *                     type: number
+ *       400:
+ *         description: Faltan parámetros necesarios
+ *       401:
+ *         description: No autorizado
+ * */
+reservationRouter.get('/tables/available', authMiddleware, getAvailableTables);
+
+// mandarlo así -> http://localhost:5001/api/reservations/tables/available?date=2025-05-10&startTime=12:00&endTime=14:00
 
 export default reservationRouter;

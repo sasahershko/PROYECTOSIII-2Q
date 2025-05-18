@@ -3,6 +3,7 @@ import Table from "../models/Tables.js";
 import Project from "../models/Project.js";
 import { handleHttpError } from "../utils/handleError.js";
 import { logEvent } from "../utils/handleLogger.js";
+import moment from "moment-timezone";
 
 //CREAR UNA RESERVA
 export const createReservation = async (req, res) => {
@@ -191,5 +192,52 @@ export const deleteReservation = async (req, res) => {
       .json({ message: "Reserva marcada como eliminada (soft delete)." });
   } catch (error) {
     handleHttpError(res, error);
+  }
+};
+
+export const getAvailableTables = async (req, res) => {
+  try {
+    const { date, startTime, endTime } = req.query;
+
+    if (!date || !startTime || !endTime) {
+      return handleHttpError(res, "Faltan parámetros: 'date', 'startTime' y 'endTime'", 400);
+    }
+
+    const start = moment.tz(`${date} ${startTime}`, "YYYY-MM-DD HH:mm", "Europe/Madrid").toDate();
+    const end = moment.tz(`${date} ${endTime}`, "YYYY-MM-DD HH:mm", "Europe/Madrid").toDate();
+
+    const overlappingReservations = await Reservation.find({
+      deleted: false,
+      $or: [
+        {
+          startTime: { $lt: end },
+          endTime: { $gt: start }
+        },
+        {
+          startTime: { $eq: end }
+        },
+        {
+          endTime: { $eq: start } 
+        }
+      ]
+    });
+
+    const reservedTableIds = overlappingReservations.map((r) =>
+      r.table.toString()
+    );
+
+    const availableTables = await Table.find({
+      _id: { $nin: reservedTableIds },
+    }).select("_id number zone capacity");
+
+    console.log("Mesas disponibles:", availableTables.length);
+    availableTables.forEach((t) => {
+      console.log(` - Mesa ${t.number} (${t._id})`);
+    });
+
+    res.status(200).json(availableTables);
+  } catch (error) {
+    console.error("Error en getAvailableTables:", error);
+    handleHttpError(res, "Error al consultar mesas disponibles");
   }
 };
