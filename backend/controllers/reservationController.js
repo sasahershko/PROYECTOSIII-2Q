@@ -206,9 +206,6 @@ export const getAvailableTables = async (req, res) => {
     const start = moment.tz(`${date} ${startTime}`, "YYYY-MM-DD HH:mm", "Europe/Madrid").toDate();
     const end = moment.tz(`${date} ${endTime}`, "YYYY-MM-DD HH:mm", "Europe/Madrid").toDate();
 
-    console.log("🕒 start (Europe/Madrid → UTC):", start.toISOString());
-    console.log("🕒 end   (Europe/Madrid → UTC):", end.toISOString());
-
     const overlappingReservations = await Reservation.find({
       deleted: false,
       $or: [
@@ -225,20 +222,6 @@ export const getAvailableTables = async (req, res) => {
       ]
     });
 
-    console.log(`📦 Reservas solapadas: ${overlappingReservations.length}`);
-    overlappingReservations.forEach((r, i) => {
-      console.log(` → Reserva ${i + 1}:`);
-      console.log("   - table:", r.table.toString());
-      console.log("   - startTime:", r.startTime.toISOString());
-      console.log("   - endTime:", r.endTime.toISOString());
-    });
-
-    const all = await Reservation.find().lean();
-    console.log("📋 TODAS las reservas:");
-    all.forEach((r) => {
-      console.log(`Mesa ${r.table} | ${r.startTime.toISOString()} - ${r.endTime.toISOString()} | deleted: ${r.deleted}`);
-    });
-
     const reservedTableIds = overlappingReservations.map((r) =>
       r.table.toString()
     );
@@ -247,14 +230,14 @@ export const getAvailableTables = async (req, res) => {
       _id: { $nin: reservedTableIds },
     }).select("_id number zone capacity");
 
-    console.log("✅ Mesas disponibles:", availableTables.length);
+    console.log("Mesas disponibles:", availableTables.length);
     availableTables.forEach((t) => {
       console.log(` - Mesa ${t.number} (${t._id})`);
     });
 
     res.status(200).json(availableTables);
   } catch (error) {
-    console.error("❌ Error en getAvailableTables:", error);
+    console.error("Error en getAvailableTables:", error);
     handleHttpError(res, "Error al consultar mesas disponibles");
   }
 };
