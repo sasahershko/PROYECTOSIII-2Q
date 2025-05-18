@@ -403,6 +403,13 @@ projectRouter.put(
 
 /**
  * @swagger
+ * tags:
+ *   name: Notes
+ *   description: Endpoints para la gestión de notas de proyectos
+ */
+
+/**
+ * @swagger
  * /api/projects/note/{id}:
  *   post:
  *     summary: Agregar una nueva nota a un proyecto.

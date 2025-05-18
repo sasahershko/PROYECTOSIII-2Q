@@ -11,6 +11,13 @@ import { validatorCreateTable } from "../validators/tablesValidator.js";
 const router = express.Router();
 
 /**
+ * @swagger
+ * tags:
+ *   name: Tables
+ *   description: Endpoints para la gestión de tablas
+ */
+
+/**
  * @openapi
  * /api/tables:
  *   post:

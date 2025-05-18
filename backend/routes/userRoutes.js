@@ -157,6 +157,12 @@ userRouter.post("/login", loginUserValidator, validateRequest, loginUser);
  *     responses:
  *       200:
  *         description: Lista de usuarios.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: "#/components/schemas/UserResponse"
  *       401:
  *         description: No autorizado.
  */
@@ -222,6 +228,10 @@ userRouter.put(
  *     responses:
  *       200:
  *         description: Perfil del usuario autenticado.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/UserResponse"
  *       401:
  *         description: Token no válido o no proporcionado.
  */
@@ -242,6 +252,10 @@ userRouter.get("/profile", authMiddleware, getUserProfile);
  *     responses:
  *       200:
  *         description: Perfil público del usuario.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/UserResponse"
  *       401:
  *         description: Token no válido o no proporcionado.
  *       404:

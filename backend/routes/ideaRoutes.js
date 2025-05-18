@@ -7,7 +7,7 @@ const router = express.Router();
  * @swagger
  * tags:
  *   name: Ideas
- *   description: API para gestionar ideas de proyectos
+ *   description: Endpoints para gestionar ideas de proyectos
  */
 
 /**

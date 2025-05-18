@@ -19,6 +19,13 @@ import { adminOrSelfMiddleware } from "../middlewares/adminOrSelfMiddleware.js";
 const reservationRouter = express.Router();
 
 /**
+ * @swagger
+ * tags:
+ *   name: Reservations
+ *   description: Endpoints para la gestión de reservas
+ */
+
+/**
  * @openapi
  * /api/reservations:
  *   post:
