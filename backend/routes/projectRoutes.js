@@ -326,50 +326,30 @@ projectRouter.put(
  * @swagger
  * /api/projects/note/{id}:
  *   post:
- *     summary: Agregar una nueva nota a un proyecto.
- *     tags:
- *       - Notes
+ *     summary: Agregar una nueva nota a un proyecto
+ *     tags: [Notes]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del proyecto al que se le añadirá la nota
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - note
- *             properties:
- *               note:
- *                 type: string
- *                 description: Contenido de la nota.
- *                 example: "Esta es una nueva nota."
- *               userWhoWrites:
- *                 type: string
- *                 description: ID del usuario que escribe la nota.
- *                 example: "606d1f2c2f1b2c3a4d5e6f8h"
- *               userWhoRecieves:
- *                 type: array
- *                 items:
- *                   type: string
- *                 description: Lista de IDs de usuarios que recibirán la nota.
- *                 example: ["606d1f2c2f1b2c3a4d5e6f9i"]
- *               tag:
- *                 type: string
- *                 enum: ["completada", "no completada"]
- *                 description: Estado de la nota.
- *                 example: "no completada"
+ *             $ref: "#/components/schemas/ProjectNote"
  *     responses:
  *       200:
  *         description: Nota agregada exitosamente.
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Nota agregada exitosamente"
+ *               $ref: "#/components/schemas/ProjectNote"
  *       404:
  *         description: Proyecto no encontrado.
  *       500:
@@ -381,9 +361,8 @@ projectRouter.post("/note/:id", authMiddleware, createNoteValidator, addNotes);
  * @swagger
  * /api/projects/note/{id}:
  *   patch:
- *     summary: Actualizar una nota existente en un proyecto.
- *     tags:
- *       - Notes
+ *     summary: Actualizar una nota existente en un proyecto
+ *     tags: [Notes]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -392,56 +371,27 @@ projectRouter.post("/note/:id", authMiddleware, createNoteValidator, addNotes);
  *         required: true
  *         schema:
  *           type: string
- *         description: ID del proyecto al que pertenece la nota.
+ *         description: ID del proyecto
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - noteIndex
- *             properties:
- *               noteIndex:
- *                 type: integer
- *                 description: Índice de la nota dentro del arreglo pendingNotes del proyecto.
- *                 example: 0
- *               note:
- *                 type: string
- *                 description: Contenido actualizado de la nota.
- *                 example: "Nota actualizada."
- *               userWhoWrites:
- *                 type: string
- *                 description: ID del usuario que actualiza la nota.
- *                 example: "606d1f2c2f1b2c3a4d5e6f8h"
- *               userWhoRecieves:
- *                 type: array
- *                 items:
- *                   type: string
- *                 description: Lista de IDs de usuarios que recibirán la nota actualizada.
- *                 example: ["606d1f2c2f1b2c3a4d5e6f9i"]
- *               tag:
- *                 type: string
- *                 enum: ["completada", "no completada"]
- *                 description: Estado actualizado de la nota.
- *                 example: "completada"
+ *             allOf:
+ *               - type: object
+ *                 required: [noteIndex]
+ *                 properties:
+ *                   noteIndex:
+ *                     type: integer
+ *                     example: 0
+ *               - $ref: "#/components/schemas/ProjectNote"
  *     responses:
  *       200:
  *         description: Nota actualizada correctamente.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Nota actualizada correctamente."
  *       400:
- *         description: Índice no válido o datos incorrectos.
- *       401:
- *         description: Token no válido o no proporcionado.
+ *         description: Datos inválidos.
  *       404:
- *         description: Proyecto o nota no encontrado.
+ *         description: Proyecto o nota no encontrada.
  *       500:
  *         description: Error interno del servidor.
  */
@@ -456,9 +406,8 @@ projectRouter.patch(
  * @swagger
  * /api/projects/note/{id}:
  *   delete:
- *     summary: Eliminar una nota específica de un proyecto.
- *     tags:
- *       - Notes
+ *     summary: Eliminar una nota específica de un proyecto
+ *     tags: [Notes]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -467,29 +416,25 @@ projectRouter.patch(
  *         required: true
  *         schema:
  *           type: string
- *         description: ID del proyecto al que pertenece la nota.
+ *         description: ID del proyecto
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - noteIndex
+ *             required: [noteIndex]
  *             properties:
  *               noteIndex:
  *                 type: integer
- *                 description: Índice de la nota que se desea eliminar en el arreglo pendingNotes del proyecto.
  *                 example: 0
  *     responses:
  *       200:
  *         description: Nota eliminada correctamente
  *       400:
- *         description: Índice de nota no válido
- *       401:
- *         description: Token no válido o no proporcionado
+ *         description: Índice inválido
  *       404:
- *         description: Proyecto no encontrado
+ *         description: Proyecto o nota no encontrada
  *       500:
  *         description: Error interno del servidor
  */

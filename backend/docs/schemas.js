@@ -465,7 +465,29 @@ const schemas = {
     },
   },
 
-  
+  ProjectNote: {
+    type: "object",
+    properties: {
+      note: {
+        type: "string",
+        example: "Revisar entregables antes del viernes",
+      },
+      userWhoWrites: {
+        type: "string",
+        example: "6617f1f57e95e18f0fbf0a7a",
+      },
+      userWhoRecieves: {
+        type: "array",
+        items: { type: "string" },
+        example: ["6617f1f57e95e18f0fbf0a7b", "6617f1f57e95e18f0fbf0a7c"],
+      },
+      tag: {
+        type: "string",
+        enum: ["completada", "no completada"],
+        example: "no completada",
+      },
+    },
+  },
 };
 
 export default schemas;
