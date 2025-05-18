@@ -12,7 +12,7 @@ import Step3Reserva from '@/components/reservations/Step3Reserva';
 import ReservaCard from "@/components/reservations/ReservaCard";
 
 export default function ReservasPage() {
-  const [view, setView] = useState('create'); // 'create' | 'my'
+  const [view, setView] = useState('create');
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     date: '',
@@ -30,7 +30,9 @@ export default function ReservasPage() {
     setLoading(true);
     try {
       const data = await getUserReservations();
-      setReservations(data);
+      const validStatuses = ['pending', 'approved', 'rejected'];
+      const filtered = data.filter((r) => validStatuses.includes(r.status));
+      setReservations(filtered);
       setError(null);
     } catch (e) {
       console.error(e);
@@ -39,6 +41,7 @@ export default function ReservasPage() {
       setLoading(false);
     }
   };
+
 
   useEffect(() => {
     fetchReservations();

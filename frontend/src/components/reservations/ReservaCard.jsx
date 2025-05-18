@@ -11,8 +11,12 @@ export default function ReservaCard({ reserva, onDelete }) {
     status
   } = reserva;
 
-  const formatTime = (timeStr) =>
-    new Date(timeStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const formatHourUTC = (isoString) => {
+    const date = new Date(isoString);
+    const hours = String(date.getUTCHours()).padStart(2, '0');
+    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+  };
 
   const formatDate = (dateStr) =>
     new Date(dateStr).toLocaleDateString('es-ES', {
@@ -47,18 +51,22 @@ export default function ReservaCard({ reserva, onDelete }) {
         </span>
       </div>
 
-      <p className="text-sm text-gray-600 dark:text-gray-300">
-        Mesa {table?.name || 'Sin mesa'}
-      </p>
+      {table?.zone && (
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          {table.zone}
+        </p>
+      )}
+
+      {table?.capacity && (
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          {table.capacity} personas
+        </p>
+      )}
 
       {/* Fecha y hora */}
       <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-        <CalendarDays className="w-4 h-4" />
-        <span>{formatDate(date)}</span>
-      </div>
-      <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
         <Clock className="w-4 h-4" />
-        <span>{formatTime(startTime)} - {formatTime(endTime)}</span>
+        <span>{formatHourUTC(startTime)} - {formatHourUTC(endTime)}</span>
       </div>
 
       {/* Acción eliminar */}
