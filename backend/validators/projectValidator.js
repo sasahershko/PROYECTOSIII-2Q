@@ -173,3 +173,23 @@ export const validateProjectUsersUpdate = [
     .isMongoId()
     .withMessage("Cada ID en responsibles debe ser un ObjectId válido"),
 ];
+
+export const validatorAddIncome = [
+  param("id").isMongoId().withMessage("ID de proyecto no válido"),
+  check("concept")
+    .exists()
+    .notEmpty()
+    .withMessage("El concepto es obligatorio"),
+  check("amount")
+    .exists()
+    .isFloat({ min: 0 })
+    .withMessage("El importe debe ser un número positivo"),
+  check("date")
+    .optional()
+    .isISO8601()
+    .withMessage("La fecha debe tener un formato válido"),
+  (req, res, next) => {
+    req.filteredData = matchedData(req, { locations: ["body"] });
+    validateRequest(req, res, next);
+  },
+];

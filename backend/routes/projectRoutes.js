@@ -14,6 +14,7 @@ import {
   updateProjectBudget,
   addUsersToProject,
   removeUsersFromProject,
+  addIncomeToProject,
 } from "../controllers/projectController.js";
 import {
   authMiddleware,
@@ -26,6 +27,7 @@ import {
   projectIdValidator,
   budgetValidator,
   validateProjectUsersUpdate,
+  validatorAddIncome,
 } from "../validators/projectValidator.js";
 import {
   createNoteValidator,
@@ -606,6 +608,70 @@ projectRouter.patch(
   validateProjectUsersUpdate,
   validateRequest,
   removeUsersFromProject
+);
+
+/**
+ * @swagger
+ * /api/projects/{id}/budget/incomes:
+ *   patch:
+ *     summary: Añadir un ingreso al presupuesto del proyecto
+ *     tags: [Projects]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID del proyecto
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - concept
+ *               - amount
+ *             properties:
+ *               concept:
+ *                 type: string
+ *                 example: "Pago por cliente"
+ *               amount:
+ *                 type: number
+ *                 example: 5000
+ *               date:
+ *                 type: string
+ *                 format: date
+ *                 example: "2025-05-18"
+ *     responses:
+ *       200:
+ *         description: Ingreso añadido correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Ingreso añadido correctamente.
+ *                 budget:
+ *                   $ref: '#/components/schemas/ProjectBudget'
+ *       400:
+ *         description: Validaciones fallidas
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Proyecto no encontrado
+ *       500:
+ *         description: Error interno del servidor
+ */
+projectRouter.patch(
+  "/:id/budget/incomes",
+  authMiddleware,
+  validatorAddIncome,
+  addIncomeToProject
 );
 
 export default projectRouter;

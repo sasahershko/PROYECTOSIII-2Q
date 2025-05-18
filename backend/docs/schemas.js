@@ -326,6 +326,9 @@ const schemas = {
       folder: { type: "string" },
       description: { type: "string" },
       image: { type: "string" },
+      budget: {
+        $ref: "#/components/schemas/ProjectBudget",
+      },
       startDate: { type: "string", format: "date" },
       endDate: { type: "string", format: "date" },
       practicesAgreement: { type: "boolean" },
@@ -355,6 +358,7 @@ const schemas = {
           numTutors: { type: "number", example: 2 },
           estimatedHours: { type: "number", example: 10 },
           pricePerHour: { type: "number", example: 25 },
+          subtotal: { type: "number", example: 500 },
         },
       },
       interns: {
@@ -363,6 +367,7 @@ const schemas = {
           numInterns: { type: "number", example: 1 },
           estimatedHours: { type: "number", example: 80 },
           pricePerHour: { type: "number", example: 12 },
+          subtotal: { type: "number", example: 960 },
         },
       },
       extraExpenses: {
@@ -373,8 +378,47 @@ const schemas = {
             description: { type: "string", example: "Licencia software" },
             quantity: { type: "number", example: 3 },
             unitPrice: { type: "number", example: 50 },
+            subtotal: { type: "number", example: 150 },
           },
         },
+      },
+      incomes: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            concept: { type: "string", example: "Pago por cliente" },
+            amount: { type: "number", example: 2000 },
+            date: {
+              type: "string",
+              format: "date",
+              example: "2025-05-18",
+            },
+          },
+        },
+      },
+      totalIncomes: { type: "number", example: 2000 },
+      totalExpenses: { type: "number", example: 1610 },
+      totalGeneral: { type: "number", example: 390 },
+    },
+  },
+
+  ProjectIncome: {
+    type: "object",
+    required: ["concept", "amount"],
+    properties: {
+      concept: {
+        type: "string",
+        example: "Pago empresa colaboradora",
+      },
+      amount: {
+        type: "number",
+        example: 1500,
+      },
+      date: {
+        type: "string",
+        format: "date",
+        example: "2025-05-18",
       },
     },
   },
