@@ -24,10 +24,18 @@ const router = express.Router();
  *       content:
  *         application/json:
  *           schema:
- *             $ref: "#/components/schemas/Table"
+ *             $ref: "#/components/schemas/TableCreate"
  *     responses:
  *       201:
- *         description: Mesa creada
+ *         description: Mesa creada correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/TableResponse"
+ *       400:
+ *         description: Datos inválidos
+ *       403:
+ *         description: No autorizado
  */
 router.post(
   "/",
@@ -48,13 +56,15 @@ router.post(
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Lista de mesas
+ *         description: Lista de todas las mesas
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
- *                 $ref: "#/components/schemas/Table"
+ *                 $ref: "#/components/schemas/TableResponse"
+ *       403:
+ *         description: No autorizado
  */
 router.get("/", authMiddleware, getTables);
 
@@ -65,6 +75,7 @@ router.get("/", authMiddleware, getTables);
  *     tags:
  *       - Tables
  *     summary: Obtener mesas disponibles por fecha y hora
+ *     description: Devuelve las mesas no reservadas para una fecha y franja horaria concretas.
  *     parameters:
  *       - in: query
  *         name: date
@@ -72,11 +83,13 @@ router.get("/", authMiddleware, getTables);
  *         schema:
  *           type: string
  *           format: date
+ *         example: "2025-05-20"
  *       - in: query
  *         name: time
  *         required: true
  *         schema:
  *           type: string
+ *         example: "10:00"
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -87,7 +100,11 @@ router.get("/", authMiddleware, getTables);
  *             schema:
  *               type: array
  *               items:
- *                 $ref: "#/components/schemas/Table"
+ *                 $ref: "#/components/schemas/TableResponse"
+ *       400:
+ *         description: Parámetros inválidos
+ *       403:
+ *         description: No autorizado
  */
 router.get("/available", authMiddleware, getAvailableTables);
 
