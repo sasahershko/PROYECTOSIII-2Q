@@ -40,33 +40,12 @@ const userRouter = express.Router();
  *   post:
  *     summary: Registrar un nuevo usuario
  *     tags: [Users]
- *     description: Permite registrar un usuario con validaciones de email y DNI.
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required: [name, surname, email, password, dni, grade]
- *             properties:
- *               name:
- *                 type: string
- *                 example: "Juan"
- *               surname:
- *                 type: string
- *                 example: "Pérez"
- *               email:
- *                 type: string
- *                 example: "juan@u-tad.com"
- *               password:
- *                 type: string
- *                 example: "SecureP@ss123"
- *               dni:
- *                 type: string
- *                 example: "12345678A"
- *               grade:
- *                 type: string
- *                 enum: [INSO, MAIS, FIIS, DIPI, ANIV]
+ *             $ref: "#/components/schemas/UserRegister"
  *     responses:
  *       201:
  *         description: Usuario registrado exitosamente.
@@ -91,15 +70,7 @@ userRouter.post(
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required: [email, code]
- *             properties:
- *               email:
- *                 type: string
- *                 example: "usuario@u-tad.com"
- *               code:
- *                 type: string
- *                 example: "123456"
+ *             $ref: "#/components/schemas/UserVerifyCode"
  *     responses:
  *       200:
  *         description: Código correcto, usuario verificado.
@@ -158,18 +129,14 @@ userRouter.post(
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required: [email, password]
- *             properties:
- *               email:
- *                 type: string
- *                 example: "juan@u-tad.com"
- *               password:
- *                 type: string
- *                 example: "SecureP@ss123"
+ *             $ref: "#/components/schemas/UserLogin"
  *     responses:
  *       200:
  *         description: Login exitoso. Devuelve token y datos del usuario.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/UserResponse"
  *       400:
  *         description: Datos incompletos.
  *       401:
@@ -302,10 +269,14 @@ userRouter.get("/profile/:id", getUserProfileById);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/UserUpdate'
+ *             $ref: "#/components/schemas/UserUpdate"
  *     responses:
  *       200:
  *         description: Usuario actualizado correctamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/UserResponse"
  *       400:
  *         description: No puedes modificar el correo ni la contraseña.
  *       403:
