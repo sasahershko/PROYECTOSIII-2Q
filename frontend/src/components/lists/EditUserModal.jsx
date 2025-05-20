@@ -189,14 +189,14 @@ export default function EditUserModal({ user, isOpen, onClose, onUpdated }) {
             </button>
 
             <form onSubmit={handleSubmit} className="space-y-8">
-              {/* Header y selector de imagen centrado */}
-              <div className="flex flex-col items-center mb-6">
-                <h2 className="text-3xl font-bold mb-4 text-accent text-center">
+              {/* Header y selector de imagen centrado y grande */}
+              <div className="flex flex-col items-center mb-8">
+                <h2 className="text-3xl font-bold mb-5 text-accent text-center">
                   Editar usuario
                 </h2>
                 <div
                   className={`
-                    relative w-28 h-28 rounded-full overflow-hidden border-2
+                    relative w-40 h-40 rounded-full overflow-hidden border-2
                     transition-all cursor-pointer flex items-center justify-center
                     ${
                       dragActive
@@ -204,7 +204,7 @@ export default function EditUserModal({ user, isOpen, onClose, onUpdated }) {
                         : "border-accent bg-card"
                     }
                     hover:ring-2 hover:ring-accent/60
-                    mb-2
+                    mb-4
                   `}
                   tabIndex={0}
                   role="button"
@@ -232,8 +232,8 @@ export default function EditUserModal({ user, isOpen, onClose, onUpdated }) {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-5xl text-secundary-text bg-primary-bg">
-                      <PencilIcon size={48} />
+                    <div className="w-full h-full flex items-center justify-center text-7xl text-secundary-text bg-primary-bg">
+                      <PencilIcon size={56} />
                     </div>
                   )}
                   <input
@@ -252,11 +252,11 @@ export default function EditUserModal({ user, isOpen, onClose, onUpdated }) {
                     </div>
                   )}
                 </div>
-                <span className="text-xs text-secundary-text mb-2">
+                <span className="text-xs text-secundary-text mb-2 text-center">
                   Haz clic o arrastra una imagen
                 </span>
                 {file && (
-                  <span className="mt-1 text-xs text-secundary-text">
+                  <span className="mt-1 text-xs text-secundary-text text-center">
                     {file.name}
                   </span>
                 )}
