@@ -59,22 +59,23 @@ export async function updateUser(userId, form) {
   const token = await getToken();
   const fd = new FormData();
 
-  // agrega campos de texto
   for (const [k,v] of Object.entries(form)) {
-    if (k === "file") continue; 
+    if (k === "file") continue;
     if (v != null && v !== "") fd.append(k, v);
   }
+  if (form.file) fd.append("file", form.file);
 
-  // agrega el fichero
-  if (form.file) {
-    fd.append("file", form.file);
+  const resp = await fetch(
+    `${process.env.BACK_URL}/api/users/${userId}`,
+    {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${token}` },
+      body: fd,
+    }
+  );
+  if (!resp.ok) {
+    const err = await resp.json();
+    throw new Error(err.message || "Error actualizando usuario");
   }
-
-  const resp = await fetch(`${process.env.BACK_URL}/api/users/${userId}`, {
-    method: "PATCH",
-    headers: { Authorization: `Bearer ${token}` }, 
-    body: fd
-  });
-  if (!resp.ok) throw new Error((await resp.json()).message);
   return (await resp.json()).user;
 }

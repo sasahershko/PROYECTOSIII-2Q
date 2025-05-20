@@ -64,20 +64,11 @@ export default function EditUserModal({ user, isOpen, onClose, onUpdated }) {
     setTimeout(() => setToast((t) => ({ ...t, visible: false })), 4000);
   };
 
-  // const handleChange = (e) => {
-  //   const { name, value } = e.target;
-  //   if (name === "rol" && value === "admin" && form.rol !== "admin") {
-  //     setPendingRole("admin");
-  //     setShowRoleWarning(true);
-  //     return;
-  //   }
-  //   setForm((f) => ({ ...f, [name]: value }));
-  // };
 
-const handleChange = e => {
-  const { name, value } = e.target;
-  setForm(fm => ({ ...fm, [name]: value }));
-};
+  const handleChange = e => {
+    const { name, value } = e.target;
+    setForm(fm => ({ ...fm, [name]: value }));
+  };
 
 
   const handleFileChange = e => {
@@ -98,38 +89,6 @@ const handleChange = e => {
     setShowRoleWarning(false);
     setPendingRole("");
   };
-
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   if (!user) return;
-  //   setSaving(true);
-
-  //   try {
-  //     const payload = {};
-  //     Object.entries(form).forEach(([key, val]) => {
-  //       if (val != null && val !== "null" && val !== "") {
-  //         payload[key] = val;
-  //       }
-  //     });
-
-  //     if (file) {
-  //       const formData = new FormData();
-  //       Object.entries(payload).forEach(([k, v]) => formData.append(k, v));
-  //       formData.append("file", file);
-  //       await updateUser(user._id, formData);
-  //     } else {
-  //       await updateUser(user._id, payload);
-  //     }
-
-  //     showToast("✅ Usuario actualizado correctamente");
-  //     onUpdated?.();
-  //     onClose();
-  //   } catch (err) {
-  //     showToast(`❌ ${err.message}`, "error");
-  //   } finally {
-  //     setSaving(false);
-  //   }
-  // };
 
   const handleSubmit = async e => {
     e.preventDefault();
