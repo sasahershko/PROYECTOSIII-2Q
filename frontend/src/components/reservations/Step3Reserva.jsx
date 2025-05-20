@@ -3,13 +3,11 @@ import {
   Clock,
   CalendarDays,
   TimerReset,
-  ClipboardEdit,
-  PackageSearch,
   CheckCircle
 } from 'lucide-react';
 
 export default function Step3Reserva({ formData, prevStep, onSubmit }) {
-  const { date, startTime, endTime, reason, materials, table } = formData;
+  const { date, startTime, endTime, table } = formData;
 
   const calcDuration = () => {
     const [h1, m1] = startTime.split(':').map(Number);
@@ -23,7 +21,7 @@ export default function Step3Reserva({ formData, prevStep, onSubmit }) {
   return (
     <div className="space-y-6">
       {/* Secciones */}
-      <div className="grid lg:grid-cols-2 gap-8">
+      <div className="grid lg:grid-cols-2 gap-6">
         {/* Detalles */}
         <div className="rounded-xl shadow-md p-6 border border-gray-200">
           <h2 className="text-lg font-semibold mb-4">Detalles de la Reserva</h2>
@@ -44,23 +42,6 @@ export default function Step3Reserva({ formData, prevStep, onSubmit }) {
               <TimerReset className="w-4 h-4" />
               <span><strong>Duración:</strong> {calcDuration()}</span>
             </div>
-            <div className="flex items-center gap-2">
-              <ClipboardEdit className="w-4 h-4" />
-              <span><strong>Motivo:</strong> {reason || 'No especificado'}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <PackageSearch className="w-4 h-4" />
-              <span>
-                <strong>Materiales:</strong>{' '}
-                {materials.length > 0 ? (
-                  <span className="font-semibold text-blue-800">
-                    {materials.join(', ')}
-                  </span>
-                ) : (
-                  'Ninguno'
-                )}
-              </span>
-            </div>
           </div>
         </div>
 
@@ -68,7 +49,7 @@ export default function Step3Reserva({ formData, prevStep, onSubmit }) {
         <div className="rounded-xl shadow-md p-6 border border-gray-200">
           <h2 className="text-lg font-semibold mb-4">Zona</h2>
           <div className="border border-gray-300 rounded-md p-4 h-48 flex items-center justify-center text-gray-500">
-            Mesa seleccionada: <span className="ml-2 font-bold text-blue-700">{table}</span>
+            Mesa seleccionada: <span className="ml-2 font-bold text-blue-700">{}</span>
           </div>
         </div>
       </div>
@@ -76,7 +57,7 @@ export default function Step3Reserva({ formData, prevStep, onSubmit }) {
       {/* Navegación (fuera de las tarjetas) */}
       <div className="flex justify-between pt-4">
         <button
-          className="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded text-sm font-medium"
+          className="hover:bg-gray-300 px-4 py-2 rounded text-sm font-medium"
           onClick={prevStep}
         >
           ← Atrás
