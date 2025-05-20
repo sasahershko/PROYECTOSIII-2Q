@@ -14,6 +14,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { LuDownload } from "react-icons/lu";
 
 const COLORS = ["#2563eb", "#10b981", "#f59e0b"];
 
@@ -216,7 +217,7 @@ export default function PresupuestoDashboard({ data, onEditClick }) {
     <div className="max-w-8xl mx-auto px-6 py-8 space-y-10">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Presupuesto del Proyecto</h1>
-        <div className="space-x-2">
+        <div className="space-x-2 flex flex-row">
           <button
             onClick={onEditClick}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
@@ -224,10 +225,11 @@ export default function PresupuestoDashboard({ data, onEditClick }) {
             Editar Presupuesto
           </button>
           <button
-            className="border px-4 py-2 rounded hover:bg-gray-200"
+            className="border border-primary-text/20 px-4 py-2 rounded hover:bg-gray-200 flex items-center gap-2"
             onClick={exportToPDF}
           >
-            Exportar Presupuesto
+            <LuDownload className="w-5 h-5 text-primary-text/80" />
+            Descargar Presupuesto
           </button>
         </div>
       </div>
@@ -337,37 +339,6 @@ export default function PresupuestoDashboard({ data, onEditClick }) {
         <p className="text-right font-bold text-2xl mt-4 mx-2">
           TOTAL: {gastado.toLocaleString()}€
         </p>
-      </section>
-
-      <section>
-        <h2 className="text-lg font-bold mb-2">Comentarios</h2>
-        <textarea
-          value={comentarios}
-          disabled
-          placeholder="Añada notas o aclaraciones sobre el presupuesto..."
-          className="w-full rounded-xl shadow-md border p-4 h-36"
-        />
-      </section>
-
-      <section>
-        <h2 className="text-lg font-bold mb-2">Historial de Cambios</h2>
-        <div className="rounded-xl shadow-md border p-4 min-h-36">
-          {historialCambios.map((cambio, i) => (
-            <div key={i} className="flex items-start gap-3">
-              <img
-                src={cambio.avatar || "/avatar.png"}
-                className="h-8 w-8 rounded-full"
-              />
-              <div>
-                <p className="font-semibold">
-                  {cambio.nombre} ·{" "}
-                  <span className="text-sm text-gray-500">{cambio.fecha}</span>
-                </p>
-                <p className="text-sm text-gray-600">{cambio.descripcion}</p>
-              </div>
-            </div>
-          ))}
-        </div>
       </section>
     </div>
   );
