@@ -123,9 +123,38 @@ export default function Users() {
   return (
     <div className="flex flex-col w-full items-center min-h-full overflow-y-scroll bg-primary-bg text-primary-text">
       {/* Top bar */}
-      <div className="w-[95%] max-w-8xl mt-8 mb-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold select-none">Lista de Usuarios</h1>
-        <div className="flex flex-wrap gap-2 items-center">
+      <div className="w-[95%] max-w-8xl mt-8 mb-4 flex flex-col md:flex-row items-center justify-between gap-4">
+        {/* Título y chips a la IZQUIERDA */}
+        <div className="flex items-center gap-4 w-full md:w-auto">
+          <h1 className="text-2xl font-bold select-none whitespace-nowrap">
+            Lista de Usuarios
+          </h1>
+          <div className="flex flex-wrap gap-2">
+            {[
+              ...filterGrade.map((g) => ({
+                label: g,
+                color: areaColors[g] || "bg-gray-400",
+                remove: () => removeChip(g, setFilterGrade, filterGrade),
+              })),
+              ...filterRol.map((r) => ({
+                label: r,
+                color: rolColors[r] || "bg-gray-400",
+                remove: () => removeChip(r, setFilterRol, filterRol),
+              })),
+            ].map((chip) => (
+              <div
+                key={chip.label}
+                onClick={chip.remove}
+                className={`${chip.color} text-white rounded-full px-3 py-1 text-sm gap-2 flex items-center cursor-pointer select-none`}
+              >
+                <span>{chip.label}</span>
+                <span className="font-bold">×</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        {/* Buscador y botón filtro a la DERECHA */}
+        <div className="flex gap-2 items-center">
           <div className="relative group">
             <LuSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-secundary-text group-focus-within:text-accent transition-colors" />
             <input
@@ -139,35 +168,11 @@ export default function Users() {
           <button
             onClick={() => setShowFilters(true)}
             className="text-primary-text select-none hover:scale-105 transition duration-150 p-2 rounded-full"
+            aria-label="Mostrar filtros"
           >
             <LuFilter className="w-6 h-6" />
           </button>
         </div>
-      </div>
-
-      {/* Active filter chips */}
-      <div className="w-[95%] max-w-8xl mb-2 flex flex-wrap gap-2 px-4">
-        {[
-          ...filterGrade.map((g) => ({
-            label: g,
-            color: areaColors[g] || "bg-gray-400",
-            remove: () => removeChip(g, setFilterGrade, filterGrade),
-          })),
-          ...filterRol.map((r) => ({
-            label: r,
-            color: rolColors[r] || "bg-gray-400",
-            remove: () => removeChip(r, setFilterRol, filterRol),
-          })),
-        ].map((chip) => (
-          <div
-            key={chip.label}
-            onClick={chip.remove}
-            className={`${chip.color} text-white rounded-full px-3 py-1 text-sm gap-2 flex items-center cursor-pointer select-none`}
-          >
-            <span>{chip.label}</span>
-            <span className="font-bold">×</span>
-          </div>
-        ))}
       </div>
 
       {/* Contador de resultados */}
@@ -265,7 +270,7 @@ export default function Users() {
       {/* Users table */}
       <div className="w-[95%] max-w-8xl bg-card shadow-md rounded-lg mb-4 px-4">
         <div
-          className="grid gap-4 items-center px-2 py-2 border-b"
+          className="grid gap-4 items-center px-2 py-2 border-primary-bg border-b-2 mb-1"
           style={{
             gridTemplateColumns: "0.25fr 2fr 2fr 3fr 2fr 0.8fr 0.8fr 1fr",
           }}
