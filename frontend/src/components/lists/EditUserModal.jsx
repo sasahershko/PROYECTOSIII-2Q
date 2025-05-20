@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { updateUser } from "@/lib/users";
@@ -11,6 +11,47 @@ const ROLE_OPTIONS = [
   { value: "user", label: "Usuario" },
   { value: "admin", label: "Administrador" },
 ];
+
+// Hook drag & drop para imagen
+function useDragDropImage(onFileSelected) {
+  const inputRef = useRef(null);
+  const [dragActive, setDragActive] = useState(false);
+
+  const handleAreaClick = () => inputRef.current?.click();
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(true);
+  };
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+  };
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      onFileSelected(e.dataTransfer.files[0]);
+    }
+  };
+  const handleChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      onFileSelected(e.target.files[0]);
+    }
+  };
+
+  return {
+    inputRef,
+    dragActive,
+    handleAreaClick,
+    handleDragOver,
+    handleDragLeave,
+    handleDrop,
+    handleChange,
+  };
+}
 
 export default function EditUserModal({ user, isOpen, onClose, onUpdated }) {
   const [form, setForm] = useState({
@@ -30,9 +71,23 @@ export default function EditUserModal({ user, isOpen, onClose, onUpdated }) {
     type: "success",
   });
 
-  // Estado para popup de cambio de rol a admin
+  // Popup cambio rol a admin
   const [showRoleWarning, setShowRoleWarning] = useState(false);
   const [pendingRole, setPendingRole] = useState("");
+
+  // --- Hook drag&drop
+  const {
+    inputRef,
+    dragActive,
+    handleAreaClick,
+    handleDragOver,
+    handleDragLeave,
+    handleDrop,
+    handleChange,
+  } = useDragDropImage((f) => {
+    setFile(f);
+    setForm((fm) => ({ ...fm, file: f }));
+  });
 
   useEffect(() => {
     if (user) {
@@ -64,20 +119,10 @@ export default function EditUserModal({ user, isOpen, onClose, onUpdated }) {
     setTimeout(() => setToast((t) => ({ ...t, visible: false })), 4000);
   };
 
-
-  const handleChange = e => {
+  const handleChangeInput = (e) => {
     const { name, value } = e.target;
-    setForm(fm => ({ ...fm, [name]: value }));
+    setForm((fm) => ({ ...fm, [name]: value }));
   };
-
-
-  const handleFileChange = e => {
-    const f = e.target.files?.[0] ?? null;
-    setFile(f);
-    setForm(fm => ({ ...fm, file: f }));
-  };
-
-
 
   const confirmRoleChange = () => {
     setForm((f) => ({ ...f, rol: pendingRole }));
@@ -90,11 +135,20 @@ export default function EditUserModal({ user, isOpen, onClose, onUpdated }) {
     setPendingRole("");
   };
 
-  const handleSubmit = async e => {
+  const handleRoleSelect = (e) => {
+    const { value } = e.target;
+    if (value === "admin" && form.rol !== "admin") {
+      setShowRoleWarning(true);
+      setPendingRole(value);
+    } else {
+      setForm((fm) => ({ ...fm, rol: value }));
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
     try {
-      // Simplemente le pasas tu objeto `form`, que ya incluye `file` cuando se selecciona
       await updateUser(user._id, form);
       showToast("✅ Usuario actualizado correctamente");
       onUpdated?.();
@@ -105,7 +159,6 @@ export default function EditUserModal({ user, isOpen, onClose, onUpdated }) {
       setSaving(false);
     }
   };
-
 
   if (typeof window === "undefined") return null;
 
@@ -135,14 +188,37 @@ export default function EditUserModal({ user, isOpen, onClose, onUpdated }) {
               ×
             </button>
 
-            <h2 className="text-2xl font-semibold mb-4 text-accent">
-              Editar usuario
-            </h2>
-
             <form onSubmit={handleSubmit} className="space-y-8">
-              {/* Imagen */}
-              <div className="flex items-center gap-4">
-                <div className="relative w-20 h-20 rounded-full overflow-hidden border border-accent bg-card">
+              {/* Header y selector de imagen centrado y grande */}
+              <div className="flex flex-col items-center mb-8">
+                <h2 className="text-3xl font-bold mb-5 text-accent text-center">
+                  Editar usuario
+                </h2>
+                <div
+                  className={`
+                    relative w-40 h-40 rounded-full overflow-hidden border-2
+                    transition-all cursor-pointer flex items-center justify-center
+                    ${
+                      dragActive
+                        ? "border-accent ring-4 ring-accent/40 bg-accent/10"
+                        : "border-accent bg-card"
+                    }
+                    hover:ring-2 hover:ring-accent/60
+                    mb-4
+                  `}
+                  tabIndex={0}
+                  role="button"
+                  title="Haz clic o arrastra una imagen"
+                  onClick={handleAreaClick}
+                  onKeyDown={(e) =>
+                    (e.key === "Enter" || e.key === " ") && handleAreaClick()
+                  }
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDragEnd={handleDragLeave}
+                  onDrop={handleDrop}
+                  style={{ outline: "none" }}
+                >
                   {preview ? (
                     <img
                       src={preview}
@@ -156,28 +232,34 @@ export default function EditUserModal({ user, isOpen, onClose, onUpdated }) {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-2xl text-secundary-text bg-primary-bg">
-                      <PencilIcon />
+                    <div className="w-full h-full flex items-center justify-center text-7xl text-secundary-text bg-primary-bg">
+                      <PencilIcon size={56} />
+                    </div>
+                  )}
+                  <input
+                    ref={inputRef}
+                    type="file"
+                    name="file"
+                    accept="image/*"
+                    onChange={handleChange}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    tabIndex={-1}
+                    aria-hidden="true"
+                  />
+                  {dragActive && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-accent/20 text-accent text-sm font-semibold z-10 pointer-events-none">
+                      Suelta la imagen aquí
                     </div>
                   )}
                 </div>
-                <div className="flex-1 flex flex-col gap-1">
-                  <label className="cursor-pointer inline-block px-4 py-2 bg-accent rounded-md text-sm text-white hover:opacity-90 transition">
-                    Seleccionar imagen
-                    <input
-                      type="file"
-                      name="file"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      className="hidden"
-                    />
-                  </label>
-                  {file && (
-                    <span className="mt-1 text-xs text-secundary-text">
-                      {file.name}
-                    </span>
-                  )}
-                </div>
+                <span className="text-xs text-secundary-text mb-2 text-center">
+                  Haz clic o arrastra una imagen
+                </span>
+                {file && (
+                  <span className="mt-1 text-xs text-secundary-text text-center">
+                    {file.name}
+                  </span>
+                )}
               </div>
 
               {/* Dos columnas */}
@@ -187,13 +269,13 @@ export default function EditUserModal({ user, isOpen, onClose, onUpdated }) {
                     label="Nombre"
                     name="name"
                     value={form.name}
-                    onChange={handleChange}
+                    onChange={handleChangeInput}
                   />
                   <Input
                     label="DNI"
                     name="dni"
                     value={form.dni}
-                    onChange={handleChange}
+                    onChange={handleChangeInput}
                   />
                 </div>
                 <div className="flex flex-col gap-4">
@@ -201,13 +283,13 @@ export default function EditUserModal({ user, isOpen, onClose, onUpdated }) {
                     label="Apellidos"
                     name="surname"
                     value={form.surname}
-                    onChange={handleChange}
+                    onChange={handleChangeInput}
                   />
                   <Select
                     label="Grado"
                     name="grade"
                     value={form.grade}
-                    onChange={handleChange}
+                    onChange={handleChangeInput}
                     options={["INSO", "MAIS", "FIIS", "DIPI", "ANIV"]}
                   />
                 </div>
@@ -219,7 +301,7 @@ export default function EditUserModal({ user, isOpen, onClose, onUpdated }) {
                   label="Rol"
                   name="rol"
                   value={form.rol}
-                  onChange={handleChange}
+                  onChange={handleRoleSelect}
                   options={ROLE_OPTIONS.map((opt) => ({
                     value: opt.value,
                     label: opt.label,
@@ -306,7 +388,7 @@ export default function EditUserModal({ user, isOpen, onClose, onUpdated }) {
   );
 }
 
-// Componentes reutilizables
+// Reutilizables
 function Input({ label, name, value, onChange }) {
   return (
     <div className="flex flex-col">
