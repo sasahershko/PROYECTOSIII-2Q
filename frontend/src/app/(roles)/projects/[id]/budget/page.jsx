@@ -37,7 +37,9 @@ export default function BudgetDashboardPage() {
   if (!project) {
     return (
       <div className="p-10">
-        <h2 className="text-2xl font-semibold text-red-500">Proyecto no encontrado</h2>
+        <h2 className="text-2xl font-semibold text-red-500">
+          Proyecto no encontrado
+        </h2>
       </div>
     );
   }
@@ -50,7 +52,13 @@ export default function BudgetDashboardPage() {
     return null;
   }
 
-  const { tutors, interns, extraExpenses = [], totalGeneral, generalComments } = presupuesto;
+  const {
+    tutors,
+    interns,
+    extraExpenses = [],
+    totalGeneral,
+    generalComments,
+  } = presupuesto;
 
   const adaptedData = {
     limite: totalGeneral,
@@ -58,28 +66,32 @@ export default function BudgetDashboardPage() {
     comentarios: generalComments,
     resumenMensual: [],
     desglose: {
-      profesores: [{
-        descripcion: "Tutores",
-        numeroTutores: tutors?.numTutors || 0,
-        horasEstimadas: tutors?.estimatedHours || 0,
-        precioPorHora: tutors?.pricePerHour || 0,
-        subtotal: tutors?.subtotal || 0
-      }],
-      estudiantes: [{
-        descripcion: "Estudiantes en prácticas",
-        numeroEstudiantes: interns?.numInterns || 0,
-        horasEstimadas: interns?.estimatedHours || 0,
-        precioPorHora: interns?.pricePerHour || 0,
-        subtotal: interns?.subtotal || 0
-      }],
-      otros: extraExpenses.map(exp => ({
+      profesores: [
+        {
+          descripcion: "Tutores",
+          numeroTutores: tutors?.numTutors || 0,
+          horasEstimadas: tutors?.estimatedHours || 0,
+          precioPorHora: tutors?.pricePerHour || 0,
+          subtotal: tutors?.subtotal || 0,
+        },
+      ],
+      estudiantes: [
+        {
+          descripcion: "Estudiantes en prácticas",
+          numeroEstudiantes: interns?.numInterns || 0,
+          horasEstimadas: interns?.estimatedHours || 0,
+          precioPorHora: interns?.pricePerHour || 0,
+          subtotal: interns?.subtotal || 0,
+        },
+      ],
+      otros: extraExpenses.map((exp) => ({
         descripcion: exp.description,
         cantidad: exp.quantity,
         precioUnidad: exp.unitPrice,
-        subtotal: exp.subtotal
-      }))
+        subtotal: exp.subtotal,
+      })),
     },
-    historialCambios: []
+    historialCambios: [],
   };
 
   return (

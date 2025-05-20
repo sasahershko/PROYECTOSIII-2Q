@@ -1,33 +1,42 @@
 import Table from "../models/Tables.js";
+import Reservation from "../models/Reservation.js";
+import { matchedData } from "express-validator";
+import { handleHttpError } from "../utils/handleError.js";
 
-
-export const createTable = async (req, res) => {
+// Crear una mesa
+const createTable = async (req, res) => {
   try {
-    const { number, zone, capacity } = req.body;
-
-    // Verificar si ya existe una mesa con el mismo número
-    const existingTable = await Table.findOne({ number });
-    if (existingTable) {
-      return res.status(400).json({ message: "El número de mesa ya está en uso" });
-    }
-
-    const newTable = new Table({
-      number,
-      zone,
-      capacity,
-    });
-
-    await newTable.save();
-
-    res.status(200).json({
-      message: "Mesa creada correctamente",
-      table: newTable,
-    });
-
-  } catch (error) {
-    res.status(500).json({
-      message: "Error al crear la mesa",
-      error: error.message,
-    });
+    const data = matchedData(req);
+    const newTable = await Table.create(data);
+    res.status(201).json(newTable);
+  } catch (err) {
+    handleHttpError(res, "ERROR_CREATE_TABLE");
   }
 };
+
+// Obtener todas las mesas
+const getTables = async (req, res) => {
+  try {
+    const tables = await Table.find();
+    res.json(tables);
+  } catch (err) {
+    handleHttpError(res, "ERROR_GET_TABLES");
+  }
+};
+
+// Obtener mesas disponibles en una fecha/hora
+const getAvailableTables = async (req, res) => {
+  try {
+    const { date, time } = matchedData(req);
+
+    const reserved = await Reservation.find({ date, time }).select("tableId");
+    const reservedIds = reserved.map((r) => r.tableId.toString());
+
+    const availableTables = await Table.find({ _id: { $nin: reservedIds } });
+    res.json(availableTables);
+  } catch (err) {
+    handleHttpError(res, "ERROR_GET_AVAILABLE_TABLES");
+  }
+};
+
+export { createTable, getTables, getAvailableTables };

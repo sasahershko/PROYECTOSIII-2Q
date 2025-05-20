@@ -229,102 +229,89 @@ export default function ResumenPage() {
                   Cronograma & Tareas
                 </p>
                 <div className="space-y-4">
-                  {[
-                    ...reviewDates.map((d, i) => ({
-                      label: `${i + 1}ª Revisión`,
-                      date: new Date(d),
-                    })),
-                    { label: "Fin del proyecto", date: new Date(endDate) },
-                  ].map((m, i) => {
-                    const pct =
-                      ((m.date.getTime() - globalStart.getTime()) /
-                        (globalEnd.getTime() - globalStart.getTime())) *
-                      100;
-                    const done = now >= m.date;
-                    return (
-                      <motion.div
-                        key={i}
-                        className="flex items-center gap-3 min-h-6 w-full max-w-2xl"
-                        variants={itemVariants}
-                      >
-                        <Badge
-                          variant={done ? "outline" : "secondary"}
-                          className="px-2 py-1 text-xs shrink-0 w-28 text-center mr-10"
-                        >
-                          {m.label}
-                        </Badge>
-                        <div className="relative flex-1 h-3 bg-card rounded-full">
-                          <motion.div
-                            className={`absolute top-0 left-0 h-3 rounded-full ${
-                              done ? "bg-accent" : "bg-card"
-                            }`}
-                            style={{ width: `${pct}%` }}
-                            transition={{ duration: 0.5 }}
-                          />
-                        </div>
-                        <span className="text-xs text-muted-foreground w-24 text-right shrink-0">
-                          {m.date.toLocaleDateString("es-ES")}
-                        </span>
-                      </motion.div>
+                  {(() => {
+                    // 1. Juntar y ordenar TODAS las fechas
+                    const milestones = [
+                      ...reviewDates.map((date) => new Date(date)),
+                      new Date(endDate),
+                    ].sort((a, b) => a - b);
+
+                    // 2. Asignar nombres por orden de fecha
+                    const milestonesWithLabels = milestones.map(
+                      (date, i, arr) => ({
+                        label:
+                          i < arr.length - 1
+                            ? `${i + 1}ª Revisión`
+                            : "Fin del proyecto",
+                        date,
+                      })
                     );
-                  })}
-                </div>
-                <div>
-                  <h3 className="font-medium text-primary-text mb-2 text-center">
-                    Tareas
-                  </h3>
-                  <motion.table
-                    className="w-full text-left border-separate border-spacing-y-2"
-                    variants={itemVariants}
-                  >
-                    <thead>
-                      <tr className="text-secundary-text text-xs">
-                        <th>Tarea</th>
-                        <th>Responsable</th>
-                        <th>Fecha Límite</th>
-                        <th>Estado</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(tasks.length > 0
-                        ? tasks
-                        : Array.from({ length: 4 }).map((_, i) => ({
-                            name: "Diseño de interfaz",
-                            owner: "Ana García",
-                            deadline: new Date(2025, 4, 10).toISOString(),
-                            status: "En progreso",
-                          }))
-                      ).map((t, i) => (
-                        <motion.tr
+
+                    // 3. Calcular progreso real entre fechas
+                    return milestonesWithLabels.map((m, i, arr) => {
+                      const prevDate =
+                        i === 0 ? new Date(startDate) : arr[i - 1].date;
+                      const start = prevDate;
+                      const end = m.date;
+                      let pct = 0;
+                      let status = "pending";
+                      if (now >= end) {
+                        pct = 100;
+                        status = "done";
+                      } else if (now > start && now < end) {
+                        pct = ((now - start) / (end - start)) * 100;
+                        status = "progress";
+                      }
+                      const pctStr = `${Math.round(pct)}%`;
+                      return (
+                        <motion.div
                           key={i}
-                          className="bg-card hover:scale-105 transition"
+                          className="flex items-center gap-3 min-h-8 w-full max-w-2xl group"
                           variants={itemVariants}
                         >
-                          <td className="px-3 py-2 text-secundary-text">
-                            {t.name}
-                          </td>
-                          <td className="px-3 py-2 text-secundary-text">
-                            {t.owner}
-                          </td>
-                          <td className="px-3 py-2 text-secundary-text">
-                            {new Date(t.deadline).toLocaleDateString("es-ES")}
-                          </td>
-                          <td className="px-3 py-2">
-                            <Badge
-                              variant={
-                                t.status === "Completado"
-                                  ? "outline"
-                                  : "secondary"
-                              }
-                              className="px-2 py-1 text-xs"
+                          <Badge
+                            variant={
+                              status === "done" ? "outline" : "secondary"
+                            }
+                            className="px-2 py-1 text-xs shrink-0 w-28 text-center mr-10"
+                          >
+                            {m.label}
+                          </Badge>
+                          <div className="relative flex-1 h-5 bg-card rounded-full overflow-hidden">
+                            <motion.div
+                              className={`absolute top-0 left-0 h-5 rounded-full transition-all ${
+                                status === "done"
+                                  ? "bg-accent"
+                                  : status === "progress"
+                                  ? "bg-accent/50"
+                                  : "bg-card"
+                              }`}
+                              style={{ width: `${pct}%` }}
+                              transition={{ duration: 0.5 }}
                             >
-                              {t.status}
-                            </Badge>
-                          </td>
-                        </motion.tr>
-                      ))}
-                    </tbody>
-                  </motion.table>
+                              {/* % solo visible en hover */}
+                              <span
+                                className={`absolute inset-0 flex items-center justify-center font-bold text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${
+                                  pct > 12 ? "" : "hidden"
+                                }`}
+                              >
+                                {pctStr}
+                              </span>
+                            </motion.div>
+                            {/* Alternativa para % fuera si la barra es muy pequeña */}
+                            {pct <= 12 && pct > 0 && (
+                              <span className="absolute left-full ml-2 top-1/2 -translate-y-1/2 font-bold text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                {pctStr}
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-xs text-muted-foreground w-24 text-right shrink-0">
+                            {m.date.toLocaleDateString("es-ES")}
+                          </span>
+                        </motion.div>
+                      );
+                    });
+                  })()}
                 </div>
               </CardContent>
             </Card>

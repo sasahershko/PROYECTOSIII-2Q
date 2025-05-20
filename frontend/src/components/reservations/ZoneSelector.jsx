@@ -1,33 +1,59 @@
-export default function ZoneSelector({ selectedTable, setTable }) {
-    const tables = [
-      { id: '1', name: 'Mesa 1', busy: true },
-      { id: '2', name: 'Mesa 2', busy: false },
-      { id: '3', name: 'Mesa 3', busy: false },
-      { id: '4', name: 'Mesa 4', busy: true },
-      { id: '5', name: 'Mesa 5', busy: false },
-      { id: '6', name: 'Mesa 6', busy: false },
-    ];
-  
-    return (
-      <div>
-        <h2 className="text-lg font-semibold mb-2">Zona</h2>
-        <p className="text-sm mb-4 text-gray-600">Seleccione uno o varios puestos de trabajo.</p>
+'use client';
+import { useEffect, useState } from 'react';
+import { getAvailableTables } from '@/lib/reservations';
+
+export default function ZoneSelector({ selectedTable, setTable, date, startTime, endTime }) {
+  const [tables, setTables] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!date || !startTime || !endTime) return;
+
+    const fetchAvailableTables = async () => {
+      setLoading(true);
+      try {
+        const available = await getAvailableTables({ date, startTime, endTime });
+        setTables(available);
+      } catch (err) {
+        console.error("❌ Error al cargar mesas:", err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAvailableTables();
+  }, [date, startTime, endTime]);
+
+  return (
+    <div>
+      <h2 className="text-lg font-semibold mb-2">Zona</h2>
+      <p className="text-sm mb-4 text-gray-600">Selecciona una mesa disponible para la fecha elegida.</p>
+
+      {loading ? (
+        <p className="text-sm text-gray-500">Cargando mesas disponibles...</p>
+      ) : tables.length === 0 ? (
+        <p className="text-sm text-red-500">No hay mesas disponibles para este horario.</p>
+      ) : (
         <div className="grid grid-cols-3 gap-3">
-          {tables.map((t) => (
-            <div
-              key={t.id}
-              onClick={() => !t.busy && setTable(t.id)}
-              className={`
-                p-4 rounded-md text-center text-sm font-medium border shadow-sm cursor-pointer
-                ${t.busy ? 'bg-red-400 text-gray-200 cursor-not-allowed' : 'hover:bg-blue-100'}
-                ${selectedTable === t.id ? 'ring-2 ring-blue-600 border-blue-600' : ''}
-              `}
-            >
-              {t.name}
-            </div>
-          ))}
+          {tables.map((t) => {
+            const isSelected = selectedTable === t._id;
+            return (
+              <div
+                key={t._id}
+                onClick={() => setTable(t._id)}
+                className={`
+                  p-4 rounded-md text-center text-sm font-medium border shadow-sm cursor-pointer transition
+                  hover:bg-blue-100
+                  ${isSelected ? 'ring-2 ring-blue-600 border-blue-600' : ''}
+                `}
+              >
+                Mesa {t.number} <br />
+                <span className="text-xs text-gray-500">{t.zone} ({t.capacity} personas)</span>
+              </div>
+            );
+          })}
         </div>
-      </div>
-    );
-  }
-  
+      )}
+    </div>
+  );
+}

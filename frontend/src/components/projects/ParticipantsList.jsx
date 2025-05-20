@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import { getProjectById } from "@/lib/projects";
-import { getUsers } from "@/lib/users";
 import SpinLoader from "@/components/SpinLoader";
 import UserProfileModal from "@components/lists/UserProfileModal";
 
@@ -24,7 +23,7 @@ export default function ParticipantsList({ projectId }) {
 
         const projectParticipants = [
           ...(project.users ?? []),
-          ...(project.responsibles ?? [])
+          ...(project.responsibles ?? []),
         ];
 
         setParticipants(projectParticipants);
@@ -38,8 +37,6 @@ export default function ParticipantsList({ projectId }) {
 
     fetchParticipants();
   }, [projectId]);
-
-
 
   const handleParticipantClick = (participant) => {
     setSelectedUser(participant);
@@ -66,8 +63,7 @@ export default function ParticipantsList({ projectId }) {
 
   return (
     <>
-      <div
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {participants.length > 0 ? (
           participants.map((participant, i) => (
             <div
