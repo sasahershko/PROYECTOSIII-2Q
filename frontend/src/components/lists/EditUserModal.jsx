@@ -21,6 +21,8 @@ export default function EditUserModal({ user, isOpen, onClose, onUpdated }) {
     rol: "",
     profileImage: "",
   });
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState(null);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState({
     visible: false,
@@ -28,9 +30,9 @@ export default function EditUserModal({ user, isOpen, onClose, onUpdated }) {
     type: "success",
   });
 
-  // Estado para mostrar aviso al cambiar a admin
+  // Estado para popup de cambio de rol a admin
   const [showRoleWarning, setShowRoleWarning] = useState(false);
-  const [pendingRole, setPendingRole] = useState(""); // rol temporal mientras aceptas/cancelas
+  const [pendingRole, setPendingRole] = useState("");
 
   useEffect(() => {
     if (user) {
@@ -42,51 +44,58 @@ export default function EditUserModal({ user, isOpen, onClose, onUpdated }) {
         rol: user.rol ?? "",
         profileImage: user.profileImage ?? "",
       });
+      setFile(null);
+      setPreview(null);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (!file) {
+      setPreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    setPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
 
   const showToast = (message, type = "success") => {
     setToast({ visible: true, message, type });
     setTimeout(() => setToast((t) => ({ ...t, visible: false })), 4000);
   };
 
-  const handleChange = (e) => {
+
+  const handleChange = e => {
     const { name, value } = e.target;
-    // Si es el rol y quieres cambiar a admin, saca popup antes de cambiar en el form
-    if (name === "rol" && value === "admin" && form.rol !== "admin") {
-      setPendingRole("admin");
-      setShowRoleWarning(true);
-      return;
-    }
-    setForm((f) => ({ ...f, [name]: value }));
+    setForm(fm => ({ ...fm, [name]: value }));
   };
 
-  // Si aceptas el popup, actualiza el rol
+
+  const handleFileChange = e => {
+    const f = e.target.files?.[0] ?? null;
+    setFile(f);
+    setForm(fm => ({ ...fm, file: f }));
+  };
+
+
+
   const confirmRoleChange = () => {
     setForm((f) => ({ ...f, rol: pendingRole }));
     setShowRoleWarning(false);
     setPendingRole("");
   };
 
-  // Si cancelas, no cambias el rol
   const cancelRoleChange = () => {
     setShowRoleWarning(false);
     setPendingRole("");
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
-    if (!user) return;
     setSaving(true);
     try {
-      const payload = {};
-      Object.entries(form).forEach(([key, val]) => {
-        if (val != null && val !== "null" && val !== "") {
-          payload[key] = val;
-        }
-      });
-
-      await updateUser(user._id, payload);
+      // Simplemente le pasas tu objeto `form`, que ya incluye `file` cuando se selecciona
+      await updateUser(user._id, form);
       showToast("✅ Usuario actualizado correctamente");
       onUpdated?.();
       onClose();
@@ -96,6 +105,7 @@ export default function EditUserModal({ user, isOpen, onClose, onUpdated }) {
       setSaving(false);
     }
   };
+
 
   if (typeof window === "undefined") return null;
 
@@ -133,7 +143,13 @@ export default function EditUserModal({ user, isOpen, onClose, onUpdated }) {
               {/* Imagen */}
               <div className="flex items-center gap-4">
                 <div className="relative w-20 h-20 rounded-full overflow-hidden border border-accent bg-card">
-                  {form.profileImage ? (
+                  {preview ? (
+                    <img
+                      src={preview}
+                      alt="avatar-preview"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : form.profileImage ? (
                     <img
                       src={form.profileImage}
                       alt="avatar"
@@ -145,17 +161,22 @@ export default function EditUserModal({ user, isOpen, onClose, onUpdated }) {
                     </div>
                   )}
                 </div>
-                <div className="flex-1">
-                  <label className="text-sm text-secundary-text">
-                    URL de la imagen
+                <div className="flex-1 flex flex-col gap-1">
+                  <label className="cursor-pointer inline-block px-4 py-2 bg-accent rounded-md text-sm text-white hover:opacity-90 transition">
+                    Seleccionar imagen
+                    <input
+                      type="file"
+                      name="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
                   </label>
-                  <input
-                    name="profileImage"
-                    value={form.profileImage}
-                    onChange={handleChange}
-                    placeholder="https://..."
-                    className="mt-1 w-full px-3 py-2 border border-card rounded-md bg-primary-bg text-primary-text focus:outline-accent"
-                  />
+                  {file && (
+                    <span className="mt-1 text-xs text-secundary-text">
+                      {file.name}
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -269,15 +290,15 @@ export default function EditUserModal({ user, isOpen, onClose, onUpdated }) {
                 </motion.div>
               )}
             </AnimatePresence>
-          </motion.div>
 
-          {toast.visible && (
-            <Toast
-              message={toast.message}
-              type={toast.type}
-              onClose={() => setToast((t) => ({ ...t, visible: false }))}
-            />
-          )}
+            {toast.visible && (
+              <Toast
+                message={toast.message}
+                type={toast.type}
+                onClose={() => setToast((t) => ({ ...t, visible: false }))}
+              />
+            )}
+          </motion.div>
         </motion.div>
       )}
     </AnimatePresence>,

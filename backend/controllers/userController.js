@@ -7,6 +7,9 @@ import { sendVerificationEmail } from "../utils/emailService.js";
 import { handleHttpError } from "../utils/handleError.js";
 import { logEvent } from "../utils/handleLogger.js";
 
+import storageModel from "../models/storage.js";
+import { uploadToPinata } from "../utils/handleUploadIPFS.js";
+
 //(estos son solo informativos, no salen en Swagger)
 /**
  * @desc Registrar un nuevo usuario
@@ -304,59 +307,66 @@ export const getAllUsers = async (req, res) => {
  * @route PATCH /api/users/update-role/:id
  * @access Private (requiere ser admin y tener token)
  */
-export const updateUser = async (req, res) => {
+export const updateUser = async (req, res, next) => {
   try {
-    const { id, name, surname, rol, grade, profileImage, dni } =
-      req.filteredData;
+    const id    = req.params.id;
+    const actor = req.usuario;
+    const isAdmin = actor.rol === "admin";
+    const isSelf  = actor.id === id;
 
-    const usuarioAutenticado = req.usuario;
-    const isAdmin = usuarioAutenticado.rol === "admin";
-    const isSameUser = usuarioAutenticado.id === id;
-
-    if (!isSameUser && !isAdmin) {
-      return handleHttpError(
-        res,
-        "No tienes permiso para editar este usuario.",
-        403
-      );
+    if (!isSelf && !isAdmin) {
+      return handleHttpError(res, "No tienes permiso para editar este usuario.", 403);
     }
-
-    // Capa de seguridad extra por si llegan datos fuera del validador
     if ("email" in req.body || "password" in req.body) {
-      return handleHttpError(
-        res,
-        "No puedes modificar el correo ni la contraseña.",
-        400
-      );
+      return handleHttpError(res, "No puedes modificar correo ni contraseña.", 400);
     }
 
-    // Solo actualizamos los campos permitidos
-    const updatedData = {};
-    if (name) updatedData.name = name;
-    if (surname) updatedData.surname = surname;
-    if (profileImage) updatedData.profileImage = profileImage;
-    if (grade) updatedData.grade = grade;
-    if (dni) updatedData.dni = dni;
-    if (rol && isAdmin) updatedData.rol = rol;
-
-    const updatedUser = await User.findByIdAndUpdate(id, updatedData, {
-      new: true,
-    });
-
-    if (!updatedUser) {
+    const user = await User.findById(id);
+    if (!user) {
       return handleHttpError(res, "Usuario no encontrado.", 404);
     }
 
-    await logEvent(`✏️ Usuario actualizado: ${updatedUser.email}`);
+    if (req.file) {
+      const { buffer, originalname } = req.file;
+      const { IpfsHash } = await uploadToPinata(buffer, originalname);
+      const ipfsUrl = `https://${process.env.PINATA_GATEWAY_URL}/ipfs/${IpfsHash}`;
 
-    res.status(200).json({
-      message: "Usuario actualizado correctamente.",
-      user: updatedUser,
+      await storageModel.findByIdAndUpdate(id, { url: ipfsUrl }, { new: true, upsert: true });
+      user.profileImage = ipfsUrl;
+    }
+
+    else if (req.body.profileImage) {
+      user.profileImage = req.body.profileImage;
+    }
+
+    ["name","surname","grade","dni"].forEach(key => {
+      if (req.body[key]) user[key] = req.body[key];
     });
-  } catch (error) {
-    handleHttpError(res, error);
+    if (req.body.rol && isAdmin) {
+      user.rol = req.body.rol;
+    }
+
+    await user.save();
+    await logEvent(`Usuario actualizado: ${user.email}`);
+
+    return res.status(200).json({
+      message: "Usuario actualizado correctamente.",
+      user: {
+        id:           user._id,
+        name:         user.name,
+        surname:      user.surname,
+        email:        user.email,
+        dni:          user.dni,
+        rol:          user.rol,
+        grade:        user.grade,
+        profileImage: user.profileImage,
+      },
+    });
+  } catch (err) {
+    next(err);
   }
 };
+
 
 /**
  * @desc Eliminar usuario (propio o admin) y limpiar referencias en proyectos

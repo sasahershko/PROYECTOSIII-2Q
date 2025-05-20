@@ -150,7 +150,7 @@ function EmptyState() {
         Sé el primero en compartir una idea innovadora con la comunidad
       </p>
       <a
-        href="/ideas/newIdeas"
+        href="/admin/ideas/newIdeas"
         className="px-6 py-3 bg-slate-800 text-white rounded-lg font-medium inline-flex items-center gap-2 hover:bg-slate-900"
       >
         <PlusCircle className="h-5 w-5" />
