@@ -7,13 +7,13 @@ import { updateUser } from "@/lib/users";
 import Toast from "@/components/ui/Toast";
 import { PencilIcon } from "lucide-react";
 
+
 export default function EditUserModal({ user, isOpen, onClose, onUpdated }) {
   const [form, setForm] = useState({
-    name: "",
-    surname: "",
-    grade: "",
-    profileImage: "",
+    name: "", surname: "", grade: "", profileImage: ""
   });
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState(null);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState({
     visible: false,
@@ -33,30 +33,42 @@ export default function EditUserModal({ user, isOpen, onClose, onUpdated }) {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (!file) {
+      setPreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    setPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
+
   const showToast = (message, type = "success") => {
     setToast({ visible: true, message, type });
     setTimeout(() => setToast((t) => ({ ...t, visible: false })), 4000);
   };
 
-  const handleChange = (e) => {
+  const handleChange = e => {
     const { name, value } = e.target;
-    setForm((f) => ({ ...f, [name]: value }));
+    setForm(f => ({ ...f, [name]: value }));
   };
+
+
+  const handleFileChange = e => {
+    const f = e.target.files?.[0];
+    if (f) {
+      setFile(f);
+      setForm(prev => ({ ...prev, file: f }));
+    }
+  };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!user) return;
     setSaving(true);
     try {
-      // Construir payload excluyendo null/"null"/""
-      const payload = {};
-      Object.entries(form).forEach(([key, val]) => {
-        if (val != null && val !== "null" && val !== "") {
-          payload[key] = val;
-        }
-      });
-
-      const updated = await updateUser(user._id, payload);
+      // Llamamos a la única función updateUser
+      const updated = await updateUser(user._id, form);
       showToast("✅ Usuario actualizado correctamente");
       onUpdated?.();
       onClose();
@@ -86,7 +98,7 @@ export default function EditUserModal({ user, isOpen, onClose, onUpdated }) {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
           >
             {/* Cerrar */}
             <button
@@ -101,34 +113,33 @@ export default function EditUserModal({ user, isOpen, onClose, onUpdated }) {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Imagen */}
               <div className="flex items-center gap-4">
-                <div className="relative w-20 h-20 rounded-full overflow-hidden border">
-                  {form.profileImage ? (
-                    <img
-                      src={form.profileImage}
-                      alt="avatar"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gray-200 flex items-center justify-center text-2xl text-gray-500">
-                      <PencilIcon />
-                    </div>
-                  )}
-                </div>
-                <div className="flex-1">
-                  <label className="text-sm text-secundary-text">
-                    URL de la imagen
-                  </label>
-                  <input
-                    name="profileImage"
-                    value={form.profileImage}
-                    onChange={handleChange}
-                    placeholder="https://..."
-                    className="mt-1 w-full px-3 py-2 border rounded-md bg-primary-bg text-primary-text focus:outline-accent"
+                <div className="w-20 h-20 rounded-full overflow-hidden border">
+                  <img
+                    src={preview || form.profileImage || "/placeholder.png"}
+                    alt="avatar"
+                    className="w-full h-full object-cover"
                   />
+                </div>
+                <div className="flex flex-col">
+                  <label className="cursor-pointer inline-block px-4 py-2 bg-accent rounded-md text-sm text-secundary-text hover:bg-primary-bg transition duration-300 ">
+                    Seleccionar imagen
+                    <input
+                      type="file"
+                      name="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                  </label>
+                  {file && (
+                    <span className="mt-2 text-xs text-secundary-text">
+                      {file.name}
+                    </span>
+                  )}
                 </div>
               </div>
 
-              {/* Campos */}
+              {/* Campos de texto */}
               <Input
                 label="Nombre"
                 name="name"
@@ -159,15 +170,15 @@ export default function EditUserModal({ user, isOpen, onClose, onUpdated }) {
                 </button>
               </div>
             </form>
-          </motion.div>
 
-          {toast.visible && (
-            <Toast
-              message={toast.message}
-              type={toast.type}
-              onClose={() => setToast((t) => ({ ...t, visible: false }))}
-            />
-          )}
+            {toast.visible && (
+              <Toast
+                message={toast.message}
+                type={toast.type}
+                onClose={() => setToast(t => ({ ...t, visible: false }))}
+              />
+            )}
+          </motion.div>
         </motion.div>
       )}
     </AnimatePresence>,

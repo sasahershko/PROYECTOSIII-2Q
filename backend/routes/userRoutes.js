@@ -24,7 +24,7 @@ import {
   userIdValidator,
 } from "../validators/userValidator.js";
 import { validateRequest } from "../middlewares/validateRequest.js";
-
+import multer from "multer";
 const userRouter = express.Router();
 
 /**
@@ -317,13 +317,15 @@ userRouter.get("/profile/:id", getUserProfileById);
  */
 userRouter.patch(
   "/:id",
-  userIdValidator,
-  updateUserValidator,
-  validateRequest,
   authMiddleware,
   adminOrSelfMiddleware,
+  multer().single("file"),
+  userIdValidator,
+  updateUserValidator,    
+  validateRequest,
   updateUser
 );
+
 
 /**
  * @swagger
