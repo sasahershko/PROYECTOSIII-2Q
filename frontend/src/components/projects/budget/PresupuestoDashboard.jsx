@@ -29,7 +29,26 @@ export default function PresupuestoDashboard({ data, onEditClick }) {
       otros: [],
     },
     historialCambios = [],
+    startDate,
+    endDate,
   } = data;
+
+
+  const obtenerMesesEntreFechas = (start, end) => {
+  const meses = [];
+  const inicio = new Date(start);
+  const fin = new Date(end);
+  const actual = new Date(inicio.getFullYear(), inicio.getMonth(), 1);
+
+  while (actual <= fin) {
+    const nombreMes = actual.toLocaleString("es-ES", { month: "short" });
+    meses.push(nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1));
+    actual.setMonth(actual.getMonth() + 1);
+  }
+
+  return meses;
+};
+
 
   const diferencia = limite - gastado;
   const porcentajeUsado = (gastado / limite) * 100;
@@ -53,23 +72,39 @@ export default function PresupuestoDashboard({ data, onEditClick }) {
     },
   ];
 
-  const generateResumenMensual = (profesores, estudiantes, otros) => {
-    const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun"];
-    const total =
-      (profesores?.subtotal || 0) +
-      (estudiantes?.subtotal || 0) +
-      (otros?.reduce((acc, gasto) => acc + (gasto.subtotal || 0), 0) || 0);
+  const generateResumenMensual = (profesores, estudiantes, otros, startDate, endDate) => {
+    const months = obtenerMesesEntreFechas(startDate, endDate);
 
-    return months.map((mes) => ({
-      mes,
-      estimado: Math.round(total / months.length),
-      real: Math.round((total / months.length) * (0.9 + Math.random() * 0.2)), // +/-10% real
-    }));
+    const totalProfesores = profesores?.reduce((acc, p) => acc + (p.subtotal || 0), 0) || 0;
+    const totalEstudiantes = estudiantes?.reduce((acc, e) => acc + (e.subtotal || 0), 0) || 0;
+    const totalOtros = otros?.reduce((acc, o) => acc + (o.subtotal || 0), 0) || 0;
+
+    const mensualProfesores = Math.round(totalProfesores / months.length);
+    const mensualEstudiantes = Math.round(totalEstudiantes / months.length);
+    const mensualOtros = Math.round(totalOtros / months.length);
+
+    let acumulado = 0;
+
+    return months.map((mes) => {
+      const mensualTotal = mensualProfesores + mensualEstudiantes + mensualOtros;
+      acumulado += mensualTotal;
+
+      return {
+        mes,
+        acumulado,
+        profesores: mensualProfesores,
+        estudiantes: mensualEstudiantes,
+        otros: mensualOtros,
+      };
+    });
   };
+
 
   const seguimientoData = resumenMensual.length
     ? resumenMensual
-    : generateResumenMensual(profesores[0], estudiantes[0], otros);
+    : (startDate && endDate
+    ? generateResumenMensual(profesores, estudiantes, otros, startDate, endDate): []);
+
 
   const exportToPDF = async () => {
     const input = document.getElementById("presupuesto-desglose");
@@ -284,25 +319,45 @@ export default function PresupuestoDashboard({ data, onEditClick }) {
         <div className="rounded-xl shadow-md border p-4">
           <h2 className="text-lg font-bold mb-8">Seguimiento Mensual</h2>
           <div className="flex justify-center mb-4">
-            <ResponsiveContainer width="60%" height={280}>
-              <LineChart data={seguimientoData}>
-                <XAxis dataKey="mes" />
-                <YAxis />
-                <Tooltip />
-                <Line
-                  type="monotone"
-                  dataKey="estimado"
-                  stroke="#60a5fa"
-                  strokeWidth={2}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="real"
-                  stroke="#10b981"
-                  strokeWidth={2}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            {seguimientoData.length === 0 ? (
+              <p className="text-center text-gray-500">No hay datos disponibles para mostrar la gráfica.</p>
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={seguimientoData}>
+                  <XAxis dataKey="mes" />
+                  <YAxis />
+                  <Tooltip />
+                  <Line
+                    type="monotone"
+                    dataKey="acumulado"
+                    stroke="#3b82f6"
+                    strokeWidth={2}
+                    name="Total Acumulado"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="profesores"
+                    stroke="#1d4ed8"
+                    strokeDasharray="5 5"
+                    name="Profesores"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="estudiantes"
+                    stroke="#10b981"
+                    strokeDasharray="5 5"
+                    name="Estudiantes"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="otros"
+                    stroke="#f59e0b"
+                    strokeDasharray="5 5"
+                    name="Otros"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </div>
       </div>

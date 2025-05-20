@@ -57,6 +57,8 @@ export default function BudgetDashboardPage() {
     gastado: totalGeneral,
     comentarios: generalComments,
     resumenMensual: [],
+    startDate: project.startDate,
+    endDate: project.endDate,
     desglose: {
       profesores: [{
         descripcion: "Tutores",
