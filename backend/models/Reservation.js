@@ -14,9 +14,9 @@ const reservationSchema = new mongoose.Schema(
       ref: "Project",
       required: true,
     }, // Proyecto asociado
-    date: { type: String, required: true }, // Fecha de la reserva (YYYY-MM-DD)
-    startTime: { type: String, required: true }, // Hora de inicio (HH:MM)
-    endTime: { type: String, required: true }, // Hora de fin (HH:MM)
+    date: { type: Date, required: true }, // Fecha de la reserva (YYYY-MM-DD)
+    startTime: { type: Date, required: true }, // Hora de inicio (HH:MM)
+    endTime: { type: Date, required: true }, // Hora de fin (HH:MM)
     status: {
       type: String,
       enum: ["pending", "approved", "rejected"],

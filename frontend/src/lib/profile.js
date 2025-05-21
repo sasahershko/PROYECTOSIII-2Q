@@ -3,7 +3,8 @@ import { cookies } from "next/headers";
 
 export async function getProfile() {
   try {
-    const token = await cookies().get("token")?.value; // Asumiendo que la cookie se llama 'token'
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
     if (!token) {
       throw new Error("Token not found in cookies");
     }
@@ -29,7 +30,8 @@ export async function getProfile() {
 
 export async function getProfileById(userId) {
   try {
-    const token = await cookies().get("token")?.value; // Asumiendo que la cookie se llama 'token'
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
     if (!token) {
       throw new Error("Token not found in cookies");
     }

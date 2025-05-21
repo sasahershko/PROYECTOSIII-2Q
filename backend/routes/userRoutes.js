@@ -24,7 +24,7 @@ import {
   userIdValidator,
 } from "../validators/userValidator.js";
 import { validateRequest } from "../middlewares/validateRequest.js";
-
+import multer from "multer";
 const userRouter = express.Router();
 
 /**
@@ -40,33 +40,12 @@ const userRouter = express.Router();
  *   post:
  *     summary: Registrar un nuevo usuario
  *     tags: [Users]
- *     description: Permite registrar un usuario con validaciones de email y DNI.
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required: [name, surname, email, password, dni, grade]
- *             properties:
- *               name:
- *                 type: string
- *                 example: "Juan"
- *               surname:
- *                 type: string
- *                 example: "Pérez"
- *               email:
- *                 type: string
- *                 example: "juan@u-tad.com"
- *               password:
- *                 type: string
- *                 example: "SecureP@ss123"
- *               dni:
- *                 type: string
- *                 example: "12345678A"
- *               grade:
- *                 type: string
- *                 enum: [INSO, MAIS, FIIS, DIPI, ANIV]
+ *             $ref: "#/components/schemas/UserRegister"
  *     responses:
  *       201:
  *         description: Usuario registrado exitosamente.
@@ -91,15 +70,7 @@ userRouter.post(
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required: [email, code]
- *             properties:
- *               email:
- *                 type: string
- *                 example: "usuario@u-tad.com"
- *               code:
- *                 type: string
- *                 example: "123456"
+ *             $ref: "#/components/schemas/UserVerifyCode"
  *     responses:
  *       200:
  *         description: Código correcto, usuario verificado.
@@ -158,18 +129,14 @@ userRouter.post(
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required: [email, password]
- *             properties:
- *               email:
- *                 type: string
- *                 example: "juan@u-tad.com"
- *               password:
- *                 type: string
- *                 example: "SecureP@ss123"
+ *             $ref: "#/components/schemas/UserLogin"
  *     responses:
  *       200:
  *         description: Login exitoso. Devuelve token y datos del usuario.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/UserResponse"
  *       400:
  *         description: Datos incompletos.
  *       401:
@@ -190,6 +157,12 @@ userRouter.post("/login", loginUserValidator, validateRequest, loginUser);
  *     responses:
  *       200:
  *         description: Lista de usuarios.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: "#/components/schemas/UserResponse"
  *       401:
  *         description: No autorizado.
  */
@@ -255,6 +228,10 @@ userRouter.put(
  *     responses:
  *       200:
  *         description: Perfil del usuario autenticado.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/UserResponse"
  *       401:
  *         description: Token no válido o no proporcionado.
  */
@@ -275,6 +252,10 @@ userRouter.get("/profile", authMiddleware, getUserProfile);
  *     responses:
  *       200:
  *         description: Perfil público del usuario.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/UserResponse"
  *       401:
  *         description: Token no válido o no proporcionado.
  *       404:
@@ -284,9 +265,9 @@ userRouter.get("/profile/:id", getUserProfileById);
 
 /**
  * @swagger
- * /api/users/{id}/restore:
- *   put:
- *     summary: Restaurar un usuario eliminado (soft delete)
+ * /api/users/{id}:
+ *   patch:
+ *     summary: Actualizar los datos de un usuario
  *     tags: [Users]
  *     security:
  *       - bearerAuth: []
@@ -294,30 +275,42 @@ userRouter.get("/profile/:id", getUserProfileById);
  *       - in: path
  *         name: id
  *         required: true
- *         description: ID del usuario a restaurar.
+ *         description: ID del usuario a actualizar.
  *         schema:
  *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: "#/components/schemas/UserUpdate"
  *     responses:
  *       200:
- *         description: Usuario restaurado correctamente.
- *       401:
- *         description: Token no válido o no proporcionado.
+ *         description: Usuario actualizado correctamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/UserResponse"
+ *       400:
+ *         description: No puedes modificar el correo ni la contraseña.
  *       403:
- *         description: Solo los administradores pueden realizar esta acción.
+ *         description: No tienes permiso para editar este usuario.
  *       404:
  *         description: Usuario no encontrado.
  *       500:
- *         description: Error al restaurar el usuario.
+ *         description: Error del servidor.
  */
 userRouter.patch(
   "/:id",
-  userIdValidator,
-  updateUserValidator,
-  validateRequest,
   authMiddleware,
   adminOrSelfMiddleware,
+  multer().single("file"),
+  userIdValidator,
+  updateUserValidator,    
+  validateRequest,
   updateUser
 );
+
 
 /**
  * @swagger

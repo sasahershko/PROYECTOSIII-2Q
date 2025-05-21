@@ -1,19 +1,69 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { updateUser } from "@/lib/users";
 import Toast from "@/components/ui/Toast";
 import { PencilIcon } from "lucide-react";
 
+const ROLE_OPTIONS = [
+  { value: "user", label: "Usuario" },
+  { value: "admin", label: "Administrador" },
+];
+
+// Hook drag & drop para imagen
+function useDragDropImage(onFileSelected) {
+  const inputRef = useRef(null);
+  const [dragActive, setDragActive] = useState(false);
+
+  const handleAreaClick = () => inputRef.current?.click();
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(true);
+  };
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+  };
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      onFileSelected(e.dataTransfer.files[0]);
+    }
+  };
+  const handleChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      onFileSelected(e.target.files[0]);
+    }
+  };
+
+  return {
+    inputRef,
+    dragActive,
+    handleAreaClick,
+    handleDragOver,
+    handleDragLeave,
+    handleDrop,
+    handleChange,
+  };
+}
+
 export default function EditUserModal({ user, isOpen, onClose, onUpdated }) {
   const [form, setForm] = useState({
     name: "",
     surname: "",
+    dni: "",
     grade: "",
+    rol: "",
     profileImage: "",
   });
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState(null);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState({
     visible: false,
@@ -21,42 +71,85 @@ export default function EditUserModal({ user, isOpen, onClose, onUpdated }) {
     type: "success",
   });
 
-  // Inicializar form cuando cambie el usuario
+  // Popup cambio rol a admin
+  const [showRoleWarning, setShowRoleWarning] = useState(false);
+  const [pendingRole, setPendingRole] = useState("");
+
+  // --- Hook drag&drop
+  const {
+    inputRef,
+    dragActive,
+    handleAreaClick,
+    handleDragOver,
+    handleDragLeave,
+    handleDrop,
+    handleChange,
+  } = useDragDropImage((f) => {
+    setFile(f);
+    setForm((fm) => ({ ...fm, file: f }));
+  });
+
   useEffect(() => {
     if (user) {
       setForm({
         name: user.name ?? "",
         surname: user.surname ?? "",
+        dni: user.dni ?? "",
         grade: user.grade ?? "",
+        rol: user.rol ?? "",
         profileImage: user.profileImage ?? "",
       });
+      setFile(null);
+      setPreview(null);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (!file) {
+      setPreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    setPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
 
   const showToast = (message, type = "success") => {
     setToast({ visible: true, message, type });
     setTimeout(() => setToast((t) => ({ ...t, visible: false })), 4000);
   };
 
-  const handleChange = (e) => {
+  const handleChangeInput = (e) => {
     const { name, value } = e.target;
-    setForm((f) => ({ ...f, [name]: value }));
+    setForm((fm) => ({ ...fm, [name]: value }));
+  };
+
+  const confirmRoleChange = () => {
+    setForm((f) => ({ ...f, rol: pendingRole }));
+    setShowRoleWarning(false);
+    setPendingRole("");
+  };
+
+  const cancelRoleChange = () => {
+    setShowRoleWarning(false);
+    setPendingRole("");
+  };
+
+  const handleRoleSelect = (e) => {
+    const { value } = e.target;
+    if (value === "admin" && form.rol !== "admin") {
+      setShowRoleWarning(true);
+      setPendingRole(value);
+    } else {
+      setForm((fm) => ({ ...fm, rol: value }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!user) return;
     setSaving(true);
     try {
-      // Construir payload excluyendo null/"null"/""
-      const payload = {};
-      Object.entries(form).forEach(([key, val]) => {
-        if (val != null && val !== "null" && val !== "") {
-          payload[key] = val;
-        }
-      });
-
-      const updated = await updateUser(user._id, payload);
+      await updateUser(user._id, form);
       showToast("✅ Usuario actualizado correctamente");
       onUpdated?.();
       onClose();
@@ -67,7 +160,6 @@ export default function EditUserModal({ user, isOpen, onClose, onUpdated }) {
     }
   };
 
-  // No renderizamos en SSR
   if (typeof window === "undefined") return null;
 
   return createPortal(
@@ -81,7 +173,7 @@ export default function EditUserModal({ user, isOpen, onClose, onUpdated }) {
           onClick={onClose}
         >
           <motion.div
-            className="bg-card rounded-lg w-[90%] max-w-lg p-6 relative"
+            className="bg-card rounded-lg w-[90%] max-w-2xl p-8 relative border border-card shadow"
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
@@ -91,83 +183,204 @@ export default function EditUserModal({ user, isOpen, onClose, onUpdated }) {
             {/* Cerrar */}
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 text-2xl text-gray-500 hover:text-gray-700"
+              className="absolute top-4 right-4 text-2xl text-secundary-text hover:text-accent transition"
             >
               ×
             </button>
 
-            <h2 className="text-2xl font-semibold mb-4">Editar usuario</h2>
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Imagen */}
-              <div className="flex items-center gap-4">
-                <div className="relative w-20 h-20 rounded-full overflow-hidden border">
-                  {form.profileImage ? (
+            <form onSubmit={handleSubmit} className="space-y-8">
+              {/* Header y selector de imagen centrado y grande */}
+              <div className="flex flex-col items-center mb-8">
+                <h2 className="text-3xl font-bold mb-5 text-accent text-center">
+                  Editar usuario
+                </h2>
+                <div
+                  className={`
+                    relative w-40 h-40 rounded-full overflow-hidden border-2
+                    transition-all cursor-pointer flex items-center justify-center
+                    ${
+                      dragActive
+                        ? "border-accent ring-4 ring-accent/40 bg-accent/10"
+                        : "border-accent bg-card"
+                    }
+                    hover:ring-2 hover:ring-accent/60
+                    mb-4
+                  `}
+                  tabIndex={0}
+                  role="button"
+                  title="Haz clic o arrastra una imagen"
+                  onClick={handleAreaClick}
+                  onKeyDown={(e) =>
+                    (e.key === "Enter" || e.key === " ") && handleAreaClick()
+                  }
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDragEnd={handleDragLeave}
+                  onDrop={handleDrop}
+                  style={{ outline: "none" }}
+                >
+                  {preview ? (
+                    <img
+                      src={preview}
+                      alt="avatar-preview"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : form.profileImage ? (
                     <img
                       src={form.profileImage}
                       alt="avatar"
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full bg-gray-200 flex items-center justify-center text-2xl text-gray-500">
-                      <PencilIcon />
+                    <div className="w-full h-full flex items-center justify-center text-7xl text-secundary-text bg-primary-bg">
+                      <PencilIcon size={56} />
+                    </div>
+                  )}
+                  <input
+                    ref={inputRef}
+                    type="file"
+                    name="file"
+                    accept="image/*"
+                    onChange={handleChange}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    tabIndex={-1}
+                    aria-hidden="true"
+                  />
+                  {dragActive && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-accent/20 text-accent text-sm font-semibold z-10 pointer-events-none">
+                      Suelta la imagen aquí
                     </div>
                   )}
                 </div>
-                <div className="flex-1">
-                  <label className="text-sm text-secundary-text">
-                    URL de la imagen
-                  </label>
-                  <input
-                    name="profileImage"
-                    value={form.profileImage}
-                    onChange={handleChange}
-                    placeholder="https://..."
-                    className="mt-1 w-full px-3 py-2 border rounded-md bg-primary-bg text-primary-text focus:outline-accent"
+                <span className="text-xs text-secundary-text mb-2 text-center">
+                  Haz clic o arrastra una imagen
+                </span>
+                {file && (
+                  <span className="mt-1 text-xs text-secundary-text text-center">
+                    {file.name}
+                  </span>
+                )}
+              </div>
+
+              {/* Dos columnas */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="flex flex-col gap-4">
+                  <Input
+                    label="Nombre"
+                    name="name"
+                    value={form.name}
+                    onChange={handleChangeInput}
+                  />
+                  <Input
+                    label="DNI"
+                    name="dni"
+                    value={form.dni}
+                    onChange={handleChangeInput}
+                  />
+                </div>
+                <div className="flex flex-col gap-4">
+                  <Input
+                    label="Apellidos"
+                    name="surname"
+                    value={form.surname}
+                    onChange={handleChangeInput}
+                  />
+                  <Select
+                    label="Grado"
+                    name="grade"
+                    value={form.grade}
+                    onChange={handleChangeInput}
+                    options={["INSO", "MAIS", "FIIS", "DIPI", "ANIV"]}
                   />
                 </div>
               </div>
 
-              {/* Campos */}
-              <Input
-                label="Nombre"
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-              />
-              <Input
-                label="Apellidos"
-                name="surname"
-                value={form.surname}
-                onChange={handleChange}
-              />
-              <Select
-                label="Grado"
-                name="grade"
-                value={form.grade}
-                onChange={handleChange}
-                options={["INSO", "MAIS", "FIIS", "DIPI", "ANIV"]}
-              />
+              {/* Rol separado */}
+              <div>
+                <Select
+                  label="Rol"
+                  name="rol"
+                  value={form.rol}
+                  onChange={handleRoleSelect}
+                  options={ROLE_OPTIONS.map((opt) => ({
+                    value: opt.value,
+                    label: opt.label,
+                  }))}
+                />
+              </div>
 
               <div className="flex justify-end">
                 <button
                   type="submit"
                   disabled={saving}
-                  className="bg-accent text-white px-6 py-2 rounded-md font-medium hover:opacity-90 disabled:opacity-50"
+                  className="bg-accent text-white px-6 py-2 rounded-md font-medium hover:opacity-90 disabled:opacity-50 transition"
                 >
                   {saving ? "Guardando..." : "Guardar"}
                 </button>
               </div>
             </form>
-          </motion.div>
 
-          {toast.visible && (
-            <Toast
-              message={toast.message}
-              type={toast.type}
-              onClose={() => setToast((t) => ({ ...t, visible: false }))}
-            />
-          )}
+            {/* POPUP CAMBIO A ADMIN */}
+            <AnimatePresence>
+              {showRoleWarning && (
+                <motion.div
+                  className="fixed inset-0 bg-black/40 backdrop-blur-[6px] flex items-center justify-center z-50"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={cancelRoleChange}
+                  style={{ zIndex: 100 }}
+                >
+                  <motion.div
+                    className="bg-card rounded-lg shadow-lg p-8 max-w-3xl relative border border-accent"
+                    initial={{ scale: 0.95, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.95, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <h3 className="text-lg font-semibold mb-2 text-accent">
+                      ¡Atención!
+                    </h3>
+                    <p className="text-sm text-secundary-text mb-6">
+                      Vas a asignar el rol{" "}
+                      <b className="text-accent">Administrador</b> a este
+                      usuario.
+                      <br />
+                      Un administrador puede modificar, borrar y gestionar
+                      cualquier dato del sistema.
+                      <br />
+                      <span className="text-accent font-semibold">
+                        ¿Estás seguro de que quieres continuar?
+                      </span>
+                    </p>
+                    <div className="flex justify-end gap-2">
+                      <button
+                        onClick={cancelRoleChange}
+                        className="px-4 py-2 rounded border border-secundary text-secundary-text bg-card hover:bg-accent/10 font-medium transition"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={confirmRoleChange}
+                        className="px-4 py-2 rounded border border-accent bg-accent text-white hover:opacity-90 font-semibold transition"
+                      >
+                        Sí, cambiar a admin
+                      </button>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {toast.visible && (
+              <Toast
+                message={toast.message}
+                type={toast.type}
+                onClose={() => setToast((t) => ({ ...t, visible: false }))}
+              />
+            )}
+          </motion.div>
         </motion.div>
       )}
     </AnimatePresence>,
@@ -175,7 +388,7 @@ export default function EditUserModal({ user, isOpen, onClose, onUpdated }) {
   );
 }
 
-// Componentes reutilizables
+// Reutilizables
 function Input({ label, name, value, onChange }) {
   return (
     <div className="flex flex-col">
@@ -187,7 +400,7 @@ function Input({ label, name, value, onChange }) {
         name={name}
         value={value}
         onChange={onChange}
-        className="px-4 py-2 rounded-md border bg-primary-bg text-primary-text focus:outline-accent"
+        className="px-4 py-2 rounded-md border border-card bg-primary-bg text-primary-text focus:outline-accent"
       />
     </div>
   );
@@ -204,16 +417,22 @@ function Select({ label, name, value, onChange, options }) {
         name={name}
         value={value}
         onChange={onChange}
-        className="px-4 py-2 rounded-md border bg-primary-bg text-primary-text focus:outline-accent"
+        className="px-4 py-2 rounded-md border border-card bg-primary-bg text-primary-text focus:outline-accent"
       >
         <option value="" disabled>
           Selecciona una opción
         </option>
-        {options.map((opt) => (
-          <option key={opt} value={opt}>
-            {opt}
-          </option>
-        ))}
+        {options.map((opt) =>
+          typeof opt === "string" ? (
+            <option key={opt} value={opt}>
+              {opt}
+            </option>
+          ) : (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          )
+        )}
       </select>
     </div>
   );

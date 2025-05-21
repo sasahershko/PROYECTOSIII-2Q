@@ -1,7 +1,7 @@
 "use client";
 
-import { getUsers } from "@lib/users";
 import { useState, useEffect } from "react";
+import { getUsers } from "@lib/users";
 import UserCard from "@components/lists/UserCard";
 import SpinLoader from "@components/SpinLoader";
 import { AnimatePresence, motion } from "framer-motion";
@@ -29,6 +29,9 @@ export default function Users() {
   const [filterGrade, setFilterGrade] = useState([]);
   const [filterRol, setFilterRol] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
+  const [page, setPage] = useState(1);
+
+  const PAGE_SIZE = 10; //numero de usuarios por página
 
   const reloadUsers = () => {
     setLoading(true);
@@ -61,6 +64,7 @@ export default function Users() {
     );
   };
 
+  // Ordenar
   const sortedUsers = [...mapaUsers].sort((a, b) => {
     const aVal = a[sortBy]?.toString().toLowerCase() || "";
     const bVal = b[sortBy]?.toString().toLowerCase() || "";
@@ -69,6 +73,7 @@ export default function Users() {
     return 0;
   });
 
+  // Filtrar
   const filteredUsers = sortedUsers.filter((user) => {
     const search = searchTerm.toLowerCase();
     const matchesSearch = Object.values(user).some((v) =>
@@ -80,6 +85,19 @@ export default function Users() {
       filterRol.length > 0 ? filterRol.includes(user.rol) : true;
     return matchesSearch && matchesGrade && matchesRol;
   });
+
+  // Resetear página al cambiar filtros o búsqueda
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, filterGrade, filterRol]);
+
+  // Paginación
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / PAGE_SIZE));
+  const paginatedUsers = filteredUsers.slice(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE
+  );
+  const goToPage = (p) => setPage(Math.min(Math.max(1, p), totalPages));
 
   const toggleFilter = (value, setter, current) =>
     setter(
@@ -103,11 +121,40 @@ export default function Users() {
   };
 
   return (
-    <div className="flex flex-col w-full items-center min-h-screen bg-primary-bg text-primary-text">
+    <div className="flex flex-col w-full items-center min-h-full overflow-y-scroll bg-primary-bg text-primary-text">
       {/* Top bar */}
-      <div className="w-[95%] max-w-8xl mt-8 mb-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold select-none">Lista de Personas</h1>
-        <div className="flex flex-wrap gap-2 items-center">
+      <div className="w-[95%] max-w-8xl mt-8 mb-4 flex flex-col md:flex-row items-center justify-between gap-4">
+        {/* Título y chips a la IZQUIERDA */}
+        <div className="flex items-center gap-4 w-full md:w-auto">
+          <h1 className="text-2xl font-bold select-none whitespace-nowrap">
+            Lista de Usuarios
+          </h1>
+          <div className="flex flex-wrap gap-2">
+            {[
+              ...filterGrade.map((g) => ({
+                label: g,
+                color: areaColors[g] || "bg-gray-400",
+                remove: () => removeChip(g, setFilterGrade, filterGrade),
+              })),
+              ...filterRol.map((r) => ({
+                label: r,
+                color: rolColors[r] || "bg-gray-400",
+                remove: () => removeChip(r, setFilterRol, filterRol),
+              })),
+            ].map((chip) => (
+              <div
+                key={chip.label}
+                onClick={chip.remove}
+                className={`${chip.color} text-white rounded-full px-3 py-1 text-sm gap-2 flex items-center cursor-pointer select-none`}
+              >
+                <span>{chip.label}</span>
+                <span className="font-bold">×</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        {/* Buscador y botón filtro a la DERECHA */}
+        <div className="flex gap-2 items-center">
           <div className="relative group">
             <LuSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-secundary-text group-focus-within:text-accent transition-colors" />
             <input
@@ -121,35 +168,16 @@ export default function Users() {
           <button
             onClick={() => setShowFilters(true)}
             className="text-primary-text select-none hover:scale-105 transition duration-150 p-2 rounded-full"
+            aria-label="Mostrar filtros"
           >
             <LuFilter className="w-6 h-6" />
           </button>
         </div>
       </div>
 
-      {/* Active filter chips */}
-      <div className="w-[95%] max-w-8xl mb-4 flex flex-wrap gap-2 px-4">
-        {[
-          ...filterGrade.map((g) => ({
-            label: g,
-            color: areaColors[g] || "bg-gray-400",
-            remove: () => removeChip(g, setFilterGrade, filterGrade),
-          })),
-          ...filterRol.map((r) => ({
-            label: r,
-            color: rolColors[r] || "bg-gray-400",
-            remove: () => removeChip(r, setFilterRol, filterRol),
-          })),
-        ].map((chip) => (
-          <div
-            key={chip.label}
-            onClick={chip.remove}
-            className={`${chip.color} text-white rounded-full px-3 py-1 text-sm gap-2 flex items-center cursor-pointer select-none`}
-          >
-            <span>{chip.label}</span>
-            <span className="font-bold">×</span>
-          </div>
-        ))}
+      {/* Contador de resultados */}
+      <div className="w-[95%] max-w-8xl mb-4 px-4 text-sm text-secundary-text">
+        Mostrando {filteredUsers.length} de {mapaUsers.length}
       </div>
 
       {/* Filters modal */}
@@ -196,7 +224,7 @@ export default function Users() {
                           toggleFilter(g, setFilterGrade, filterGrade)
                         }
                       />
-                      <span className="select-none">{g}</span>
+                      <span>{g}</span>
                     </label>
                   ))}
                 </div>
@@ -217,7 +245,7 @@ export default function Users() {
                           toggleFilter(r, setFilterRol, filterRol)
                         }
                       />
-                      <span className="select-none">{r}</span>
+                      <span>{r}</span>
                     </label>
                   ))}
                 </div>
@@ -240,9 +268,9 @@ export default function Users() {
       </AnimatePresence>
 
       {/* Users table */}
-      <div className="w-[95%] max-w-8xl bg-card shadow-md rounded-lg mb-8 px-4">
+      <div className="w-[95%] max-w-8xl bg-card shadow-md rounded-lg mb-4 px-4">
         <div
-          className="grid gap-4 items-center px-2 py-2 border-b"
+          className="grid gap-4 items-center px-2 py-2 border-primary-bg border-b-2 mb-1"
           style={{
             gridTemplateColumns: "0.25fr 2fr 2fr 3fr 2fr 0.8fr 0.8fr 1fr",
           }}
@@ -271,13 +299,13 @@ export default function Users() {
           <div className="flex justify-center items-center py-8">
             <SpinLoader />
           </div>
-        ) : filteredUsers.length === 0 ? (
+        ) : paginatedUsers.length === 0 ? (
           <div className="text-center text-secundary-text font-medium py-8">
             No se encuentran usuarios para tus filtros.
           </div>
         ) : (
           <AnimatePresence>
-            {filteredUsers.map((user, idx) => (
+            {paginatedUsers.map((user, idx) => (
               <motion.div
                 key={user._id}
                 initial={{ opacity: 0, y: 10 }}
@@ -290,6 +318,39 @@ export default function Users() {
           </AnimatePresence>
         )}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 0 && (
+        <div className="flex items-center gap-2 mb-8 absolute z-10 bottom-0">
+          <button
+            onClick={() => goToPage(page - 1)}
+            disabled={page === 1}
+            className="px-3 py-1 bg-card rounded disabled:opacity-50"
+          >
+            Anterior
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+            <button
+              key={p}
+              onClick={() => goToPage(p)}
+              className={`px-3 py-1 rounded ${
+                p === page
+                  ? "bg-accent text-white"
+                  : "bg-card hover:bg-secundary-text/30"
+              }`}
+            >
+              {p}
+            </button>
+          ))}
+          <button
+            onClick={() => goToPage(page + 1)}
+            disabled={page === totalPages}
+            className="px-3 py-1 bg-card rounded disabled:opacity-50 hover:bg-secundary-text/30"
+          >
+            Siguiente
+          </button>
+        </div>
+      )}
     </div>
   );
 }

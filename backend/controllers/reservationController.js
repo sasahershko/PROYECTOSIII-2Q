@@ -3,6 +3,7 @@ import Table from "../models/Tables.js";
 import Project from "../models/Project.js";
 import { handleHttpError } from "../utils/handleError.js";
 import { logEvent } from "../utils/handleLogger.js";
+import moment from "moment-timezone";
 
 //CREAR UNA RESERVA
 export const createReservation = async (req, res) => {
@@ -14,28 +15,33 @@ export const createReservation = async (req, res) => {
     const existingTable = await Table.findById(table);
     if (!existingTable) return handleHttpError(res, "Mesa no encontrada.", 404);
 
-    // Verificar si el proyecto existe y pertenece al usuario
+    // Verificar si el proyecto existe y el usuario pertenece a él
     const existingProject = await Project.findOne({
       _id: project,
-      members: userId,
+      users: userId,
     });
-
-
     if (!existingProject)
       return handleHttpError(res, "No tienes acceso a este proyecto.", 403);
 
-    // Verificar disponibilidad de la mesa en la franja horaria
+    // Construir fechas completas con hora
+    const parsedDate = new Date(date);
+    const startTimeParsed = new Date(`${date}T${startTime}:00`);
+    const endTimeParsed = new Date(`${date}T${endTime}:00`);
+
+    // Verificar solapamiento
     const overlappingReservation = await Reservation.findOne({
       table,
-      date,
+      date: parsedDate,
       $or: [
-        { startTime: { $lt: endTime, $gte: startTime } }, // Se solapa al inicio
-        { endTime: { $gt: startTime, $lte: endTime } }, // Se solapa al final
-        { startTime: { $lte: startTime }, endTime: { $gte: endTime } }, // Contiene la reserva completamente
+        { startTime: { $lt: endTimeParsed, $gte: startTimeParsed } },
+        { endTime: { $gt: startTimeParsed, $lte: endTimeParsed } },
+        {
+          startTime: { $lte: startTimeParsed },
+          endTime: { $gte: endTimeParsed },
+        },
       ],
     });
 
-    //if (overlappingReservation && overlappingReservation.status != "rejected") {
     if (overlappingReservation)
       return handleHttpError(
         res,
@@ -48,15 +54,16 @@ export const createReservation = async (req, res) => {
       user: userId,
       table,
       project,
-      date,
-      startTime,
-      endTime,
+      date: parsedDate,
+      startTime: startTimeParsed,
+      endTime: endTimeParsed,
       status: "pending",
     });
+
     await newReservation.save();
 
     await logEvent(
-      `📅 Nueva reserva creada por ${req.usuario.email} para la mesa ${table} el ${date}`
+      `📅 Nueva reserva creada por ${req.usuario.email} para la mesa ${table} el ${date} de ${startTime} a ${endTime}`
     );
 
     res.status(201).json({
@@ -72,7 +79,9 @@ export const getUserReservations = async (req, res) => {
   try {
     const userId = req.usuario._id;
 
-    const reservations = await Reservation.find({ user: userId });
+    const reservations = await Reservation.find({ user: userId })
+      .populate("table", "name zone capacity")
+      .populate("project", "name");
 
     if (reservations.length === 0)
       return handleHttpError(res, "No se encontraron reservas.", 404);
@@ -85,7 +94,9 @@ export const getUserReservations = async (req, res) => {
 //probar find().populate("table", "number zone capacity")
 export const getAllReservations = async (req, res) => {
   try {
-    const reservations = await Reservation.find();
+    const reservations = await Reservation.find()
+      .populate("table", "name zone capacity")
+      .populate("project", "name");
 
     if (reservations.length === 0)
       return handleHttpError(res, "No se encontraron reservas.", 404);
@@ -181,5 +192,52 @@ export const deleteReservation = async (req, res) => {
       .json({ message: "Reserva marcada como eliminada (soft delete)." });
   } catch (error) {
     handleHttpError(res, error);
+  }
+};
+
+export const getAvailableTables = async (req, res) => {
+  try {
+    const { date, startTime, endTime } = req.query;
+
+    if (!date || !startTime || !endTime) {
+      return handleHttpError(res, "Faltan parámetros: 'date', 'startTime' y 'endTime'", 400);
+    }
+
+    const start = moment.tz(`${date} ${startTime}`, "YYYY-MM-DD HH:mm", "Europe/Madrid").toDate();
+    const end = moment.tz(`${date} ${endTime}`, "YYYY-MM-DD HH:mm", "Europe/Madrid").toDate();
+
+    const overlappingReservations = await Reservation.find({
+      deleted: false,
+      $or: [
+        {
+          startTime: { $lt: end },
+          endTime: { $gt: start }
+        },
+        {
+          startTime: { $eq: end }
+        },
+        {
+          endTime: { $eq: start } 
+        }
+      ]
+    });
+
+    const reservedTableIds = overlappingReservations.map((r) =>
+      r.table.toString()
+    );
+
+    const availableTables = await Table.find({
+      _id: { $nin: reservedTableIds },
+    }).select("_id number zone capacity");
+
+    console.log("Mesas disponibles:", availableTables.length);
+    availableTables.forEach((t) => {
+      console.log(` - Mesa ${t.number} (${t._id})`);
+    });
+
+    res.status(200).json(availableTables);
+  } catch (error) {
+    console.error("Error en getAvailableTables:", error);
+    handleHttpError(res, "Error al consultar mesas disponibles");
   }
 };

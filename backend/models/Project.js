@@ -48,7 +48,6 @@ const pendingNotesSchema = new Schema(
 const projectSchema = new Schema(
   {
     name: { type: String, required: true },
-    //! DEBERÍA TENER CORREO Y NÚMERO DE TELÉFONO
     contactPerson: {
       name: { type: String, required: true },
       email: { type: String, required: true },
@@ -77,15 +76,15 @@ const projectSchema = new Schema(
 
     // PRESUPUESTO
     budget: {
-      title: { type: String, default:'' },
-      reason: { type: String, default: '' },
-      generalComments: { type: String, default: '' },
+      title: { type: String, default: "" },
+      reason: { type: String, default: "" },
+      generalComments: { type: String, default: "" },
 
       tutors: {
         numTutors: { type: Number, default: 0 },
         estimatedHours: { type: Number, default: 0 },
         pricePerHour: { type: Number, default: 0 },
-        subtotal: { type: Number, default: 0 }, 
+        subtotal: { type: Number, default: 0 },
       },
 
       interns: {
@@ -100,11 +99,23 @@ const projectSchema = new Schema(
           description: { type: String, required: true },
           quantity: { type: Number, required: true },
           unitPrice: { type: Number, required: true },
-          subtotal: { type: Number, required: true }, 
+          subtotal: { type: Number, required: true },
         },
       ],
 
       totalGeneral: { type: Number, default: 0 },
+
+      incomes: [
+        {
+          concept: { type: String, required: true },
+          amount: { type: Number, required: true },
+          date: { type: Date, default: Date.now },
+        },
+      ],
+
+      totalIncomes: { type: Number, default: 0 },
+
+      totalExpenses: { type: Number, default: 0 },
     },
 
     description: { type: String, required: true },

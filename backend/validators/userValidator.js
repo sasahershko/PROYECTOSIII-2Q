@@ -1,4 +1,4 @@
-import { check, param } from "express-validator";
+import { check, body, param } from "express-validator";
 import { dniValidator } from "./dniValidator.js";
 import { emailValidator } from "./emailValidator.js";
 import { passwordValidator } from "./passwordValidator.js";
@@ -31,8 +31,15 @@ export const resendVerificationValidator = [
 ];
 
 export const updateUserValidator = [
-  check("name").optional().notEmpty(),
-  check("surname").optional().notEmpty(),
+  // Campos editables
+  check("name")
+    .optional()
+    .notEmpty()
+    .withMessage("El nombre no puede estar vacío"),
+  check("surname")
+    .optional()
+    .notEmpty()
+    .withMessage("Los apellidos no pueden estar vacíos"),
   check("grade")
     .optional()
     .isIn(["INSO", "MAIS", "FIIS", "DIPI", "ANIV"])
@@ -41,7 +48,18 @@ export const updateUserValidator = [
     .optional()
     .isIn(["admin", "moderator", "user"])
     .withMessage("Rol no válido"),
-  check("profileImage").optional().isString(),
+  check("profileImage")
+    .optional()
+    .isString()
+    .withMessage("La imagen debe ser una URL o string"),
+  dniValidator.optional(),
+
+  // Campos no editables
+  body("email").not().exists().withMessage("No se puede modificar el correo"),
+  body("password")
+    .not()
+    .exists()
+    .withMessage("No se puede modificar la contraseña"),
 ];
 
 export const userIdValidator = [

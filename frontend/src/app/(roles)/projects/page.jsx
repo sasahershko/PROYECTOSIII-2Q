@@ -102,9 +102,39 @@ export default function AdminProjectDashboard() {
   return (
     <div className="min-h-screen bg-primary-bg text-primary-text">
       {/* Top bar */}
-      <div className="w-[95%] max-w-8xl mx-auto mt-8 mb-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold select-none">Dashboard Proyectos</h1>
-        <div className="flex flex-wrap gap-2 items-center">
+      <div className="w-[95%] max-w-8xl mx-auto mt-8 mb-4 flex flex-col md:flex-row items-center justify-between gap-4">
+        {/* Título y chips activos */}
+        <div className="flex flex-col md:flex-row items-start md:items-center w-full gap-2">
+          <h1 className="text-2xl font-bold select-none whitespace-nowrap">
+            Dashboard Proyectos
+          </h1>
+          <div className="flex flex-wrap gap-2 ml-0 md:ml-4">
+            {[
+              ...selectedEstados.map((e) => ({
+                label: e,
+                color: estadoColorsMap[e],
+                remove: () =>
+                  toggleItem(e, selectedEstados, setSelectedEstados),
+              })),
+              ...selectedGrados.map((g) => ({
+                label: g,
+                color: areaColors[g],
+                remove: () => toggleItem(g, selectedGrados, setSelectedGrados),
+              })),
+            ].map((chip) => (
+              <div
+                key={chip.label}
+                className={`${chip.color} text-white rounded-full px-3 py-1 text-sm flex items-center gap-2 cursor-pointer select-none`}
+                onClick={chip.remove}
+              >
+                <span>{chip.label}</span>
+                <span className="font-bold">×</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        {/* Buscador, botón filtros y orden */}
+        <div className="flex gap-2 items-center">
           <div className="relative group">
             <LuSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-secundary-text group-focus-within:text-accent transition-colors" />
             <input
@@ -115,28 +145,27 @@ export default function AdminProjectDashboard() {
               className="bg-card border-2 border-secundary-text text-primary-text placeholder-secundary-text rounded px-10 py-2 focus:outline-none focus:border-accent h-10 w-64"
             />
           </div>
-          <div className="flex items-center gap-4 ml-4">
-            {" "}
-            <button
-              onClick={() => setShowFilters((v) => !v)}
-              className="text-primary-text select-none hover:scale-105 transition duration-150 rounded-full"
-            >
-              <LuFilter className="w-6 h-6" />
-            </button>
-            <button
-              onClick={() =>
-                setOrdenFecha((prev) => (prev === "asc" ? "desc" : "asc"))
-              }
-              className="hover:scale-105 transition duration-150 rounded-full text-primary-text select-none"
-              title={`Ordenar por fecha (${ordenFecha})`}
-            >
-              {ordenFecha === "asc" ? (
-                <LuClockArrowUp className="w-6 h-6" />
-              ) : (
-                <LuClockArrowDown className="w-6 h-6" />
-              )}
-            </button>
-          </div>
+          <button
+            onClick={() => setShowFilters((v) => !v)}
+            className="text-primary-text select-none hover:scale-105 transition duration-150 rounded-full"
+            aria-label="Mostrar filtros"
+          >
+            <LuFilter className="w-6 h-6" />
+          </button>
+          <button
+            onClick={() =>
+              setOrdenFecha((prev) => (prev === "asc" ? "desc" : "asc"))
+            }
+            className="hover:scale-105 transition duration-150 rounded-full text-primary-text select-none"
+            title={`Ordenar por fecha (${ordenFecha})`}
+            aria-label="Ordenar por fecha"
+          >
+            {ordenFecha === "asc" ? (
+              <LuClockArrowUp className="w-6 h-6" />
+            ) : (
+              <LuClockArrowDown className="w-6 h-6" />
+            )}
+          </button>
         </div>
       </div>
 
@@ -230,31 +259,6 @@ export default function AdminProjectDashboard() {
         )}
       </AnimatePresence>
 
-      {/* Chips activos */}
-      <div className="w-[95%] max-w-8xl mx-auto mb-4 flex flex-wrap gap-2 px-4">
-        {[
-          ...selectedEstados.map((e) => ({
-            label: e,
-            color: estadoColorsMap[e],
-            remove: () => toggleItem(e, selectedEstados, setSelectedEstados),
-          })),
-          ...selectedGrados.map((g) => ({
-            label: g,
-            color: areaColors[g],
-            remove: () => toggleItem(g, selectedGrados, setSelectedGrados),
-          })),
-        ].map((chip) => (
-          <div
-            key={chip.label}
-            className={`${chip.color} text-white rounded-full px-3 py-1 text-sm flex items-center gap-2 cursor-pointer select-none`}
-            onClick={chip.remove}
-          >
-            <span>{chip.label}</span>
-            <span className="font-bold">×</span>
-          </div>
-        ))}
-      </div>
-
       {/* Acciones */}
       <div className="w-[95%] max-w-8xl mx-auto flex gap-2 mb-6 px-4">
         <Link
@@ -270,7 +274,7 @@ export default function AdminProjectDashboard() {
         {proyectosFiltrados.length === 0 ? (
           <p className="text-center py-12">No existen proyectos.</p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
             <AnimatePresence>
               {proyectosFiltrados.map((project, idx) => (
                 <motion.div

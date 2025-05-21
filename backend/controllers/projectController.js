@@ -80,13 +80,20 @@ export const getAllProjects = async (req, res) => {
   try {
     let projects;
     if (!req.usuario) {
-      projects = await Project.find().select("area name description image");
+      projects = await Project.find()
+        .select("area name description image")
+        .populate("responsibles", "name surname profileImage")
+        .populate("users", "name surname profileImage");
     } else if (req.usuario.rol === "admin") {
-      projects = await Project.find();
+      projects = await Project.find()
+        .populate("responsibles", "name surname profileImage")
+        .populate("users", "name surname profileImage");
     } else {
       projects = await Project.find({
         $or: [{ responsibles: req.usuario._id }, { users: req.usuario._id }],
-      });
+      })
+        .populate("responsibles", "name surname profileImage")
+        .populate("users", "name surname profileImage");
     }
     res.status(200).json(projects);
   } catch (error) {
@@ -99,8 +106,8 @@ export const getProjectById = async (req, res) => {
   try {
     const { id } = req.filteredData;
     const project = await Project.findById(id)
-      .populate("responsibles", "name")
-      .populate("users", "name surname")
+      .populate("responsibles", "name surname profileImage")
+      .populate("users", "name surname profileImage")
       .populate("pendingNotes.userWhoWrites", "name")
       .populate("pendingNotes.userWhoRecieves", "name");
 
@@ -470,7 +477,15 @@ export const hardDeleteProject = async (req, res) => {
 export const updateProjectBudget = async (req, res) => {
   try {
     const { id } = req.params;
-    const updates = req.body.budget;
+    const updates = req.filteredData.budget;
+
+    if (!updates) {
+      return handleHttpError(
+        res,
+        "No se ha enviado información de presupuesto",
+        400
+      );
+    }
 
     const project = await Project.findById(id);
     if (!project) return handleHttpError(res, "Proyecto no encontrado", 404);
@@ -479,7 +494,7 @@ export const updateProjectBudget = async (req, res) => {
       project.budget = {};
     }
 
-    // fusionar valores enviados con los existentes
+    // Fusionar presupuestos
     const mergedBudget = {
       ...project.budget,
       ...updates,
@@ -493,17 +508,15 @@ export const updateProjectBudget = async (req, res) => {
       },
     };
 
-    // eliminar cálculos anteriores
+    // Seguridad: eliminar campos calculados si vienen por error
     delete mergedBudget.tutors?.subtotal;
     delete mergedBudget.interns?.subtotal;
     delete mergedBudget.totalGeneral;
 
-    // calcular presupuesto actualizado
+    // Recalcular
     calculateBudget(mergedBudget);
 
-    // guardar nuevo presupuesto en el proyecto
     project.budget = mergedBudget;
-
     await project.save();
 
     await logEvent(`💰 Presupuesto actualizado para: ${project.name}`);
@@ -578,5 +591,53 @@ export const removeUsersFromProject = async (req, res) => {
       .json({ message: "Usuarios eliminados correctamente", proyecto });
   } catch (error) {
     handleHttpError(res, error);
+  }
+};
+
+export const addIncomeToProject = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const income = req.filteredData;
+
+    const project = await Project.findById(id);
+    if (!project) {
+      return handleHttpError(res, "Proyecto no encontrado", 404);
+    }
+
+    // Añadir ingreso
+    project.budget.incomes.push(income);
+
+    // Recalcular totalIncomes
+    project.budget.totalIncomes = project.budget.incomes.reduce(
+      (acc, curr) => acc + curr.amount,
+      0
+    );
+
+    // Recalcular totalExpenses
+    const subtotalTutors = project.budget.tutors?.subtotal || 0;
+    const subtotalInterns = project.budget.interns?.subtotal || 0;
+    const subtotalExtras =
+      project.budget.extraExpenses?.reduce(
+        (acc, item) => acc + item.subtotal,
+        0
+      ) || 0;
+
+    project.budget.totalExpenses =
+      subtotalTutors + subtotalInterns + subtotalExtras;
+
+    // Calcular balance final
+    project.budget.totalGeneral =
+      project.budget.totalIncomes - project.budget.totalExpenses;
+
+    await project.save();
+
+    await logEvent(`💸 Ingreso añadido al proyecto: ${project.name}`);
+
+    return res.status(200).json({
+      message: "Ingreso añadido correctamente.",
+      budget: project.budget,
+    });
+  } catch (error) {
+    handleHttpError(res, "ERROR_ADDING_INCOME");
   }
 };

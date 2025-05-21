@@ -2,7 +2,6 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { BsCalendar, BsClockHistory, BsHourglassSplit } from "react-icons/bs";
 import Image from "next/image";
-import { getProfileById } from "@/lib/profile";
 import { useEffect, useState } from "react";
 
 export default function ProjectCard({ project }) {
@@ -17,21 +16,6 @@ export default function ProjectCard({ project }) {
     users,
     pStatus,
   } = project;
-
-  const [updatedUsers, setUpdatedUsers] = useState([]);
-
-  useEffect(() => {
-    const fetchProfiles = async () => {
-      if (users?.length) {
-        const profiles = await Promise.all(
-          users.map((u) => getProfileById(u._id))
-        );
-        setUpdatedUsers(profiles);
-      }
-    };
-
-    fetchProfiles();
-  }, [users]);
 
   const currentStatus = pStatus?.[0]?.status || "Sin estado";
 
@@ -96,7 +80,7 @@ export default function ProjectCard({ project }) {
         </div>
 
         <div className="flex -space-x-2">
-          {updatedUsers?.map((u) => (
+          {project.users?.map((u) => (
             <div
               key={u._id}
               className="w-8 h-8 rounded-full border-2 border-primary-bg bg-gray-300 flex items-center justify-center text-xs font-semibold overflow-hidden"
